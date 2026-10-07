@@ -1,0 +1,22 @@
+{
+  "name": "@erp/rules",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "lint": "echo 'linting @erp/rules'"
+  },
+  "dependencies": {
+    "@erp/shared": "workspace:*",
+    "json-logic-js": "^2.0.2"
+  },
+  "devDependencies": {
+    "@erp/tsconfig": "workspace:*",
+    "@types/json-logic-js": "^2.0.8",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.2"
+  }
+}
