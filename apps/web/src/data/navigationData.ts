@@ -87,26 +87,6 @@ export const navigationModules: ModuleNav[] = [
     ],
   },
   {
-    id: 'gateways',
-    label: 'Gateways & Adquirentes',
-    icon: 'CreditCard',
-    groups: [
-      {
-        groupName: 'Processamento & Pagamentos',
-        items: [
-          { id: 'gw-gateways', label: 'Gateways', description: 'Integrações, chaves e webhooks' },
-          { id: 'gw-adquirentes', label: 'Adquirentes', description: 'Cadastro e contratos' },
-          { id: 'gw-bandeiras', label: 'Bandeiras', description: 'Bandeiras e roteamento' },
-          { id: 'gw-mdr', label: 'MDR', description: 'Taxas das adquirentes' },
-          { id: 'gw-parcelamento', label: 'Parcelamento', description: 'Condições por parcela' },
-          { id: 'gw-metodos', label: 'Métodos de Pagamento', description: 'PIX, cartões e PDV' },
-          { id: 'gw-regras', label: 'Regras Comerciais', description: 'Taxas negociadas por evento' },
-          { id: 'gw-custom', label: 'Pagamentos Customizados', description: 'Splits e configurações especiais' },
-        ],
-      },
-    ],
-  },
-  {
     id: 'contabil',
     label: 'Contábil',
     icon: 'BookOpen',

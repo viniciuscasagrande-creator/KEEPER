@@ -45,10 +45,8 @@ export function App() {
 
   const handleSelectSubModule = (subModuleId: string) => {
     setActiveSubModule(subModuleId);
-    if (subModuleId.startsWith('fin-') || subModuleId === 'dash-fin') {
+    if (subModuleId.startsWith('fin-') || subModuleId === 'dash-fin' || subModuleId.startsWith('gw-')) {
       setActiveModule('financeiro');
-    } else if (subModuleId.startsWith('gw-')) {
-      setActiveModule('gateways');
     } else if (subModuleId.startsWith('acc-')) {
       setActiveModule('contabil');
     } else if (subModuleId === 'quick-entry') {
