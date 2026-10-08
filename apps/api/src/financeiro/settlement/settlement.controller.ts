@@ -164,4 +164,87 @@ export class SettlementController {
   ) {
     return this.settlementService.processRefundWebhook(tenantId, payload);
   }
+
+  @Get('refunds/overview')
+  @ApiOperation({ summary: 'Visão geral executiva de estornos, cancelamentos, reservas e retenções' })
+  async getRefundsAndCancellationsOverview(
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.getRefundsAndCancellationsOverview(tenantId);
+  }
+
+  @Get('obligations')
+  @ApiOperation({ summary: 'Lista obrigações e retenções operacionais do evento (Teatro, ECAD, Cachês)' })
+  async getEventObligations(
+    @Query('eventId') eventId?: string,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.getEventObligations(tenantId, eventId);
+  }
+
+  @Post('obligations')
+  @ApiOperation({ summary: 'Registra retenção ou obrigação do evento na carteira' })
+  async saveEventObligation(
+    @Body() obligationData: any,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.saveEventObligation(tenantId, obligationData);
+  }
+
+  @Get('cancellations')
+  @ApiOperation({ summary: 'Lista dossiês de cancelamento de evento com índice de cobertura financeira' })
+  async getEventCancellations(
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.getEventCancellations(tenantId);
+  }
+
+  @Get('cancellations/simulate/:eventId')
+  @ApiOperation({ summary: 'Simula cancelamento e calcula cobertura vs déficit/insuficiência de caixa' })
+  async simulateEventCancellation(
+    @Param('eventId') eventId: string,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.simulateEventCancellation(tenantId, eventId);
+  }
+
+  @Post('cancellations')
+  @ApiOperation({ summary: 'Registra cancelamento de evento e ativa trava de segurança bloqueando repasses' })
+  async registerEventCancellation(
+    @Body() payload: any,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.registerEventCancellation(tenantId, payload);
+  }
+
+  @Get('refunds/requests')
+  @ApiOperation({ summary: 'Consulta fila de solicitações e transações de estorno por pedido' })
+  async getSaleRefundRequests(
+    @Query('eventId') eventId?: string,
+    @Query('status') status?: string,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.getSaleRefundRequests(tenantId, { eventId, status });
+  }
+
+  @Post('cancellations/:id/execute-refunds')
+  @ApiOperation({ summary: 'Executa lote de estornos e grava lançamentos ESTORNO no FinancialLedger' })
+  async executeBatchRefunds(
+    @Param('id') cancellationId: string,
+    @Body() payload: { requestIds?: string[] },
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.executeBatchRefunds(tenantId, cancellationId, payload?.requestIds);
+  }
+
+  @Post('cancellations/:id/recomposition-plan')
+  @ApiOperation({ summary: 'Pactua ou atualiza Plano de Recomposição de Déficit com o produtor' })
+  async saveRecompositionPlan(
+    @Param('id') cancellationId: string,
+    @Body() planData: any,
+    @Query('tenantId') tenantId = '00000000-0000-0000-0000-000000000001',
+  ) {
+    return this.settlementService.saveRecompositionPlan(tenantId, cancellationId, planData);
+  }
 }
+

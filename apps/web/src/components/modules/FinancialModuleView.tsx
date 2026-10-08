@@ -12,6 +12,7 @@ import {
   TrendingUp,
   PieChart,
   ShieldCheck,
+  ShieldAlert,
   RefreshCw,
   Plus,
   LayoutDashboard,
@@ -31,11 +32,13 @@ import { BudgetView } from './financeiro/BudgetView';
 import { CreditView } from './financeiro/CreditView';
 import { SettlementCentralView } from './financeiro/SettlementCentralView';
 import { ProducerFinancialCentralView } from './financeiro/ProducerFinancialCentralView';
+import { RefundsAndCancellationsView } from './financeiro/RefundsAndCancellationsView';
 import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
 
 export type FinancialTab =
   | 'settlement'
   | 'producers'
+  | 'refunds'
   | 'dashboard'
   | 'payables'
   | 'receivables'
@@ -109,6 +112,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
   useEffect(() => {
     if (activeSubTab) {
       if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
+      else if (activeSubTab.includes('refund') || activeSubTab.includes('cancellation')) setActiveTab('refunds');
       else if (activeSubTab.includes('settlement') || activeSubTab.includes('clearing')) setActiveTab('settlement');
       else if (activeSubTab.includes('payable')) setActiveTab('payables');
       else if (activeSubTab.includes('receivable') || activeSubTab.includes('billing')) setActiveTab('receivables');
@@ -404,7 +408,27 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             </span>
           </button>
 
-          {/* 3. CENTRAL FINANCEIRA */}
+          {/* 3. ESTORNOS & CANCELAMENTOS */}
+          <button
+            onClick={() => setActiveTab('refunds')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+              activeTab === 'refunds'
+                ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
+                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <ShieldAlert className={`w-4 h-4 ${activeTab === 'refunds' ? 'text-white' : 'text-rose-600'}`} />
+            <span>Estornos & Cancelamentos</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'refunds' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800'
+              }`}
+            >
+              Gestão & Risco
+            </span>
+          </button>
+
+          {/* 4. CENTRAL FINANCEIRA */}
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
@@ -535,6 +559,8 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       {activeTab === 'settlement' && <SettlementCentralView />}
 
       {activeTab === 'producers' && <ProducerFinancialCentralView />}
+
+      {activeTab === 'refunds' && <RefundsAndCancellationsView />}
 
       {activeTab === 'dashboard' && (
         <FinancialDashboard

@@ -137,6 +137,46 @@ enum LedgerEntryType {
   @@schema("financeiro")
 }
 
+enum EventObligationCategory {
+  VENUE_RENTAL
+  ECAD
+  STAGE_STRUCTURE
+  ARTIST
+  TAX
+  SECURITY
+  TICKETING_EQUIPMENT
+  OTHER
+  @@schema("financeiro")
+}
+
+enum ObligationStatus {
+  RESERVED
+  APPROVED
+  PAID
+  CANCELLED
+  @@schema("financeiro")
+}
+
+enum CancellationStatus {
+  UNDER_ANALYSIS
+  APPROVED
+  RECOMPOSITION_PENDING
+  PROCESSING_REFUNDS
+  COMPLETED
+  REJECTED
+  @@schema("financeiro")
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  REFUNDED
+  FAILED
+  REJECTED
+  @@schema("financeiro")
+}
+
 enum LedgerDirection {
   CREDIT
   DEBIT
@@ -227,6 +267,9 @@ model Tenant {
   eventExpenses EventExpense[]
   settlementSchedules SettlementSchedule[]
   eventFinancialStatements EventFinancialStatement[]
+  eventObligations EventObligation[]
+  eventCancellations EventCancellation[]
+  saleRefundRequests SaleRefundRequest[]
   producers Producer[]
   accountingAccounts AccountingAccount[]
   accountingPeriods AccountingPeriod[]
@@ -980,6 +1023,12 @@ model EventWallet {
   salesTargetAmount        Decimal  @default(200000.0) @db.Decimal(19,4) @map("sales_target_amount")
   minSalesMilestonePct     Decimal  @default(50.0) @db.Decimal(5,2) @map("min_sales_milestone_pct")
   maxReleasePct            Decimal  @default(20.0) @db.Decimal(5,2) @map("max_release_pct")
+  contingencyReservePct    Decimal  @default(15.0) @db.Decimal(5,2) @map("contingency_reserve_pct")
+  contingencyReserveAmount Decimal  @default(0) @db.Decimal(19,4) @map("contingency_reserve_amount")
+  obligationsReservedTotal Decimal  @default(0) @db.Decimal(19,4) @map("obligations_reserved_total")
+  obligationsPaidTotal     Decimal  @default(0) @db.Decimal(19,4) @map("obligations_paid_total")
+  refundsPaidTotal         Decimal  @default(0) @db.Decimal(19,4) @map("refunds_paid_total")
+  isCancellationBlocked    Boolean  @default(false) @map("is_cancellation_blocked")
   status                   String   @default("OPEN")
   createdAt                DateTime @default(now()) @map("created_at")
   updatedAt                DateTime @updatedAt @map("updated_at")
@@ -993,6 +1042,9 @@ model EventWallet {
   repaymentRules EventRepaymentRule[]
   advances      ProducerAdvance[]
   ledgers       FinancialLedger[]
+  obligations   EventObligation[]
+  cancellations EventCancellation[]
+  refundRequests SaleRefundRequest[]
 
   @@schema("financeiro")
   @@map("event_wallets")
@@ -1241,6 +1293,98 @@ model FinancialLedger {
   @@index([saleId])
   @@schema("financeiro")
   @@map("financial_ledgers")
+}
+
+model EventObligation {
+  id                  String                  @id @default(uuid()) @db.Uuid
+  tenantId            String                  @map("tenant_id") @db.Uuid
+  eventWalletId       String                  @map("event_wallet_id") @db.Uuid
+  category            EventObligationCategory @default(OTHER)
+  description         String
+  beneficiaryName     String                  @map("beneficiary_name")
+  beneficiaryDocument String?                 @map("beneficiary_document")
+  amountReserved      Decimal                 @default(0) @db.Decimal(19,4) @map("amount_reserved")
+  amountApproved      Decimal                 @default(0) @db.Decimal(19,4) @map("amount_approved")
+  amountPaid          Decimal                 @default(0) @db.Decimal(19,4) @map("amount_paid")
+  status              ObligationStatus        @default(RESERVED)
+  dueDate             DateTime?               @db.Date @map("due_date")
+  paidAt              DateTime?               @map("paid_at")
+  paymentMethod       String?                 @default("PIX") @map("payment_method")
+  receiptUrl          String?                 @map("receipt_url")
+  authorizedBy        String?                 @map("authorized_by")
+  notes               String?
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("event_obligations")
+}
+
+model EventCancellation {
+  id                           String             @id @default(uuid()) @db.Uuid
+  tenantId                     String             @map("tenant_id") @db.Uuid
+  eventWalletId                String             @map("event_wallet_id") @db.Uuid
+  cancellationNumber           String             @map("cancellation_number")
+  reason                       String
+  status                       CancellationStatus @default(UNDER_ANALYSIS)
+  totalTicketsCount            Int                @default(0) @map("total_tickets_count")
+  totalRefundRequired          Decimal            @default(0) @db.Decimal(19,4) @map("total_refund_required")
+  fundsAvailableAtCancellation Decimal            @default(0) @db.Decimal(19,4) @map("funds_available_at_cancellation")
+  obligationsPaidTotal         Decimal            @default(0) @db.Decimal(19,4) @map("obligations_paid_total")
+  repaymentsPaidTotal          Decimal            @default(0) @db.Decimal(19,4) @map("repayments_paid_total")
+  shortfallAmount              Decimal            @default(0) @db.Decimal(19,4) @map("shortfall_amount")
+  coveragePct                  Decimal            @default(0) @db.Decimal(5,2) @map("coverage_pct")
+  repaymentsBlocked            Boolean            @default(true) @map("repayments_blocked")
+  recompositionPlanNotes       String?            @map("recomposition_plan_notes")
+  refundPolicy                 String             @default("INTEGRAL_WITH_FEES") @map("refund_policy")
+  requestedBy                  String?            @map("requested_by")
+  approvedBy                   String?            @map("approved_by")
+  executedRefundsCount         Int                @default(0) @map("executed_refunds_count")
+  executedRefundsAmount        Decimal            @default(0) @db.Decimal(19,4) @map("executed_refunds_amount")
+  cancelledAt                  DateTime           @default(now()) @map("cancelled_at")
+  createdAt                    DateTime           @default(now()) @map("created_at")
+  updatedAt                    DateTime           @updatedAt @map("updated_at")
+
+  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  wallet         EventWallet         @relation(fields: [eventWalletId], references: [id])
+  refundRequests SaleRefundRequest[]
+
+  @@schema("financeiro")
+  @@map("event_cancellations")
+}
+
+model SaleRefundRequest {
+  id                  String            @id @default(uuid()) @db.Uuid
+  tenantId            String            @map("tenant_id") @db.Uuid
+  eventWalletId       String            @map("event_wallet_id") @db.Uuid
+  eventCancellationId String?           @map("event_cancellation_id") @db.Uuid
+  saleId              String?           @map("sale_id")
+  orderNumber         String            @map("order_number")
+  customerName        String            @map("customer_name")
+  customerDocument    String?           @map("customer_document")
+  customerEmail       String?           @map("customer_email")
+  ticketGrossAmount   Decimal           @default(0) @db.Decimal(19,4) @map("ticket_gross_amount")
+  diskFeeAmount       Decimal           @default(0) @db.Decimal(19,4) @map("disk_fee_amount")
+  amountToRefund      Decimal           @default(0) @db.Decimal(19,4) @map("amount_to_refund")
+  paymentMethod       String            @default("PIX") @map("payment_method")
+  refundStatus        RefundStatus      @default(REQUESTED) @map("refund_status")
+  gatewayRefundId     String?           @map("gateway_refund_id")
+  failureReason       String?           @map("failure_reason")
+  notes               String?
+  requestedAt         DateTime          @default(now()) @map("requested_at")
+  processedAt         DateTime?         @map("processed_at")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id])
+  wallet       EventWallet        @relation(fields: [eventWalletId], references: [id])
+  cancellation EventCancellation? @relation(fields: [eventCancellationId], references: [id])
+
+  @@schema("financeiro")
+  @@map("sale_refund_requests")
 }
 
 model AccountingAccount {

@@ -251,4 +251,57 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+
+  getRefundsOverview: async () => {
+    return request<any>('/financeiro/settlement/refunds/overview');
+  },
+
+  getEventObligations: async (eventId?: string) => {
+    const qs = eventId ? `?eventId=${eventId}` : '';
+    return request<any[]>(`/financeiro/settlement/obligations${qs}`);
+  },
+
+  saveEventObligation: async (data: any) => {
+    return request<any>('/financeiro/settlement/obligations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getEventCancellations: async () => {
+    return request<any[]>('/financeiro/settlement/cancellations');
+  },
+
+  simulateEventCancellation: async (eventId: string) => {
+    return request<any>(`/financeiro/settlement/cancellations/simulate/${eventId}`);
+  },
+
+  registerEventCancellation: async (payload: any) => {
+    return request<any>('/financeiro/settlement/cancellations', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  getSaleRefundRequests: async (filters?: { eventId?: string; status?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.eventId) params.append('eventId', filters.eventId);
+    if (filters?.status) params.append('status', filters.status);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<any[]>(`/financeiro/settlement/refunds/requests${qs}`);
+  },
+
+  executeBatchRefunds: async (cancellationId: string, requestIds?: string[]) => {
+    return request<any>(`/financeiro/settlement/cancellations/${cancellationId}/execute-refunds`, {
+      method: 'POST',
+      body: JSON.stringify({ requestIds }),
+    });
+  },
+
+  saveRecompositionPlan: async (cancellationId: string, planData: any) => {
+    return request<any>(`/financeiro/settlement/cancellations/${cancellationId}/recomposition-plan`, {
+      method: 'POST',
+      body: JSON.stringify(planData),
+    });
+  },
 };
