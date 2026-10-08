@@ -1,0 +1,30 @@
+{
+  "name": "@erp/worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/main.ts",
+    "start": "node dist/main.js",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "lint": "echo 'linting @erp/worker'"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/schedule": "^5.0.1",
+    "@erp/database": "workspace:*",
+    "@erp/events": "workspace:*",
+    "@erp/shared": "workspace:*",
+    "amqplib": "^0.10.5",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@erp/tsconfig": "workspace:*",
+    "@types/amqplib": "^0.10.6",
+    "@types/node": "^22.13.9",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}

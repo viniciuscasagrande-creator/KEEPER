@@ -1,93 +1,138 @@
-# KEEPER
+# Keeper — Enterprise Resource Planning (ERP v1)
 
+Plataforma empresarial modular, multi-tenant e multiempresa construída do zero, seguindo os princípios de **Domain-Driven Design (DDD)**, **Clean Architecture**, **Event-Driven Architecture (Outbox Pattern)** e **Strict Accounting Immutability (Partidas Dobradas)**.
 
+---
 
-## Getting started
+## 🏛️ Arquitetura do Sistema
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+```text
+┌──────────────────────────────────────────────────────────────┐
+│                        KEEPER ERP                            │
+├──────────────────────────────────────────────────────────────┤
+│                         EXPERIENCE                           │
+│  React 18 + Vite + Tailwind CSS (NetSuite Executive Shell)   │
+├──────────────────────────────────────────────────────────────┤
+│                            CORE                              │
+│  Auth (JWT/RBAC) │ Tenants │ Users │ Companies │ Audit Logs  │
+│  Workflow Engine │ Declarative Rule Engine (Json-Logic)      │
+├──────────────────────────────────────────────────────────────┤
+│                          BUSINESS                            │
+│  Financeiro │ Contábil │ Fiscal │ RH │ Compras │ Estoque     │
+│  Vendas │ CRM │ Contratos │ Projetos │ Ativos │ Integrações  │
+├──────────────────────────────────────────────────────────────┤
+│                       INFRASTRUCTURE                         │
+│  PostgreSQL 16 (15 Schemas) │ Prisma ORM │ RabbitMQ │ Redis  │
+└──────────────────────────────────────────────────────────────┘
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/ViniciusMurray/keeper.git
-git branch -M main
-git push -uf origin main
+
+---
+
+## 📦 Estrutura do Monorepo
+
+```text
+keeper/
+├── apps/
+│   ├── api/            # Backend REST API (NestJS 11 + Swagger OpenAPI + Problem Details RFC 7807)
+│   ├── web/            # Frontend Web (React 18 + Vite + Tailwind CSS + Lucide Icons)
+│   └── worker/         # Background Worker (Outbox Pattern Relay + Agendamento de Tarefas)
+├── packages/
+│   ├── auth/           # Utilitários de autenticação, JWT guards, RBAC e PasswordHasher
+│   ├── database/       # Prisma multi-schema ORM, extensões multi-tenant e DDL PostgreSQL
+│   ├── events/         # Catálogo de Domain Events e interfaces de Outbox
+│   ├── rules/          # Motor de regras declarativo baseado em Json-Logic
+│   ├── shared/         # Primitivas DDD, AppError, Result/Either, paginação e filtros
+│   └── tsconfig/       # Configurações TypeScript compartilhadas
+├── infrastructure/
+│   └── postgres/       # Script DDL oficial (init.sql) com 15 schemas e triggers de imutabilidade
+├── docker/
+│   └── docker-compose.yml # PostgreSQL 16 Alpine, Redis 7 e RabbitMQ 3.13
+└── docs/               # Blueprints técnicos oficiais e documentação de arquitetura
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.com/ViniciusMurray/keeper/-/settings/integrations)
+## 🗄️ Esquemas de Banco de Dados (PostgreSQL 16)
 
-## Collaborate with your team
+O banco de dados é particionado logicamente em **15 schemas** isolados para garantir limites claros de domínio (*Bounded Contexts*):
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Schema | Propósito | Principais Entidades |
+| :--- | :--- | :--- |
+| `core` | Fundação da plataforma e segurança | `tenants`, `companies`, `branches`, `users`, `roles`, `permissions`, `audit_logs`, `rules`, `workflows`, `domain_events` |
+| `financeiro` | Gestão de tesouraria e liquidez | `financial_accounts`, `payable_titles`, `receivable_titles`, `financial_movements`, `bank_statements` |
+| `contabil` | Razão geral e partidas dobradas | `accounting_accounts`, `accounting_periods`, `journal_entries`, `journal_lines`, `journal_reversals` |
+| `fiscal` | Documentos fiscais e tributos | `fiscal_tax_rules`, `fiscal_documents`, `fiscal_document_items` |
+| `rh` | Gestão de pessoas e folha | `departments`, `positions`, `employees`, `payrolls`, `payroll_items`, `payroll_events` |
+| `compras` | Suprimentos e compras | `purchase_requests`, `purchase_orders`, `purchase_order_items` |
+| `estoque` | Controle físico e centros de distribuição | `products`, `warehouses`, `stock_balances`, `stock_movements` |
+| `vendas` | Faturamento comercial | `sales_orders`, `sales_order_items` |
+| `crm` | Relacionamento e pipeline | `customers`, `leads`, `opportunities` |
+| `contratos` | Contratos de clientes e fornecedores | `contracts`, `contract_amendments` |
+| `projetos` | Gestão de projetos e horas | `projects`, `project_tasks`, `project_members` |
+| `ativos` | Ativos fixos e imobilizado | `fixed_assets`, `asset_depreciations` |
+| `servicos` | Ordens de serviços prestados | `service_orders`, `service_order_items` |
+| `bi` | Vistas materializadas e indicadores | Snapshots consolidados |
+| `integracoes` | Webhooks e conectores externos | `integrations`, `webhooks`, `webhook_deliveries` |
 
-## Test and Deploy
+> [!IMPORTANT]
+> **Imutabilidade Contábil:** O Razão Geral (`contabil.journal_entries` e `contabil.journal_lines`) é protegido por trigger PostgreSQL (`trg_immutable_journal_entries`) contra `UPDATE` ou `DELETE`. Retificações são realizadas exclusivamente através de estornos rastreados (`journal_reversals`).
 
-Use the built-in continuous integration in GitLab.
+---
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+## 🚀 Como Executar o Projeto
 
-***
+### Pré-requisitos
+- Node.js 20+ (recomendado Node 22+)
+- pnpm 10+ (`npm install -g pnpm`)
+- PostgreSQL 16 (ou via Docker Compose)
 
-# Editing this README
+### 1. Instalar Dependências
+```bash
+pnpm install
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### 2. Subir Serviços de Infraestrutura (Opcional se usar PostgreSQL local)
+```bash
+cd docker
+docker compose up -d
+```
+*O script `init.sql` com todos os 15 schemas e tabelas é montado automaticamente no primeiro boot.*
 
-## Suggestions for a good README
+### 3. Gerar Prisma Client
+```bash
+pnpm db:generate
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### 4. Compilar Todos os Pacotes (Turborepo)
+```bash
+pnpm build
+```
 
-## Name
-Choose a self-explaining name for your project.
+### 5. Iniciar em Desenvolvimento
+```bash
+# Iniciar todos os serviços simultaneamente
+pnpm dev
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+# Ou executar serviços individualmente:
+pnpm --filter @erp/api dev      # Backend na porta 4000 (Swagger: /api/docs)
+pnpm --filter @erp/web dev      # Frontend na porta 3000
+pnpm --filter @erp/worker dev   # Worker de Outbox
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 🖥️ Portais e Acessos
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+| Serviço | URL | Descrição |
+| :--- | :--- | :--- |
+| **Frontend Web** | `http://localhost:3000` | NetSuite Executive Shell com navegação horizontal e painel corporativo |
+| **API Docs (Swagger)** | `http://localhost:4000/api/docs` | Documentação OpenAPI interativa de todos os módulos |
+| **RabbitMQ Management** | `http://localhost:15672` | Painel de mensageria (guest/guest) |
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+## 🛡️ Segurança e Governança
+- **Autenticação:** JWT Bearer com Tokens de Acesso (1h) e Refresh Tokens (7d).
+- **Autorização:** RBAC (`@RequirePermissions`) com validação granular por `modulo.recurso.acao`.
+- **Multi-Tenancy:** Isolamento lógico via `tenant_id` garantido em nível de modelo Prisma e triggers PostgreSQL.
+- **Trilha de Auditoria:** Registro obrigatório de todas as mutações com endereço IP, User-Agent e diferencial de payload (antes/depois).
