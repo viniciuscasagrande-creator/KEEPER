@@ -46,3 +46,7 @@ coverage/
 # Prisma
 packages/database/src/generated/
 .vercel
+
+# Backups and archives
+*.zip
+
