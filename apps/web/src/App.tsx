@@ -15,6 +15,7 @@ import { FinancialModuleView } from './components/modules/FinancialModuleView';
 import { AccountingModuleView } from './components/modules/AccountingModuleView';
 import { ContabilidadeCompletaView } from './components/modules/ContabilidadeCompletaView';
 import { GatewaysModuleView } from './components/modules/GatewaysModuleView';
+import { RhDpModuloView } from './components/modules/RhDpModuloView';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
@@ -95,6 +96,11 @@ export function App() {
           <ContabilidadeCompletaView
             request={api.accountingRequest}
             initialSection={activeSubModule}
+          />
+        ) : activeModule === 'rh' ? (
+          <RhDpModuloView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
           />
         ) : (
           <>
