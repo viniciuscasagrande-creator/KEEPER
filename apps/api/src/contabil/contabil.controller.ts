@@ -188,11 +188,18 @@ export class ContabilController {
     @CurrentTenant() tenantId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('context') context?: string,
+    @Query('producerId') producerId?: string,
+    @Query('eventId') eventId?: string,
     @Headers('x-company-id') companyId?: string,
     @CurrentUser('companyId') userCompanyId?: string,
   ) {
     const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
-    return this.contabilService.getDRE(tenantId, effectiveCompanyId, startDate, endDate);
+    return this.contabilService.getDRE(tenantId, effectiveCompanyId, startDate, endDate, {
+      context,
+      producerId,
+      eventId,
+    });
   }
 
   // ==========================================
@@ -204,11 +211,18 @@ export class ContabilController {
   @ApiOperation({ summary: 'Obter indicadores e visão geral do Dashboard Contábil' })
   async getDashboard(
     @CurrentTenant() tenantId: string,
+    @Query('context') context?: string,
+    @Query('producerId') producerId?: string,
+    @Query('eventId') eventId?: string,
     @Headers('x-company-id') companyId?: string,
     @CurrentUser('companyId') userCompanyId?: string,
   ) {
     const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
-    return this.contabilService.getDashboard(tenantId, effectiveCompanyId);
+    return this.contabilService.getDashboard(tenantId, effectiveCompanyId, {
+      context,
+      producerId,
+      eventId,
+    });
   }
 
   // ==========================================
@@ -394,5 +408,42 @@ export class ContabilController {
   ) {
     const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
     return this.contabilService.getAccountingSettings(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // FOLHA DE PAGAMENTO & ENCARGOS CORPORATIVOS
+  // ==========================================
+
+  @Get('folha-pagamento')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Consultar escrituração de folha de pagamento, colaboradores e encargos da Disk' })
+  async getPayroll(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getPayroll(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // CONTABILIDADE AUXILIAR DE PRODUTORES E EVENTOS
+  // ==========================================
+
+  @Get('produtores-eventos')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Consultar escrituração contábil auxiliar segregada por produtor e evento' })
+  async getProducersAux(
+    @CurrentTenant() tenantId: string,
+    @Query('producerId') producerId?: string,
+    @Query('eventId') eventId?: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getProducersAux(tenantId, effectiveCompanyId, {
+      producerId,
+      eventId,
+    });
   }
 }
