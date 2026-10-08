@@ -177,82 +177,82 @@ export function EventCancellationModal({
             </div>
 
             {/* 4 Cards da Simulação */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Total a Devolver</span>
-                <p className="text-base font-black text-slate-900 mt-0.5">{fmt(simulation.totalRefundRequired)}</p>
-                <span className="text-[10px] text-slate-500">{simulation.totalTickets} ingressos</span>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase block">Total a Devolver</span>
+                <p className="text-xl font-bold text-slate-900">{fmt(simulation.totalRefundRequired)}</p>
+                <span className="text-xs text-slate-500">{simulation.totalTickets} ingressos</span>
               </div>
 
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Recursos Disponíveis</span>
-                <p className="text-base font-black text-emerald-600 mt-0.5">
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase block">Recursos Disponíveis</span>
+                <p className="text-xl font-bold text-emerald-600">
                   {fmt(simulation.fundsAvailableAtCancellation)}
                 </p>
-                <span className="text-[10px] text-emerald-700 font-semibold">Conta Custódia</span>
+                <span className="text-xs text-emerald-700 font-semibold">Conta Custódia</span>
               </div>
 
-              <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Valor já Comprometido</span>
-                <p className="text-base font-black text-amber-600 mt-0.5">{fmt(simulation.committedTotal)}</p>
-                <span className="text-[10px] text-amber-700">Teatro R$ 40k + Repasse R$ 50k</span>
+              <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase block">Valor Comprometido</span>
+                <p className="text-xl font-bold text-amber-600">{fmt(simulation.committedTotal)}</p>
+                <span className="text-xs text-amber-700">Teatro + Repasses</span>
               </div>
 
-              <div className="bg-white p-3 rounded-xl border-2 border-rose-300 bg-rose-50/50 shadow-2xs">
-                <span className="text-[10px] font-bold text-rose-600 uppercase flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" /> Insuficiência
+              <div className="bg-white p-3.5 rounded-xl border-2 border-rose-300 bg-rose-50/50 shadow-2xs space-y-1">
+                <span className="text-xs font-semibold text-rose-700 uppercase flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5" /> Insuficiência
                 </span>
-                <p className="text-base font-black text-rose-700 mt-0.5">{fmt(simulation.shortfallAmount)}</p>
-                <span className="text-[10px] text-rose-600 font-bold">Déficit a Recompor</span>
+                <p className="text-xl font-bold text-rose-700">{fmt(simulation.shortfallAmount)}</p>
+                <span className="text-xs text-rose-700 font-bold">Déficit a Recompor</span>
               </div>
             </div>
 
             {/* BARRA DE COBERTURA FINANCEIRA (55% / 45%) */}
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="text-emerald-700 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Cobertura Financeira Garantida: {simulation.coveragePct}% ({fmt(simulation.fundsAvailableAtCancellation)})
+                  <CheckCircle2 className="w-4 h-4" />
+                  Cobertura Garantida: {simulation.coveragePct}% ({fmt(simulation.fundsAvailableAtCancellation)})
                 </span>
                 <span className="text-rose-700 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Insuficiência de Caixa: {simulation.shortfallPct}% ({fmt(simulation.shortfallAmount)})
+                  <AlertTriangle className="w-4 h-4" />
+                  Insuficiência: {simulation.shortfallPct}% ({fmt(simulation.shortfallAmount)})
                 </span>
               </div>
 
-              <div className="w-full h-4 bg-rose-200 rounded-full overflow-hidden flex shadow-inner">
+              <div className="w-full h-6 bg-rose-200 rounded-lg overflow-hidden flex shadow-inner">
                 <div
                   style={{ width: `${simulation.coveragePct}%` }}
-                  className="bg-emerald-500 h-full flex items-center justify-center text-[10px] font-black text-white"
+                  className="bg-emerald-500 h-full flex items-center justify-center text-xs font-bold text-white tracking-wide uppercase"
                 >
-                  {simulation.coveragePct}%
+                  {simulation.coveragePct}% COBERTO
                 </div>
                 <div
                   style={{ width: `${simulation.shortfallPct}%` }}
-                  className="bg-rose-500 h-full flex items-center justify-center text-[10px] font-black text-white"
+                  className="bg-rose-500 h-full flex items-center justify-center text-xs font-bold text-white tracking-wide uppercase"
                 >
-                  {simulation.shortfallPct}%
+                  {simulation.shortfallPct}% DÉFICIT
                 </div>
               </div>
             </div>
 
             {/* CONTROLES E TRAVAS ATIVADAS AUTOMATICAMENTE */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
-              <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider block">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <span className="font-bold text-slate-800 text-xs uppercase tracking-normal block">
                 Travas de Governança Aplicadas Imediatamente:
               </span>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]">
-                <div className="p-2 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-2 font-bold">
-                  <Lock className="w-3.5 h-3.5 shrink-0" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                <div className="p-2.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-2 font-semibold">
+                  <Lock className="w-4 h-4 shrink-0 text-rose-600" />
                   <span>Bloqueio de Repasses: ATIVO</span>
                 </div>
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <div className="p-2.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-2 font-semibold">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-600" />
                   <span>Conciliação por Venda: EXIGIDA</span>
                 </div>
-                <div className="p-2 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-2 font-bold">
-                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Recomposição Produtor: R$ 90.000</span>
+                <div className="p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-2 font-semibold">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>Recomposição: R$ 90.000</span>
                 </div>
               </div>
             </div>

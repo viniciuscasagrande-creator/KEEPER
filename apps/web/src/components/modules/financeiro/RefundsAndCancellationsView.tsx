@@ -212,52 +212,54 @@ export function RefundsAndCancellationsView() {
   const criticalCancellation = cancellations.find((c) => c.status === 'RECOMPOSITION_PENDING') || cancellations[0];
 
   return (
-    <div className="space-y-4">
-      {/* 1. Header do Módulo com Badges de Segregação dos Três Caixas */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-rose-600 flex items-center justify-center text-white shadow-md shadow-rose-600/30">
-                <ShieldAlert className="w-5 h-5" />
+    <div className="space-y-5 font-sans">
+      {/* 1. Header do Módulo com Tipografia Limpa e Elegante */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-rose-600 flex items-center justify-center text-white shadow-md shadow-rose-600/20">
+                <ShieldAlert className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Estornos, Cancelamentos & Retenções</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-200">
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+                    Estornos, Cancelamentos & Retenções
+                  </h2>
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200">
                     Câmara de Proteção & Escrow
                   </span>
-                </h2>
-                <p className="text-xs text-slate-500 font-medium">
-                  Segregação rígida de patrimônio · Gestão de contingências · Cobertura financeira de devoluções
+                </div>
+                <p className="text-sm text-slate-600 font-normal leading-relaxed mt-0.5">
+                  Segregação patrimonial entre caixa próprio e custódia de terceiros · Gestão de contingências · Cobertura financeira de devoluções
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Badges de Segregação de Patrimônio */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <Landmark className="w-3.5 h-3.5 text-blue-600" />
+          {/* Badges dos Três Caixas */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold flex items-center gap-2 shadow-2xs">
+              <Landmark className="w-4 h-4 text-blue-600" />
               <span>1. Caixa Custódia (Terceiros)</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-2xs">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
               <span>2. Caixa Próprio Disk (Taxas)</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <Layers className="w-3.5 h-3.5 text-purple-600" />
-              <span>3. Carteira do Evento (Produtores)</span>
+            <div className="px-3.5 py-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-semibold flex items-center gap-2 shadow-2xs">
+              <Layers className="w-4 h-4 text-purple-600" />
+              <span>3. Carteira do Evento (Produtor)</span>
             </div>
           </div>
         </div>
 
         {/* Botões de Ação Principais */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setIsCancellationModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer"
             >
               <ShieldAlert className="w-4 h-4" />
               <span>Simular Cancelamento de Evento</span>
@@ -265,7 +267,7 @@ export function RefundsAndCancellationsView() {
 
             <button
               onClick={() => setIsObligationModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Nova Retenção / Obrigação (Teatro, ECAD)</span>
@@ -274,17 +276,17 @@ export function RefundsAndCancellationsView() {
             <button
               onClick={runFullFinancialPipeline}
               disabled={pipelineState.isRunning}
-              className="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
             >
               <Play className="w-4 h-4" />
-              <span>{pipelineState.isRunning ? 'Testando Fluxo...' : 'Testar Fluxo Completo (Venda → Contábil)'}</span>
+              <span>{pipelineState.isRunning ? 'Executando Teste...' : 'Testar Fluxo Completo (Venda → Contábil)'}</span>
             </button>
           </div>
 
           <button
             onClick={loadData}
             disabled={isLoading}
-            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
             title="Atualizar dados"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -293,28 +295,28 @@ export function RefundsAndCancellationsView() {
       </div>
 
       {actionNotice && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2 font-bold animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm rounded-xl flex items-center gap-2.5 font-medium animate-in fade-in">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>{actionNotice}</span>
         </div>
       )}
 
       {/* PAINEL DE EXECUÇÃO DO FLUXO COMPLETO PRIORITÁRIO (EM TEMPO REAL) */}
       {(pipelineState.isRunning || pipelineState.completed) && (
-        <div className="bg-slate-900 text-white rounded-2xl p-4.5 shadow-xl border border-slate-800 space-y-3 animate-in fade-in">
+        <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-lg border border-slate-800 space-y-3.5 animate-in fade-in">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <h3 className="text-xs font-black uppercase tracking-wider text-emerald-400">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-400">
                 Pipeline Financeiro Integrado: Venda → Taxa Disk → Carteira → Retenções → Repasse → Estorno → Ledger → Contabilidade
               </h3>
             </div>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-              Passo {pipelineState.currentStep} de 8 {pipelineState.completed ? '(Concluído 100%)' : ''}
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300">
+              Etapa {pipelineState.currentStep} de 8 {pipelineState.completed ? '(Concluído 100%)' : ''}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1.5 pt-1">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 pt-1">
             {[
               '1. Venda Bruta',
               '2. Taxa Disk',
@@ -327,11 +329,11 @@ export function RefundsAndCancellationsView() {
             ].map((stepLabel, idx) => (
               <div
                 key={stepLabel}
-                className={`p-2 rounded-xl text-center text-[10px] font-bold border transition-all ${
+                className={`py-2 px-2.5 rounded-xl text-center text-xs font-medium border transition-all ${
                   idx + 1 < pipelineState.currentStep || pipelineState.completed
-                    ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
+                    ? 'bg-emerald-950/70 border-emerald-500 text-emerald-300'
                     : idx + 1 === pipelineState.currentStep
-                    ? 'bg-blue-600 text-white border-blue-400 animate-pulse'
+                    ? 'bg-blue-600 text-white border-blue-400 animate-pulse font-bold'
                     : 'bg-slate-800/60 border-slate-700 text-slate-400'
                 }`}
               >
@@ -341,10 +343,10 @@ export function RefundsAndCancellationsView() {
           </div>
 
           {/* Logs */}
-          <div className="bg-black/50 rounded-xl p-3 font-mono text-[11px] space-y-1 max-h-36 overflow-y-auto">
+          <div className="bg-black/40 rounded-xl p-3.5 font-mono text-xs space-y-1.5 max-h-40 overflow-y-auto border border-slate-800">
             {pipelineState.logs.map((log, index) => (
-              <div key={index} className="text-slate-300 flex items-start gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+              <div key={index} className="text-slate-300 flex items-start gap-2 leading-relaxed">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <span>{log}</span>
               </div>
             ))}
@@ -352,8 +354,8 @@ export function RefundsAndCancellationsView() {
         </div>
       )}
 
-      {/* 2. Sub-Tabs Bar — FIXA E DESTACADA */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-2 flex flex-wrap items-center gap-1.5">
+      {/* 2. Sub-Tabs Bar — Limpa, Clara e Acessível */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-2 flex flex-wrap items-center gap-1.5">
         {[
           { id: 'overview', label: '1. Visão Geral' },
           { id: 'cancellations', label: '2. Cancelamento de Eventos (O Ponto Crítico)', badge: 'R$ 90k Déficit' },
@@ -367,16 +369,16 @@ export function RefundsAndCancellationsView() {
           <button
             key={tab.id}
             onClick={() => setActiveSubTab(tab.id as RefundSubTab)}
-            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 cursor-pointer ${
               activeSubTab === tab.id
-                ? 'bg-slate-900 text-white shadow-md'
+                ? 'bg-slate-900 text-white shadow-sm font-semibold'
                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
             }`}
           >
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold ${
+                className={`px-2 py-0.5 rounded-md text-xs font-bold ${
                   activeSubTab === tab.id ? 'bg-rose-500 text-white' : 'bg-rose-100 text-rose-800'
                 }`}
               >
@@ -389,110 +391,124 @@ export function RefundsAndCancellationsView() {
 
       {/* 3. SUB-VIEW: VISÃO GERAL */}
       {activeSubTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Cards Financeiros Padronizados e com Borda Colorida */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="space-y-5">
+          {/* Cards Financeiros Padronizados com Excelente Contraste e Legibilidade */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* 1. Caixa Geral de Custódia */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-blue-600 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-blue-600 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Caixa Geral Bancário (Custódia)
               </span>
-              <p className="text-xl font-black text-slate-900">{fmt(overview?.kpis?.totalEscrowBalance || 4250450.0)}</p>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <p className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+                {fmt(overview?.kpis?.totalEscrowBalance || 4250450.0)}
+              </p>
+              <div className="flex items-center justify-between text-xs text-slate-600 pt-1 border-t border-slate-100">
                 <span>Contas Escrow / Liquidação</span>
-                <span className="font-bold text-blue-600">Pertence a terceiros</span>
+                <span className="font-semibold text-blue-700">Pertence a terceiros</span>
               </div>
             </div>
 
             {/* 2. Caixa Próprio Disk */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-emerald-600 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-emerald-600 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Receita Própria Disk (Caixa Próprio)
               </span>
-              <p className="text-xl font-black text-emerald-700">{fmt(overview?.kpis?.totalDiskOwnRevenue || 425045.0)}</p>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <p className="text-2xl lg:text-3xl font-bold text-emerald-700 tracking-tight">
+                {fmt(overview?.kpis?.totalDiskOwnRevenue || 425045.0)}
+              </p>
+              <div className="flex items-center justify-between text-xs text-slate-600 pt-1 border-t border-slate-100">
                 <span>Taxas retidas (10%)</span>
-                <span className="font-bold text-emerald-600">Patrimônio Disk</span>
+                <span className="font-semibold text-emerald-700">Patrimônio Disk</span>
               </div>
             </div>
 
             {/* 3. Reserva de Contingência */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-amber-500 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-amber-500 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Reserva de Segurança (15%)
               </span>
-              <p className="text-xl font-black text-amber-700">{fmt(overview?.kpis?.totalContingencyReserve || 637567.5)}</p>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <p className="text-2xl lg:text-3xl font-bold text-amber-700 tracking-tight">
+                {fmt(overview?.kpis?.totalContingencyReserve || 637567.5)}
+              </p>
+              <div className="flex items-center justify-between text-xs text-slate-600 pt-1 border-t border-slate-100">
                 <span>Colchão contra chargebacks</span>
-                <span className="font-bold text-amber-600">Intocável p/ repasse</span>
+                <span className="font-semibold text-amber-700">Intocável p/ repasse</span>
               </div>
             </div>
 
             {/* 4. Retenções de Obrigações do Evento */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-purple-600 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-purple-600 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Retenções de Eventos (Teatro/ECAD)
               </span>
-              <p className="text-xl font-black text-purple-700">{fmt(overview?.kpis?.totalObligationsReserved || 390000.0)}</p>
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <p className="text-2xl lg:text-3xl font-bold text-purple-700 tracking-tight">
+                {fmt(overview?.kpis?.totalObligationsReserved || 390000.0)}
+              </p>
+              <div className="flex items-center justify-between text-xs text-slate-600 pt-1 border-t border-slate-100">
                 <span>Teatro, ECAD e Fornecedores</span>
-                <span className="font-bold text-purple-600">Bloqueado na carteira</span>
+                <span className="font-semibold text-purple-700">Bloqueado na carteira</span>
               </div>
             </div>
           </div>
 
           {/* Segunda linha de cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-rose-600 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" /> Insuficiência em Cancelamento
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-rose-600 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-rose-600" /> Insuficiência em Cancelamento
               </span>
-              <p className="text-xl font-black text-rose-700">{fmt(overview?.kpis?.deficitTotalAmount || 90000.0)}</p>
-              <div className="text-[11px] text-rose-800 font-medium">
-                Festival Rock Retrô 2026 · Exige recomposição do produtor
+              <p className="text-2xl lg:text-3xl font-bold text-rose-700 tracking-tight">
+                {fmt(overview?.kpis?.deficitTotalAmount || 90000.0)}
+              </p>
+              <div className="text-xs text-rose-800 font-medium">
+                Festival Rock Retrô 2026 · Exige recomposição formal do produtor
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-indigo-600 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-indigo-600 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Estornos Já Executados
               </span>
-              <p className="text-xl font-black text-indigo-700">{fmt(overview?.kpis?.totalRefundsExecuted || 128450.0)}</p>
-              <div className="text-[11px] text-slate-500">
+              <p className="text-2xl lg:text-3xl font-bold text-indigo-700 tracking-tight">
+                {fmt(overview?.kpis?.totalRefundsExecuted || 128450.0)}
+              </p>
+              <div className="text-xs text-slate-600">
                 100% auditados com lançamentos de reversão no Ledger
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 border-l-[6px] border-l-slate-700 shadow-sm space-y-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 border-l-[6px] border-l-slate-700 shadow-xs space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Estornos em Fila de Processamento
               </span>
-              <p className="text-xl font-black text-slate-800">{fmt(overview?.kpis?.totalRefundsPending || 98200.0)}</p>
-              <div className="text-[11px] text-slate-500">
+              <p className="text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight">
+                {fmt(overview?.kpis?.totalRefundsPending || 98200.0)}
+              </p>
+              <div className="text-xs text-slate-600">
                 Aguardando autorização de lote ou compensação PIX/Gateway
               </div>
             </div>
           </div>
 
           {/* Alerta Destacado do Caso Crítico */}
-          <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-4.5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                  <ShieldAlert className="w-5 h-5" />
+          <div className="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                  <ShieldAlert className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-rose-950">
+                  <h3 className="text-base font-bold text-rose-950">
                     ALERTA DE SEGURANÇA: Evento Cancelado com Déficit de Devolução aos Clientes
                   </h3>
-                  <p className="text-xs text-rose-800 font-medium">
-                    Festival Rock Retrô 2026 necessita de R$ 200.000,00 para devolução integral. Recursos em custódia: R$ 110.000,00.
+                  <p className="text-sm text-rose-800 font-normal leading-relaxed">
+                    Festival Rock Retrô 2026 necessita de R$ 200.000,00 para devolução integral. Recursos disponíveis em custódia: R$ 110.000,00.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveSubTab('cancellations')}
-                className="px-4 py-2 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-sm cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-xs cursor-pointer shrink-0"
               >
                 Abrir Dossiê de Devolução
               </button>
@@ -503,26 +519,26 @@ export function RefundsAndCancellationsView() {
 
       {/* 4. SUB-VIEW: CANCELAMENTO DE EVENTOS (O PONTO CRÍTICO) */}
       {activeSubTab === 'cancellations' && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+        <div className="space-y-5">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
               <div>
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-200 uppercase">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 uppercase tracking-wide">
                   Dossiê Oficial #CANC-2026-001
                 </span>
-                <h3 className="text-base font-black text-slate-900 mt-1">
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mt-2">
                   Festival Rock Retrô 2026 — ABC Produções & Eventos Ltda
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm text-slate-600 mt-0.5">
                   Motivo: Cancelamento por força maior (interdição judicial da estrutura do local) · Política: Restituição Integral
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => handleExecuteBatchRefunds(criticalCancellation?.id || 'canc-01')}
                   disabled={isLoading}
-                  className="px-4 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Executar Lote de Devolução (R$ 110.000)</span>
@@ -533,7 +549,7 @@ export function RefundsAndCancellationsView() {
                     setSelectedCancellationForPlan(criticalCancellation);
                     setIsRecompositionModalOpen(true);
                   }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <Handshake className="w-4 h-4" />
                   <span>Pactuar Recomposição de R$ 90.000</span>
@@ -541,104 +557,104 @@ export function RefundsAndCancellationsView() {
               </div>
             </div>
 
-            {/* OS 4 CARDS EXATOS DO PROTÓTIPO */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            {/* OS 4 CARDS DO PROTÓTIPO COM TIPOGRAFIA GENEROSA E LIMPA */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
                   Total a Devolver aos Compradores
                 </span>
-                <p className="text-2xl font-black text-slate-900">{fmt(200000.0)}</p>
-                <div className="text-[11px] text-slate-500">1.850 ingressos vendidos</div>
+                <p className="text-3xl font-extrabold text-slate-900 tracking-tight">{fmt(200000.0)}</p>
+                <div className="text-xs text-slate-500 font-medium">1.850 ingressos vendidos</div>
               </div>
 
-              <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200 space-y-1">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">
+              <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 space-y-2">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
                   Recursos Disponíveis (Custódia)
                 </span>
-                <p className="text-2xl font-black text-emerald-700">{fmt(110000.0)}</p>
-                <div className="text-[11px] text-emerald-800 font-semibold">Conta de liquidação Disk</div>
+                <p className="text-3xl font-extrabold text-emerald-700 tracking-tight">{fmt(110000.0)}</p>
+                <div className="text-xs text-emerald-800 font-semibold">Conta de liquidação Disk</div>
               </div>
 
-              <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 space-y-1">
-                <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+              <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-200 space-y-2">
+                <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
                   Valor já Comprometido / Saídas
                 </span>
-                <p className="text-2xl font-black text-amber-700">{fmt(90000.0)}</p>
-                <div className="text-[11px] text-amber-800">
-                  Despesas R$ 40k + Repasses R$ 50k
+                <p className="text-3xl font-extrabold text-amber-700 tracking-tight">{fmt(90000.0)}</p>
+                <div className="text-xs text-amber-800 font-medium">
+                  Teatro R$ 40k + Repasse R$ 50k
                 </div>
               </div>
 
-              <div className="bg-rose-50 p-4 rounded-2xl border-2 border-rose-300 space-y-1">
-                <span className="text-[11px] font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Insuficiência Financeira
+              <div className="bg-rose-50 p-5 rounded-2xl border-2 border-rose-300 space-y-2">
+                <span className="text-xs font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" /> Insuficiência Financeira
                 </span>
-                <p className="text-2xl font-black text-rose-700">{fmt(90000.0)}</p>
-                <div className="text-[11px] text-rose-800 font-bold">Déficit a recompor pelo produtor</div>
+                <p className="text-3xl font-extrabold text-rose-700 tracking-tight">{fmt(90000.0)}</p>
+                <div className="text-xs text-rose-800 font-bold">Déficit a recompor pelo produtor</div>
               </div>
             </div>
 
             {/* A BARRA DE COBERTURA FINANCEIRA (55% / 45%) */}
-            <div className="bg-slate-50 p-4.5 rounded-2xl border border-slate-200 space-y-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-1">
-                <span className="text-emerald-700 flex items-center gap-1.5">
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm font-bold gap-1">
+                <span className="text-emerald-700 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Cobertura Financeira Garantida: 55,00% ({fmt(110000.0)})
                 </span>
-                <span className="text-rose-700 flex items-center gap-1.5">
+                <span className="text-rose-700 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   Insuficiência de Caixa: 45,00% ({fmt(90000.0)})
                 </span>
               </div>
 
-              <div className="w-full h-5 bg-rose-200 rounded-full overflow-hidden flex shadow-inner">
+              <div className="w-full h-8 bg-rose-200 rounded-xl overflow-hidden flex shadow-inner">
                 <div
                   style={{ width: '55%' }}
-                  className="bg-emerald-500 h-full flex items-center justify-center text-[11px] font-black text-white"
+                  className="bg-emerald-500 h-full flex items-center justify-center text-xs font-bold text-white tracking-wide uppercase"
                 >
-                  55% COBERTO
+                  55% COBERTO (R$ 110.000)
                 </div>
                 <div
                   style={{ width: '45%' }}
-                  className="bg-rose-500 h-full flex items-center justify-center text-[11px] font-black text-white"
+                  className="bg-rose-500 h-full flex items-center justify-center text-xs font-bold text-white tracking-wide uppercase"
                 >
-                  45% INSUFICIÊNCIA
+                  45% INSUFICIÊNCIA (R$ 90.000)
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-500 pt-1">
+              <p className="text-xs text-slate-600 leading-relaxed pt-1">
                 O motor impede o estorno automático cego quando há déficit. Os R$ 110.000,00 cobrem os primeiros 1.018 ingressos. Os R$ 90.000 restantes dependem do aporte do produtor.
-              </div>
+              </p>
             </div>
 
             {/* CONTROLES OPERACIONAIS E TRAVAS RÍGIDAS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 space-y-1">
-                <div className="flex items-center gap-2 text-rose-900 font-black text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 space-y-1.5">
+                <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
                   <Lock className="w-4 h-4 text-rose-600 shrink-0" />
                   <span>Bloqueio de Novos Repasses</span>
                 </div>
-                <p className="text-[11px] text-rose-800">
+                <p className="text-xs text-rose-800 leading-relaxed">
                   <span className="font-bold">STATUS: ATIVO (TRAVADO)</span>. Qualquer tentativa de liberação de repasse ou antecipação para este evento é bloqueada pelo sistema.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 space-y-1">
-                <div className="flex items-center gap-2 text-blue-900 font-black text-xs">
+              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5">
+                <div className="flex items-center gap-2 text-blue-900 font-bold text-sm">
                   <CheckCheck className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>Conciliação por Transação</span>
                 </div>
-                <p className="text-[11px] text-blue-800">
+                <p className="text-xs text-blue-800 leading-relaxed">
                   <span className="font-bold">STATUS: OBRIGATÓRIA</span>. Cada devolução deve ser vinculada à NSU da adquirente original ou comprovante Pix para fechamento.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
-                <div className="flex items-center gap-2 text-amber-900 font-black text-xs">
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-1.5">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
                   <Handshake className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>Plano de Recomposição</span>
                 </div>
-                <p className="text-[11px] text-amber-800">
+                <p className="text-xs text-amber-800 leading-relaxed">
                   <span className="font-bold">STATUS: EXIGIDO</span>. Notificação enviada à ABC Produções para aporte via Pix Escrow de R$ 90.000,00 até 20/10/2026.
                 </p>
               </div>
@@ -649,62 +665,62 @@ export function RefundsAndCancellationsView() {
 
       {/* 5. SUB-VIEW: RETENÇÕES & OBRIGAÇÕES DO EVENTO (TEATRO, ECAD, FORNECEDORES) */}
       {activeSubTab === 'obligations' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
             <div>
-              <h3 className="text-sm font-black text-slate-900">
+              <h3 className="text-base font-bold text-slate-900">
                 Retenções & Obrigações Vinculadas às Carteiras dos Eventos
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-slate-600">
                 Alocação de passivos do produtor (Teatro, ECAD, Cachês, Estrutura) com bloqueio preventivo de saldo
               </p>
             </div>
             <button
               onClick={() => setIsObligationModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Registrar Retenção</span>
             </button>
           </div>
 
-          {/* Tabela de Obrigações com 4 Fases: Reservado -> Aprovado -> Pago -> Saldo Disponível */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          {/* Tabela de Obrigações com Tipografia Limpa e Espaçamento Agradável */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-100/80 text-slate-700 font-bold uppercase tracking-normal text-xs border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-3">Compromisso & Evento</th>
-                  <th className="py-3 px-3">Categoria</th>
-                  <th className="py-3 px-3">Beneficiário</th>
-                  <th className="py-3 px-3 text-right">Reservado</th>
-                  <th className="py-3 px-3 text-right">Aprovado</th>
-                  <th className="py-3 px-3 text-right">Efetivamente Pago</th>
-                  <th className="py-3 px-3 text-center">Fase / Status</th>
-                  <th className="py-3 px-3 text-center">Vencimento</th>
+                  <th className="py-3.5 px-4">Compromisso & Evento</th>
+                  <th className="py-3.5 px-4">Categoria</th>
+                  <th className="py-3.5 px-4">Beneficiário</th>
+                  <th className="py-3.5 px-4 text-right">Reservado</th>
+                  <th className="py-3.5 px-4 text-right">Aprovado</th>
+                  <th className="py-3.5 px-4 text-right">Efetivamente Pago</th>
+                  <th className="py-3.5 px-4 text-center">Fase / Status</th>
+                  <th className="py-3.5 px-4 text-center">Vencimento</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium">
+              <tbody className="divide-y divide-slate-100 font-normal">
                 {obligations.map((ob) => (
-                  <tr key={ob.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">{ob.description}</div>
-                      <div className="text-[10px] text-slate-500">{ob.eventName}</div>
+                  <tr key={ob.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900">{ob.description}</div>
+                      <div className="text-xs text-slate-500">{ob.eventName}</div>
                     </td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                    <td className="py-3.5 px-4">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">
                         {ob.categoryLabel || ob.category}
                       </span>
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-slate-800">{ob.beneficiaryName}</div>
-                      <div className="text-[10px] text-slate-400">{ob.beneficiaryDocument || '—'}</div>
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-slate-800">{ob.beneficiaryName}</div>
+                      <div className="text-xs text-slate-500">{ob.beneficiaryDocument || '—'}</div>
                     </td>
-                    <td className="py-3 px-3 text-right font-bold text-slate-900">{fmt(ob.amountReserved)}</td>
-                    <td className="py-3 px-3 text-right font-bold text-blue-700">{fmt(ob.amountApproved)}</td>
-                    <td className="py-3 px-3 text-right font-black text-emerald-700">{fmt(ob.amountPaid)}</td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-4 text-right font-semibold text-slate-900">{fmt(ob.amountReserved)}</td>
+                    <td className="py-3.5 px-4 text-right font-semibold text-blue-700">{fmt(ob.amountApproved)}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-emerald-700">{fmt(ob.amountPaid)}</td>
+                    <td className="py-3.5 px-4 text-center">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
                           ob.status === 'PAID'
                             ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                             : ob.status === 'APPROVED'
@@ -719,7 +735,7 @@ export function RefundsAndCancellationsView() {
                           : 'RESERVADO'}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-center text-slate-600">{ob.dueDate || '—'}</td>
+                    <td className="py-3.5 px-4 text-center text-slate-600">{ob.dueDate || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -730,57 +746,57 @@ export function RefundsAndCancellationsView() {
 
       {/* 6. SUB-VIEW: CONSULTA DE PEDIDOS & SOLICITAÇÕES DE ESTORNO */}
       {(activeSubTab === 'orders' || activeSubTab === 'refundRequests') && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
             <div>
-              <h3 className="text-sm font-black text-slate-900">
+              <h3 className="text-base font-bold text-slate-900">
                 {activeSubTab === 'orders' ? 'Consulta de Vendas e Transações' : 'Fila de Solicitações de Estorno'}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-slate-600">
                 Rastreabilidade de compras online e PDV com discriminação de ingresso, taxa e forma de pagamento
               </p>
             </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
                 type="text"
                 placeholder="Buscar por pedido, cliente ou CPF..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="w-full text-sm pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-100/80 text-slate-700 font-bold uppercase tracking-normal text-xs border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-3">Pedido</th>
-                  <th className="py-3 px-3">Comprador</th>
-                  <th className="py-3 px-3 text-right">Ingresso</th>
-                  <th className="py-3 px-3 text-right">Taxa Disk</th>
-                  <th className="py-3 px-3 text-right">Total Devolução</th>
-                  <th className="py-3 px-3 text-center">Meio</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-3 text-center">Ações</th>
+                  <th className="py-3.5 px-4">Pedido</th>
+                  <th className="py-3.5 px-4">Comprador</th>
+                  <th className="py-3.5 px-4 text-right">Ingresso</th>
+                  <th className="py-3.5 px-4 text-right">Taxa Disk</th>
+                  <th className="py-3.5 px-4 text-right">Total Devolução</th>
+                  <th className="py-3.5 px-4 text-center">Meio</th>
+                  <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-center">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium">
+              <tbody className="divide-y divide-slate-100 font-normal">
                 {refundRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-3 font-bold text-slate-900">#{req.orderNumber}</td>
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-slate-800">{req.customerName}</div>
-                      <div className="text-[10px] text-slate-400">{req.customerDocument}</div>
+                  <tr key={req.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-slate-900">#{req.orderNumber}</td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-medium text-slate-900">{req.customerName}</div>
+                      <div className="text-xs text-slate-500">{req.customerDocument}</div>
                     </td>
-                    <td className="py-3 px-3 text-right text-slate-700">{fmt(req.ticketGrossAmount)}</td>
-                    <td className="py-3 px-3 text-right text-slate-500">{fmt(req.diskFeeAmount)}</td>
-                    <td className="py-3 px-3 text-right font-black text-rose-700">{fmt(req.amountToRefund)}</td>
-                    <td className="py-3 px-3 text-center font-bold text-slate-700">{req.paymentMethod}</td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-4 text-right text-slate-700">{fmt(req.ticketGrossAmount)}</td>
+                    <td className="py-3.5 px-4 text-right text-slate-500">{fmt(req.diskFeeAmount)}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-rose-700">{fmt(req.amountToRefund)}</td>
+                    <td className="py-3.5 px-4 text-center font-medium text-slate-700">{req.paymentMethod}</td>
+                    <td className="py-3.5 px-4 text-center">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           req.refundStatus === 'REFUNDED'
                             ? 'bg-emerald-100 text-emerald-800'
                             : req.refundStatus === 'PROCESSING'
@@ -791,11 +807,11 @@ export function RefundsAndCancellationsView() {
                         {req.refundStatus}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       {req.refundStatus !== 'REFUNDED' && (
                         <button
                           onClick={() => handleExecuteBatchRefunds('canc-01')}
-                          className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer"
                         >
                           Estornar
                         </button>
@@ -811,45 +827,45 @@ export function RefundsAndCancellationsView() {
 
       {/* 7. SUB-VIEW: RESERVAS & COBERTURA FINANCEIRA (15%) */}
       {activeSubTab === 'reserves' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-black text-slate-900">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-5">
+          <div className="pb-4 border-b border-slate-100">
+            <h3 className="text-base font-bold text-slate-900">
               Matriz de Reservas de Segurança e Colchão de Liquidez
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-600">
               Política automática de contingência (15% retidos sobre vendas) para cobrir devoluções e cancelamentos
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
-              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
+            <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+              <span className="text-xs font-bold text-amber-800 uppercase tracking-wider block">
                 Reserva de Contingência Ativa (15%)
               </span>
-              <p className="text-2xl font-black text-amber-900">{fmt(637567.5)}</p>
-              <p className="text-xs text-amber-800">
+              <p className="text-3xl font-extrabold text-amber-900 tracking-tight">{fmt(637567.5)}</p>
+              <p className="text-xs text-amber-800 leading-relaxed">
                 Retida automaticamente das vendas de todos os eventos ativos antes da apuração de repasses liberáveis.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
-              <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider">
+            <div className="p-5 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+              <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">
                 Regra Inviolável de Governança
               </span>
-              <p className="text-xs text-blue-900 font-bold">
+              <p className="text-sm text-blue-900 font-bold leading-normal">
                 Saldo Disponível = Saldo Total - Retenções de Obrigações - Reserva de Segurança 15%
               </p>
-              <p className="text-[11px] text-blue-800">
+              <p className="text-xs text-blue-800 leading-relaxed">
                 Repasses não podem em hipótese alguma consumir reservas de contingência.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Auditoria de Cobertura
               </span>
-              <p className="text-xl font-black text-slate-900">100% Auditável</p>
-              <p className="text-[11px] text-slate-600">
+              <p className="text-2xl font-bold text-slate-900 tracking-tight">100% Auditável</p>
+              <p className="text-xs text-slate-600 leading-relaxed">
                 A conciliação bancária confronta diariamente o saldo das contas bancárias de liquidação com os saldos registrados no Ledger.
               </p>
             </div>
@@ -859,42 +875,42 @@ export function RefundsAndCancellationsView() {
 
       {/* 8. SUB-VIEW: CONCILIAÇÃO & LEDGER CONTÁBIL */}
       {(activeSubTab === 'conciliation' || activeSubTab === 'audit') && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-5">
+          <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-black text-slate-900">
+              <h3 className="text-base font-bold text-slate-900">
                 Livro Financeiro Central Imutável (FinancialLedger) & Partidas Dobradas
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm text-slate-600">
                 Nenhum lançamento histórico pode ser apagado · Reversões gravadas como ESTORNO
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 border border-blue-200">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
               Append-Only Ledger
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-100/80 text-slate-700 font-bold uppercase tracking-normal text-xs border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-3">Data/Hora</th>
-                  <th className="py-3 px-3">Tipo de Lançamento</th>
-                  <th className="py-3 px-3">Direção</th>
-                  <th className="py-3 px-3 text-right">Valor</th>
-                  <th className="py-3 px-3">Descrição & Origem</th>
-                  <th className="py-3 px-3 text-center">Reflexo Contábil</th>
+                  <th className="py-3.5 px-4">Data e Hora</th>
+                  <th className="py-3.5 px-4">Tipo de Lançamento</th>
+                  <th className="py-3.5 px-4">Direção</th>
+                  <th className="py-3.5 px-4 text-right">Valor</th>
+                  <th className="py-3.5 px-4">Descrição & Origem</th>
+                  <th className="py-3.5 px-4 text-center">Reflexo Contábil</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+              <tbody className="divide-y divide-slate-100 font-normal">
                 {ledgerEntries.map((led) => (
-                  <tr key={led.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-2.5 px-3 text-slate-500">
+                  <tr key={led.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 text-slate-600 text-xs">
                       {new Date(led.createdAt).toLocaleString('pt-BR')}
                     </td>
-                    <td className="py-2.5 px-3 font-bold">
+                    <td className="py-3 px-4">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] ${
+                        className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
                           led.entryType === 'ESTORNO'
                             ? 'bg-rose-100 text-rose-800'
                             : led.entryType === 'VENDA'
@@ -907,15 +923,15 @@ export function RefundsAndCancellationsView() {
                         {led.entryType}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3">
-                      <span className={led.direction === 'CREDIT' ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
+                    <td className="py-3 px-4">
+                      <span className={led.direction === 'CREDIT' ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}>
                         {led.direction}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-right font-black text-slate-900">{fmt(led.amount)}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{led.description}</td>
-                    <td className="py-2.5 px-3 text-center text-slate-500">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-[10px]">
+                    <td className="py-3 px-4 text-right font-bold text-slate-900">{fmt(led.amount)}</td>
+                    <td className="py-3 px-4 text-slate-800">{led.description}</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs">
                         Partida Dobrada OK
                       </span>
                     </td>
