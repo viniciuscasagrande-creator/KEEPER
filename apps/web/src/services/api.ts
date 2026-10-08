@@ -142,4 +142,113 @@ export const api = {
     const query = new URLSearchParams({ ...(startDate && { startDate }), ...(endDate && { endDate }) }).toString();
     return request<any>(`/contabil/balancete${query ? `?${query}` : ''}`);
   },
+
+  // Câmara de Liquidação DiskIngressos & Central Financeira do Produtor
+  getProducers: async () => {
+    return request<any[]>('/financeiro/settlement/producers');
+  },
+
+  getProducerFinancialOverview: async (producerId: string) => {
+    return request<any>(`/financeiro/settlement/producers/${producerId}/overview`);
+  },
+
+  getEventFinancialDetail: async (eventId: string) => {
+    return request<any>(`/financeiro/settlement/events/${eventId}/financial-detail`);
+  },
+
+  saveEventFeeRule: async (eventId: string, data: any) => {
+    return request<any>(`/financeiro/settlement/events/${eventId}/fees`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  requestAdvance: async (producerId: string, eventId: string, data: any) => {
+    return request<any>(`/financeiro/settlement/producers/${producerId}/advances?eventId=${eventId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  scheduleProducerRepayment: async (producerId: string, eventId: string, data: any) => {
+    return request<any>(`/financeiro/settlement/producers/${producerId}/repayments?eventId=${eventId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getClearingOverview: async () => {
+    return request<any>('/financeiro/settlement/overview');
+  },
+
+  getEventWallets: async () => {
+    return request<any[]>('/financeiro/settlement/wallets');
+  },
+
+  getEventStatement: async (walletId: string) => {
+    return request<any>(`/financeiro/settlement/wallets/${walletId}/statement`);
+  },
+
+  getFeeDefinitions: async () => {
+    return request<any[]>('/financeiro/settlement/fees');
+  },
+
+  simulateSplit: async (input: {
+    ticketAmount: number;
+    diskFeeRate?: number;
+    spreadRate?: number;
+    fixedSpread?: number;
+    advanceRate?: number;
+    spreadPayer?: 'CUSTOMER' | 'PRODUCER';
+  }) => {
+    return request<any>('/financeiro/settlement/simulate-split', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  getEventExpenses: async (walletId?: string) => {
+    const query = walletId ? `?walletId=${walletId}` : '';
+    return request<any[]>(`/financeiro/settlement/expenses${query}`);
+  },
+
+  getSettlementSchedules: async () => {
+    return request<any[]>('/financeiro/settlement/schedules');
+  },
+
+  executeRepayment: async (scheduleId: string) => {
+    return request<any>(`/financeiro/settlement/schedules/${scheduleId}/execute`, {
+      method: 'POST',
+    });
+  },
+
+  saveEventRepaymentRule: async (eventId: string, ruleData: any) => {
+    return request<any>(`/financeiro/settlement/events/${eventId}/repayment-rule`, {
+      method: 'POST',
+      body: JSON.stringify(ruleData),
+    });
+  },
+
+  getFinancialLedger: async (options?: { producerId?: string; eventId?: string; entryType?: string }) => {
+    const params = new URLSearchParams();
+    if (options?.producerId) params.append('producerId', options.producerId);
+    if (options?.eventId) params.append('eventId', options.eventId);
+    if (options?.entryType) params.append('entryType', options.entryType);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<any[]>(`/financeiro/settlement/ledger${qs}`);
+  },
+
+  sendSaleWebhook: async (payload: any) => {
+    return request<any>('/financeiro/settlement/webhook/sale-approved', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  sendRefundWebhook: async (payload: any) => {
+    return request<any>('/financeiro/settlement/webhook/sale-refunded', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };

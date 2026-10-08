@@ -36,7 +36,7 @@ export function Header({
   return (
     <header className="bg-slate-900 text-slate-100 border-b border-slate-800 sticky top-0 z-40">
       {/* Top Utility Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         {/* Brand Logo & Multi-Company Selector */}
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3 cursor-pointer">

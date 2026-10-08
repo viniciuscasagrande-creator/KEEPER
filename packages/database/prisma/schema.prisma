@@ -54,7 +54,92 @@ enum FinancialAccountType {
   SAVINGS
   INVESTMENT
   DIGITAL_WALLET
+  ESCROW_CLEARING
   OTHER
+  @@schema("financeiro")
+}
+
+enum FeeCalculationType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  HYBRID
+  PER_TICKET
+  PER_ORDER
+  PER_EVENT
+  @@schema("financeiro")
+}
+
+enum FeePayer {
+  CUSTOMER
+  PRODUCER
+  DISKINGRESSOS
+  SHARED
+  @@schema("financeiro")
+}
+
+enum FeeDestination {
+  DISKINGRESSOS_REVENUE
+  RESERVE_FUND
+  GATEWAY_COST
+  PARTNER_SHARE
+  @@schema("financeiro")
+}
+
+enum FeeApplicationChannel {
+  ONLINE
+  BOX_OFFICE
+  BOTH
+  @@schema("financeiro")
+}
+
+enum FeeChargeMoment {
+  AT_SALE
+  AT_SETTLEMENT
+  AT_TRANSFER
+  AT_CLOSING
+  AT_ADVANCE
+  @@schema("financeiro")
+}
+
+enum EventExpenseCategory {
+  SECURITY
+  VENUE_RENTAL
+  ARTIST_CACHE
+  STAGE_STRUCTURE
+  MARKETING
+  STAFF
+  TICKETING_EQUIPMENT
+  OTHER
+  @@schema("financeiro")
+}
+
+enum SettlementScheduleStatus {
+  PENDING
+  SCHEDULED
+  PROCESSING
+  PAID
+  CANCELLED
+  @@schema("financeiro")
+}
+
+enum LedgerEntryType {
+  VENDA
+  TAXA_DISK
+  TAXA_SPREAD
+  TAXA_ADVANCE
+  TAXA_RIBEIT
+  DESPESA
+  REPASSE
+  ANTECIPACAO
+  ESTORNO
+  AJUSTE
+  TRANSFERENCIA
+  @@schema("financeiro")
+}
+
+enum LedgerDirection {
+  CREDIT
+  DEBIT
   @@schema("financeiro")
 }
 
@@ -136,6 +221,13 @@ model Tenant {
   bankStatements BankStatement[]
   budgets Budget[]
   creditLimits CreditLimit[]
+  eventWallets EventWallet[]
+  feeDefinitions FeeDefinition[]
+  saleFinancialSplits SaleFinancialSplit[]
+  eventExpenses EventExpense[]
+  settlementSchedules SettlementSchedule[]
+  eventFinancialStatements EventFinancialStatement[]
+  producers Producer[]
   accountingAccounts AccountingAccount[]
   accountingPeriods AccountingPeriod[]
   costCenters CostCenter[]
@@ -224,6 +316,9 @@ model Company {
   financialMovements FinancialMovement[]
   transfers FinancialTransfer[]
   budgets Budget[]
+  eventWallets EventWallet[]
+  saleFinancialSplits SaleFinancialSplit[]
+  producers Producer[]
   accountingAccounts AccountingAccount[]
   accountingPeriods AccountingPeriod[]
   costCenters CostCenter[]
@@ -859,6 +954,293 @@ model CreditLimit {
 
   @@schema("financeiro")
   @@map("credit_limits")
+}
+
+model EventWallet {
+  id                       String   @id @default(uuid()) @db.Uuid
+  tenantId                 String   @map("tenant_id") @db.Uuid
+  companyId                String   @map("company_id") @db.Uuid
+  eventId                  String   @map("event_id") @db.Uuid
+  eventName                String   @map("event_name")
+  producerId               String   @map("producer_id") @db.Uuid
+  producerName             String   @map("producer_name")
+  clearingAccountId        String?  @map("clearing_account_id") @db.Uuid
+  grossTicketSales         Decimal  @default(0) @db.Decimal(19,4) @map("gross_ticket_sales")
+  diskFeeTotal             Decimal  @default(0) @db.Decimal(19,4) @map("disk_fee_total")
+  spreadFeeTotal           Decimal  @default(0) @db.Decimal(19,4) @map("spread_fee_total")
+  advanceFeeTotal          Decimal  @default(0) @db.Decimal(19,4) @map("advance_fee_total")
+  otherFeesTotal           Decimal  @default(0) @db.Decimal(19,4) @map("other_fees_total")
+  expensesTotal            Decimal  @default(0) @db.Decimal(19,4) @map("expenses_total")
+  repaymentsPaidTotal      Decimal  @default(0) @db.Decimal(19,4) @map("repayments_paid_total")
+  repaymentsScheduledTotal Decimal  @default(0) @db.Decimal(19,4) @map("repayments_scheduled_total")
+  balanceAvailable         Decimal  @default(0) @db.Decimal(19,4) @map("balance_available")
+  blockedBalance           Decimal  @default(0) @db.Decimal(19,4) @map("blocked_balance")
+  projectedBalance         Decimal  @default(0) @db.Decimal(19,4) @map("projected_balance")
+  advancesPaidTotal        Decimal  @default(0) @db.Decimal(19,4) @map("advances_paid_total")
+  salesTargetAmount        Decimal  @default(200000.0) @db.Decimal(19,4) @map("sales_target_amount")
+  minSalesMilestonePct     Decimal  @default(50.0) @db.Decimal(5,2) @map("min_sales_milestone_pct")
+  maxReleasePct            Decimal  @default(20.0) @db.Decimal(5,2) @map("max_release_pct")
+  status                   String   @default("OPEN")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  company       Company  @relation(fields: [companyId], references: [id])
+  expenses      EventExpense[]
+  schedules     SettlementSchedule[]
+  statements    EventFinancialStatement[]
+  eventFeeRules EventFeeRule[]
+  repaymentRules EventRepaymentRule[]
+  advances      ProducerAdvance[]
+  ledgers       FinancialLedger[]
+
+  @@schema("financeiro")
+  @@map("event_wallets")
+}
+
+model Producer {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @map("tenant_id") @db.Uuid
+  companyId           String   @map("company_id") @db.Uuid
+  name                String
+  tradeName           String?  @map("trade_name")
+  document            String   @unique // CNPJ ou CPF
+  code                String?
+  status              String   @default("ACTIVE")
+  email               String?
+  phone               String?
+  defaultDiskFeeRate  Decimal? @db.Decimal(8,4) @map("default_disk_fee_rate")
+  defaultSpreadRate   Decimal? @db.Decimal(8,4) @map("default_spread_rate")
+  bankName            String?  @map("bank_name")
+  agency              String?
+  account             String?
+  pixKey              String?  @map("pix_key")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+  ledgers FinancialLedger[]
+
+  @@schema("financeiro")
+  @@map("producers")
+}
+
+model EventFeeRule {
+  id              String                @id @default(uuid()) @db.Uuid
+  tenantId        String                @map("tenant_id") @db.Uuid
+  eventWalletId   String                @map("event_wallet_id") @db.Uuid
+  feeCode         String                @map("fee_code") // DISK_FEE, SPREAD, ADVANCE, RIBEIT, CUSTOM
+  feeName         String                @map("fee_name") // Ex: "Spread", "Advance", "Ribeit", "Taxa Disk"
+  calculationType FeeCalculationType    @map("calculation_type")
+  rate            Decimal?              @db.Decimal(8,4)
+  fixedAmount     Decimal?              @db.Decimal(19,4) @map("fixed_amount")
+  basisType       String                @default("VALOR_BRUTO_VENDA") @map("basis_type") // PEDIDO, INGRESSO, VALOR_BRUTO, VALOR_LIQUIDO, LOTE, SETOR
+  payer           FeePayer              @default(CUSTOMER)
+  destination     FeeDestination        @default(DISKINGRESSOS_REVENUE)
+  validFrom       DateTime              @default(now()) @map("valid_from")
+  validTo         DateTime?             @map("valid_to")
+  isActive        Boolean               @default(true) @map("is_active")
+  createdAt       DateTime              @default(now()) @map("created_at")
+
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("event_fee_rules")
+}
+
+model EventRepaymentRule {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @map("tenant_id") @db.Uuid
+  eventWalletId         String    @map("event_wallet_id") @db.Uuid
+  ruleCode              String    @default("DEFAULT_50_20") @map("rule_code")
+  ruleName              String    @default("Marco 50% / Liberação 20%") @map("rule_name")
+  minSalesMilestonePct  Decimal   @default(50.0) @db.Decimal(5,2) @map("min_sales_milestone_pct")
+  maxReleasePct         Decimal   @default(20.0) @db.Decimal(5,2) @map("max_release_pct")
+  salesTargetAmount     Decimal?  @db.Decimal(19,4) @map("sales_target_amount")
+  calculationBasis      String    @default("ACCUMULATED_SALES") @map("calculation_basis")
+  allowPartial          Boolean   @default(true) @map("allow_partial")
+  allowMultiple         Boolean   @default(true) @map("allow_multiple")
+  requiresApproval      Boolean   @default(true) @map("requires_approval")
+  validFrom             DateTime  @default(now()) @map("valid_from")
+  validTo               DateTime? @map("valid_to")
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("event_repayment_rules")
+}
+
+model ProducerAdvance {
+  id              String   @id @default(uuid()) @db.Uuid
+  tenantId        String   @map("tenant_id") @db.Uuid
+  eventWalletId   String   @map("event_wallet_id") @db.Uuid
+  producerId      String   @map("producer_id") @db.Uuid
+  advanceNumber   String   @map("advance_number")
+  requestedAmount Decimal  @db.Decimal(19,4) @map("requested_amount")
+  advanceFeeRate  Decimal  @db.Decimal(8,4) @map("advance_fee_rate") // Ex: 2.50%
+  advanceFeeCost  Decimal  @db.Decimal(19,4) @map("advance_fee_cost") // Ex: R$ 2.500,00
+  netAmount       Decimal  @db.Decimal(19,4) @map("net_amount") // Ex: R$ 97.500,00
+  status          String   @default("REQUESTED") // REQUESTED, UNDER_ANALYSIS, APPROVED, SCHEDULED, PAID, REJECTED
+  requestedDate   DateTime @default(now()) @map("requested_date")
+  dueDate         DateTime? @db.Date @map("due_date")
+  authorizedBy    String?  @map("authorized_by")
+  paidAt          DateTime? @map("paid_at")
+  transactionHash String?  @map("transaction_hash")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("producer_advances")
+}
+
+model FeeDefinition {
+  id              String                @id @default(uuid()) @db.Uuid
+  tenantId        String                @map("tenant_id") @db.Uuid
+  name            String
+  code            String                @unique
+  calculationType FeeCalculationType    @map("calculation_type")
+  rate            Decimal?              @db.Decimal(8,4)
+  fixedAmount     Decimal?              @db.Decimal(19,4) @map("fixed_amount")
+  basisType       String                @default("GROSS_VALUE") @map("basis_type")
+  payer           FeePayer              @default(CUSTOMER)
+  destination     FeeDestination        @default(DISKINGRESSOS_REVENUE)
+  channel         FeeApplicationChannel @default(BOTH)
+  chargeMoment    FeeChargeMoment       @default(AT_SALE) @map("charge_moment")
+  isActive        Boolean               @default(true) @map("is_active")
+  description     String?
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@schema("financeiro")
+  @@map("fee_definitions")
+}
+
+model SaleFinancialSplit {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @map("tenant_id") @db.Uuid
+  companyId         String   @map("company_id") @db.Uuid
+  orderId           String   @map("order_id") @db.Uuid
+  orderNumber       String   @map("order_number")
+  eventId           String   @map("event_id") @db.Uuid
+  producerId        String   @map("producer_id") @db.Uuid
+  ticketGrossAmount Decimal  @db.Decimal(19,4) @map("ticket_gross_amount")
+  diskFeeAmount     Decimal  @db.Decimal(19,4) @map("disk_fee_amount")
+  spreadAmount      Decimal  @default(0) @db.Decimal(19,4) @map("spread_amount")
+  advanceAmount     Decimal  @default(0) @db.Decimal(19,4) @map("advance_amount")
+  otherFeesAmount   Decimal  @default(0) @db.Decimal(19,4) @map("other_fees_amount")
+  totalCustomerPaid Decimal  @db.Decimal(19,4) @map("total_customer_paid")
+  netProducerAmount Decimal  @db.Decimal(19,4) @map("net_producer_amount")
+  clearingStatus    String   @default("SETTLED") @map("clearing_status")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@schema("financeiro")
+  @@map("sale_financial_splits")
+}
+
+model EventExpense {
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @map("tenant_id") @db.Uuid
+  eventWalletId  String               @map("event_wallet_id") @db.Uuid
+  category       EventExpenseCategory
+  description    String
+  supplierName   String               @map("supplier_name")
+  documentNumber String?              @map("document_number")
+  amount         Decimal              @db.Decimal(19,4)
+  authorizedBy   String               @map("authorized_by")
+  paymentStatus  String               @default("PENDING") @map("payment_status")
+  dueDate        DateTime?            @db.Date @map("due_date")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("event_expenses")
+}
+
+model SettlementSchedule {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  tenantId           String                   @map("tenant_id") @db.Uuid
+  eventWalletId      String                   @map("event_wallet_id") @db.Uuid
+  producerId         String                   @map("producer_id") @db.Uuid
+  scheduleNumber     String                   @map("schedule_number")
+  scheduledDate      DateTime                 @db.Date @map("scheduled_date")
+  amount             Decimal                  @db.Decimal(19,4)
+  status             SettlementScheduleStatus @default(PENDING)
+  paymentMethod      String                   @default("PIX") @map("payment_method")
+  destinationBank    String?                  @map("destination_bank")
+  destinationAccount String?                  @map("destination_account")
+  destinationPixKey  String?                  @map("destination_pix_key")
+  authorizedBy       String?                  @map("authorized_by")
+  paidAt             DateTime?                @map("paid_at")
+  transactionHash    String?                  @map("transaction_hash")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("settlement_schedules")
+}
+
+model EventFinancialStatement {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  eventWalletId  String   @map("event_wallet_id") @db.Uuid
+  movementDate   DateTime @default(now()) @map("movement_date")
+  type           String
+  description    String
+  amount         Decimal  @db.Decimal(19,4)
+  runningBalance Decimal  @db.Decimal(19,4) @map("running_balance")
+  referenceId    String?  @map("reference_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  wallet EventWallet @relation(fields: [eventWalletId], references: [id])
+
+  @@schema("financeiro")
+  @@map("event_financial_statements")
+}
+
+model FinancialLedger {
+  id                    String            @id @default(uuid()) @db.Uuid
+  tenantId              String            @map("tenant_id") @db.Uuid
+  companyId             String?           @map("company_id") @db.Uuid
+  producerId            String            @map("producer_id") @db.Uuid
+  eventWalletId         String            @map("event_wallet_id") @db.Uuid
+  saleId                String?           @map("sale_id")
+  orderNumber           String?           @map("order_number")
+  entryType             LedgerEntryType   @map("entry_type")
+  direction             LedgerDirection
+  amount                Decimal           @db.Decimal(19,4)
+  balanceAfter          Decimal           @db.Decimal(19,4) @map("balance_after")
+  clearingBalanceAfter  Decimal?          @db.Decimal(19,4) @map("clearing_balance_after")
+  description           String
+  referenceId           String?           @map("reference_id")
+  metadata              Json?
+  isReversed            Boolean           @default(false) @map("is_reversed")
+  reversedById          String?           @map("reversed_by_id") @db.Uuid
+  createdAt             DateTime          @default(now()) @map("created_at")
+  createdBy             String?           @map("created_by")
+
+  wallet   EventWallet   @relation(fields: [eventWalletId], references: [id])
+  producer Producer      @relation(fields: [producerId], references: [id])
+
+  @@index([eventWalletId, createdAt])
+  @@index([producerId, createdAt])
+  @@index([saleId])
+  @@schema("financeiro")
+  @@map("financial_ledgers")
 }
 
 model AccountingAccount {

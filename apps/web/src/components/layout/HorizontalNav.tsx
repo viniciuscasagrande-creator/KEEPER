@@ -55,7 +55,7 @@ export function HorizontalNav({
 
   return (
     <nav ref={navRef} className="bg-slate-900 border-b border-slate-800 shadow-sm relative z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar py-1">
           {navigationModules.map((mod) => {
             const Icon = iconMap[mod.icon] || LayoutDashboard;

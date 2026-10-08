@@ -17,6 +17,8 @@ import {
   LayoutDashboard,
   X,
   CreditCard,
+  Landmark,
+  Users,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { FinancialDashboard } from './financeiro/FinancialDashboard';
@@ -27,9 +29,13 @@ import { ReconciliationView } from './financeiro/ReconciliationView';
 import { CashflowView } from './financeiro/CashflowView';
 import { BudgetView } from './financeiro/BudgetView';
 import { CreditView } from './financeiro/CreditView';
+import { SettlementCentralView } from './financeiro/SettlementCentralView';
+import { ProducerFinancialCentralView } from './financeiro/ProducerFinancialCentralView';
 import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
 
 export type FinancialTab =
+  | 'settlement'
+  | 'producers'
   | 'dashboard'
   | 'payables'
   | 'receivables'
@@ -45,7 +51,7 @@ interface FinancialModuleViewProps {
 }
 
 export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: FinancialModuleViewProps) {
-  const [activeTab, setActiveTab] = useState<FinancialTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<FinancialTab>('settlement');
   const [isLoading, setIsLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -102,7 +108,9 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
   // Sync sub tab if passed externally
   useEffect(() => {
     if (activeSubTab) {
-      if (activeSubTab.includes('payable')) setActiveTab('payables');
+      if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
+      else if (activeSubTab.includes('settlement') || activeSubTab.includes('clearing')) setActiveTab('settlement');
+      else if (activeSubTab.includes('payable')) setActiveTab('payables');
       else if (activeSubTab.includes('receivable') || activeSubTab.includes('billing')) setActiveTab('receivables');
       else if (activeSubTab.includes('account')) setActiveTab('treasury');
       else if (activeSubTab.includes('reconciliation')) setActiveTab('reconciliation');
@@ -346,6 +354,36 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/75 px-3 overflow-x-auto">
           <div className="flex space-x-1 shrink-0">
             <button
+              onClick={() => setActiveTab('settlement')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'settlement'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Landmark className="w-3.5 h-3.5 text-blue-600" />
+              <span>Câmara de Liquidação</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                DiskIngressos
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('producers')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'producers'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Produtores & Eventos</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+                Regras 1:1
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('dashboard')}
               className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
                 activeTab === 'dashboard'
@@ -454,6 +492,10 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       </div>
 
       {/* 2. Active Tab Sub-view Content */}
+      {activeTab === 'settlement' && <SettlementCentralView />}
+
+      {activeTab === 'producers' && <ProducerFinancialCentralView />}
+
       {activeTab === 'dashboard' && (
         <FinancialDashboard
           onOpenNewPayable={onOpenQuickEntry}
