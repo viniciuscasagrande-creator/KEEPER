@@ -1,5 +1,8 @@
 # Keeper — Enterprise Resource Planning (ERP v1)
 
+> 🚀 **Ambiente de Produção (Vercel Live):** [https://keeper-tng6.vercel.app/](https://keeper-tng6.vercel.app/)  
+> 🔗 **API REST:** [https://keeper-tng6.vercel.app/api/v1](https://keeper-tng6.vercel.app/api/v1) | 📚 **Swagger Docs:** [https://keeper-tng6.vercel.app/api/docs](https://keeper-tng6.vercel.app/api/docs)
+
 Plataforma empresarial modular, multi-tenant e multiempresa construída do zero, seguindo os princípios de **Domain-Driven Design (DDD)**, **Clean Architecture**, **Event-Driven Architecture (Outbox Pattern)** e **Strict Accounting Immutability (Partidas Dobradas)**.
 
 ---
@@ -125,8 +128,11 @@ pnpm --filter @erp/worker dev   # Worker de Outbox
 
 | Serviço | URL | Descrição |
 | :--- | :--- | :--- |
-| **Frontend Web** | `http://localhost:3000` | NetSuite Executive Shell com navegação horizontal e painel corporativo |
-| **API Docs (Swagger)** | `http://localhost:4000/api/docs` | Documentação OpenAPI interativa de todos os módulos |
+| **Produção Oficial (Vercel)** | [https://keeper-tng6.vercel.app/](https://keeper-tng6.vercel.app/) | Ambiente Live em Produção com múltiplos serviços integrados |
+| **API REST Produção** | [https://keeper-tng6.vercel.app/api/v1](https://keeper-tng6.vercel.app/api/v1) | Endpoints REST públicos com Swagger |
+| **Swagger Docs Produção** | [https://keeper-tng6.vercel.app/api/docs](https://keeper-tng6.vercel.app/api/docs) | Documentação OpenAPI interativa ao vivo |
+| **Frontend Web (Local)** | `http://localhost:3000` | NetSuite Executive Shell com navegação horizontal e painel corporativo |
+| **API Docs (Swagger Local)** | `http://localhost:4000/api/docs` | Documentação OpenAPI local |
 | **RabbitMQ Management** | `http://localhost:15672` | Painel de mensageria (guest/guest) |
 
 ---
