@@ -13,7 +13,9 @@ import { QuickEntryDrawer } from './components/drawers/QuickEntryDrawer';
 import { ApprovalsDrawer } from './components/drawers/ApprovalsDrawer';
 import { FinancialModuleView } from './components/modules/FinancialModuleView';
 import { AccountingModuleView } from './components/modules/AccountingModuleView';
+import { ContabilidadeCompletaView } from './components/modules/ContabilidadeCompletaView';
 import { GatewaysModuleView } from './components/modules/GatewaysModuleView';
+import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
 export function App() {
@@ -90,7 +92,10 @@ export function App() {
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />
         ) : activeModule === 'contabil' ? (
-          <AccountingModuleView />
+          <ContabilidadeCompletaView
+            request={api.accountingRequest}
+            initialSection={activeSubModule}
+          />
         ) : (
           <>
             {/* Context bar / Breadcrumb & Refresh */}

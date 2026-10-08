@@ -194,4 +194,205 @@ export class ContabilController {
     const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
     return this.contabilService.getDRE(tenantId, effectiveCompanyId, startDate, endDate);
   }
+
+  // ==========================================
+  // DASHBOARD CONTÁBIL
+  // ==========================================
+
+  @Get('dashboard')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Obter indicadores e visão geral do Dashboard Contábil' })
+  async getDashboard(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getDashboard(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // LIVRO DIÁRIO
+  // ==========================================
+
+  @Get('diario')
+  @RequirePermissions('contabil.lancamentos.visualizar')
+  @ApiOperation({ summary: 'Consultar Livro Diário cronológico' })
+  async getDiario(
+    @CurrentTenant() tenantId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('limit') limit?: number,
+    @Query('page') page?: number,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getDiario(tenantId, effectiveCompanyId, {
+      startDate,
+      endDate,
+      limit: limit ? Number(limit) : 100,
+      page: page ? Number(page) : 1,
+    });
+  }
+
+  // ==========================================
+  // BALANÇO PATRIMONIAL
+  // ==========================================
+
+  @Get('balanco')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Gerar Balanço Patrimonial estruturado (Ativo vs Passivo + PL)' })
+  async getBalanco(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getBalancoPatrimonial(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // DFC — DEMONSTRAÇÃO DO FLUXO DE CAIXA
+  // ==========================================
+
+  @Get('dfc')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Gerar Demonstração do Fluxo de Caixa (Método Direto)' })
+  async getDFC(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getDFC(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // CENTROS DE CUSTO
+  // ==========================================
+
+  @Get('centros-custo')
+  @RequirePermissions('contabil.plano_contas.visualizar')
+  @ApiOperation({ summary: 'Listar centros de custo da empresa' })
+  async getCostCenters(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getCostCenters(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // INTEGRAÇÃO FINANCEIRA
+  // ==========================================
+
+  @Get('integracao-financeira')
+  @RequirePermissions('contabil.lancamentos.visualizar')
+  @ApiOperation({ summary: 'Mapeamento de contabilização do motor financeiro (Disk x Produtores)' })
+  async getFinancialIntegration(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getFinancialIntegration(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // FISCAL E TRIBUTÁRIO
+  // ==========================================
+
+  @Get('tributos')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Apuração e provisões tributárias das receitas próprias' })
+  async getTaxOverview(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getTaxOverview(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // CONCILIAÇÃO CONTÁBIL
+  // ==========================================
+
+  @Get('conciliacao')
+  @RequirePermissions('contabil.lancamentos.visualizar')
+  @ApiOperation({ summary: 'Confronto entre Ledger Financeiro e Razão Contábil' })
+  async getReconciliation(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getAccountingReconciliation(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // DOCUMENTOS CONTÁBEIS
+  // ==========================================
+
+  @Get('documentos')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Documentos fiscais, borderôs e contratos vinculados' })
+  async getDocuments(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getAccountingDocuments(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // RELATÓRIOS CONTÁBEIS
+  // ==========================================
+
+  @Get('relatorios')
+  @RequirePermissions('contabil.relatorios.visualizar')
+  @ApiOperation({ summary: 'Catálogo de relatórios e demonstrativos contábeis para exportação' })
+  async getReportsCatalog(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getReportsCatalog(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // AUDITORIA E HISTÓRICO
+  // ==========================================
+
+  @Get('auditoria')
+  @RequirePermissions('contabil.lancamentos.visualizar')
+  @ApiOperation({ summary: 'Trilha de auditoria e integridade contábil imutável' })
+  async getAuditLog(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getAccountingAudit(tenantId, effectiveCompanyId);
+  }
+
+  // ==========================================
+  // CONFIGURAÇÕES CONTÁBEIS
+  // ==========================================
+
+  @Get('configuracoes')
+  @RequirePermissions('contabil.periodos.gerenciar')
+  @ApiOperation({ summary: 'Parâmetros contábeis, exercício fiscal e CRC do responsável' })
+  async getSettings(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.contabilService.getAccountingSettings(tenantId, effectiveCompanyId);
+  }
 }

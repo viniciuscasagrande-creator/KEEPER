@@ -385,4 +385,8 @@ export const api = {
       body: JSON.stringify(input),
     });
   },
+
+  accountingRequest: async (endpoint: string, options?: RequestInit): Promise<any> => {
+    return request<any>(endpoint, options);
+  },
 };
