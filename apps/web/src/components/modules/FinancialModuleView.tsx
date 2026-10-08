@@ -33,12 +33,14 @@ import { CreditView } from './financeiro/CreditView';
 import { SettlementCentralView } from './financeiro/SettlementCentralView';
 import { ProducerFinancialCentralView } from './financeiro/ProducerFinancialCentralView';
 import { RefundsAndCancellationsView } from './financeiro/RefundsAndCancellationsView';
+import { GatewaysModuleView } from './GatewaysModuleView';
 import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
 
 export type FinancialTab =
   | 'settlement'
   | 'producers'
   | 'refunds'
+  | 'gateways'
   | 'dashboard'
   | 'payables'
   | 'receivables'
@@ -114,7 +116,8 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
   // Sync sub tab if passed externally
   useEffect(() => {
     if (activeSubTab) {
-      if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
+      if (activeSubTab.startsWith('gw-') || activeSubTab === 'gateways') setActiveTab('gateways');
+      else if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
       else if (activeSubTab.includes('refund') || activeSubTab.includes('cancellation')) setActiveTab('refunds');
       else if (activeSubTab.includes('settlement') || activeSubTab.includes('clearing')) setActiveTab('settlement');
       else if (activeSubTab.includes('payable')) setActiveTab('payables');
@@ -431,7 +434,27 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             </span>
           </button>
 
-          {/* 4. CENTRAL FINANCEIRA */}
+          {/* 4. GATEWAYS & ADQUIRENTES */}
+          <button
+            onClick={() => setActiveTab('gateways')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+              activeTab === 'gateways'
+                ? 'bg-blue-900 text-white shadow-md ring-2 ring-blue-500/40 border border-blue-900'
+                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <CreditCard className={`w-4 h-4 ${activeTab === 'gateways' ? 'text-white' : 'text-blue-600'}`} />
+            <span>Gateways & Adquirentes</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'gateways' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+              }`}
+            >
+              8 Módulos
+            </span>
+          </button>
+
+          {/* 5. CENTRAL FINANCEIRA */}
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
@@ -564,6 +587,8 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       {activeTab === 'producers' && <ProducerFinancialCentralView />}
 
       {activeTab === 'refunds' && <RefundsAndCancellationsView />}
+
+      {activeTab === 'gateways' && <GatewaysModuleView activeSection={activeSubTab} />}
 
       {activeTab === 'dashboard' && (
         <FinancialDashboard

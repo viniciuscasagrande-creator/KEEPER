@@ -13,6 +13,7 @@ import { QuickEntryDrawer } from './components/drawers/QuickEntryDrawer';
 import { ApprovalsDrawer } from './components/drawers/ApprovalsDrawer';
 import { FinancialModuleView } from './components/modules/FinancialModuleView';
 import { AccountingModuleView } from './components/modules/AccountingModuleView';
+import { GatewaysModuleView } from './components/modules/GatewaysModuleView';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
 export function App() {
@@ -46,6 +47,8 @@ export function App() {
     setActiveSubModule(subModuleId);
     if (subModuleId.startsWith('fin-') || subModuleId === 'dash-fin') {
       setActiveModule('financeiro');
+    } else if (subModuleId.startsWith('gw-')) {
+      setActiveModule('gateways');
     } else if (subModuleId.startsWith('acc-')) {
       setActiveModule('contabil');
     } else if (subModuleId === 'quick-entry') {
@@ -82,6 +85,11 @@ export function App() {
           <FinancialModuleView
             onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
             activeSubTab={activeSubModule}
+          />
+        ) : activeModule === 'gateways' ? (
+          <GatewaysModuleView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
           />
         ) : activeModule === 'contabil' ? (
           <AccountingModuleView />

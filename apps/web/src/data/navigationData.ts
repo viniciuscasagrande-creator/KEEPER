@@ -70,6 +70,39 @@ export const navigationModules: ModuleNav[] = [
           { id: 'fin-budget', label: 'Orçamento Planejado vs Realizado' },
         ],
       },
+      {
+        groupName: 'Gateways & Adquirentes',
+        items: [
+          { id: 'gw-gateways', label: 'Gateways', description: 'Hub de provedores e webhooks', badge: 'Hub', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'gw-adquirentes', label: 'Adquirentes', description: 'Credenciadoras e contratos' },
+          { id: 'gw-bandeiras', label: 'Bandeiras', description: 'Roteamento inteligente e antifraude' },
+          { id: 'gw-mdr', label: 'MDR', description: 'Taxas de intermediação e calculadora' },
+          { id: 'gw-parcelamento', label: 'Parcelamento', description: 'Regras de parcelas e juros' },
+          { id: 'gw-metodos', label: 'Métodos de Pagamento', description: 'PIX, Cartão e canais' },
+          { id: 'gw-regras', label: 'Regras Comerciais', description: 'MDR e condições por evento' },
+          { id: 'gw-custom', label: 'Pagamentos Customizados', description: 'Splits, garantias e retenções' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'gateways',
+    label: 'Gateways & Adquirentes',
+    icon: 'CreditCard',
+    groups: [
+      {
+        groupName: 'Processamento & Pagamentos',
+        items: [
+          { id: 'gw-gateways', label: 'Gateways', description: 'Integrações, chaves e webhooks' },
+          { id: 'gw-adquirentes', label: 'Adquirentes', description: 'Cadastro e contratos' },
+          { id: 'gw-bandeiras', label: 'Bandeiras', description: 'Bandeiras e roteamento' },
+          { id: 'gw-mdr', label: 'MDR', description: 'Taxas das adquirentes' },
+          { id: 'gw-parcelamento', label: 'Parcelamento', description: 'Condições por parcela' },
+          { id: 'gw-metodos', label: 'Métodos de Pagamento', description: 'PIX, cartões e PDV' },
+          { id: 'gw-regras', label: 'Regras Comerciais', description: 'Taxas negociadas por evento' },
+          { id: 'gw-custom', label: 'Pagamentos Customizados', description: 'Splits e configurações especiais' },
+        ],
+      },
     ],
   },
   {
@@ -194,7 +227,7 @@ export const navigationModules: ModuleNav[] = [
   {
     id: 'vendas',
     label: 'Vendas',
-    icon: 'CreditCard',
+    icon: 'ShoppingCart',
     groups: [
       {
         groupName: 'Comercial & Faturamento',
