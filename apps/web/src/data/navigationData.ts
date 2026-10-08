@@ -35,6 +35,7 @@ export const navigationModules: ModuleNav[] = [
         items: [
           { id: 'fin-settlement', label: 'Painel Principal Financeiro Disk', description: 'Conta de liquidação, repasses e carteiras', badge: 'Principal', badgeColor: 'bg-blue-100 text-blue-800' },
           { id: 'fin-producers', label: 'Central de Produtores & Eventos', description: 'Busca por produtor, carteira de eventos e regras de taxas', badge: 'Destaque', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'fin-tax-rules', label: 'Taxas & Regras Comerciais', description: 'Matriz de MDR, spread bruto e simulador de tarifas', badge: 'Novo', badgeColor: 'bg-emerald-100 text-emerald-800' },
           { id: 'fin-refunds', label: 'Estornos & Cancelamentos', description: 'Câmara de devoluções, cobertura de déficit e recomposição', badge: 'Crítico', badgeColor: 'bg-rose-100 text-rose-800' },
           { id: 'fin-obligations', label: 'Retenções do Evento (Teatro/ECAD)', description: 'Gestão e bloqueio de passivos dos produtores' },
           { id: 'fin-event-wallets', label: 'Carteiras dos Eventos', description: 'Posição financeira de cada evento' },

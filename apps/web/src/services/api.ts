@@ -304,4 +304,85 @@ export const api = {
       body: JSON.stringify(planData),
     });
   },
+
+  // Taxas & Regras Comerciais
+  getCommercialRules: async (filters?: {
+    scope?: string;
+    producerId?: string;
+    eventId?: string;
+    status?: string;
+    acquirer?: string;
+    search?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.scope) params.append('scope', filters.scope);
+    if (filters?.producerId) params.append('producerId', filters.producerId);
+    if (filters?.eventId) params.append('eventId', filters.eventId);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.acquirer) params.append('acquirer', filters.acquirer);
+    if (filters?.search) params.append('search', filters.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<any[]>(`/financeiro/commercial-rules${qs}`);
+  },
+
+  getCommercialRulesSummary: async () => {
+    return request<any>('/financeiro/commercial-rules/summary');
+  },
+
+  getEffectiveCommercialRule: async (params?: {
+    eventId?: string;
+    producerId?: string;
+    paymentMethod?: string;
+  }) => {
+    const qs = new URLSearchParams(params as any).toString();
+    return request<any>(`/financeiro/commercial-rules/effective${qs ? `?${qs}` : ''}`);
+  },
+
+  getCommercialRuleById: async (id: string) => {
+    return request<any>(`/financeiro/commercial-rules/${id}`);
+  },
+
+  getCommercialRuleHistory: async (id: string) => {
+    return request<any>(`/financeiro/commercial-rules/${id}/history`);
+  },
+
+  createCommercialRule: async (data: any) => {
+    return request<any>('/financeiro/commercial-rules', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  createCommercialRuleVersion: async (id: string, data: any) => {
+    return request<any>(`/financeiro/commercial-rules/${id}/version`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  publishCommercialRule: async (id: string, approvedBy?: string) => {
+    return request<any>(`/financeiro/commercial-rules/${id}/publish`, {
+      method: 'POST',
+      body: JSON.stringify({ approvedBy }),
+    });
+  },
+
+  toggleCommercialRuleStatus: async (id: string) => {
+    return request<any>(`/financeiro/commercial-rules/${id}/toggle-status`, {
+      method: 'PATCH',
+    });
+  },
+
+  duplicateCommercialRule: async (id: string) => {
+    return request<any>(`/financeiro/commercial-rules/${id}/duplicate`, {
+      method: 'POST',
+    });
+  },
+
+  simulateCommercialRule: async (input: any) => {
+    return request<any>('/financeiro/commercial-rules/simulate', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
 };

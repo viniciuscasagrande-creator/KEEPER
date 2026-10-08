@@ -1411,6 +1411,51 @@ model SaleAppropriation {
   @@map("sale_appropriations")
 }
 
+model CommercialTaxRule {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tenantId               String    @map("tenant_id") @db.Uuid
+  companyId              String    @default("00000000-0000-0000-0000-000000000001") @map("company_id") @db.Uuid
+  name                   String
+  scope                  String    @default("GLOBAL_DISK") // "EVENT" | "PRODUCER" | "GLOBAL_DISK"
+  producerId             String?   @map("producer_id") @db.Uuid
+  producerName           String?   @map("producer_name")
+  eventId                String?   @map("event_id") @db.Uuid
+  eventName              String?   @map("event_name")
+  acquirer               String    // Cielo, Rede, Stone, PagBank, EfiPix, Safra, etc.
+  gateway                String    // Pagar.me, Mercado Pago, Zoop, Asaas, etc.
+  paymentMethod          String    @map("payment_method") // CREDIT_INSTALLMENT, CREDIT_CASH, PIX, DEBIT, BOLETO
+  brand                  String?   // Visa, Mastercard, Elo, Amex, Hipercard, Todos
+  installments           String?   // 1x, 2-6x, 7-12x
+  chargedRate            Decimal   @db.Decimal(8, 4) @map("charged_rate") // Taxa Cobrada (%)
+  mdrRate                Decimal   @db.Decimal(8, 4) @map("mdr_rate") // Custo MDR Disk (%)
+  grossSpread            Decimal   @db.Decimal(8, 4) @map("gross_spread") // Spread Bruto (%)
+  acquirerFixedFee       Decimal   @default(0) @db.Decimal(19, 4) @map("acquirer_fixed_fee") // Tarifa Fixa (R$)
+  additionalCost         Decimal   @default(0) @db.Decimal(19, 4) @map("additional_cost") // Custos Adicionais (R$)
+  fixedCommercialRevenue Decimal   @default(0) @db.Decimal(19, 4) @map("fixed_commercial_revenue") // Receita Fixa Comercial (R$)
+  ruleType               String    @default("HYBRID") @map("rule_type") // HYBRID, PERCENTAGE, FIXED
+  feePayer               String    @default("PRODUCER_RETENTION") @map("fee_payer") // BUYER_CONVENIENCE, PRODUCER_RETENTION, MIXED
+  settlementTerm         String    @default("D+30") @map("settlement_term") // D+0, D+1, D+2, D+7, D+14, D+30
+  version                Int       @default(1)
+  parentId               String?   @map("parent_id") @db.Uuid
+  validFrom              DateTime  @default(now()) @map("valid_from")
+  validTo                DateTime? @map("valid_to")
+  status                 String    @default("ACTIVE") // ACTIVE, INACTIVE, DRAFT, PENDING_APPROVAL
+  requiresApproval       Boolean   @default(false) @map("requires_approval")
+  approvedBy             String?   @map("approved_by")
+  approvedAt             DateTime? @map("approved_at")
+  changeReason           String?   @map("change_reason")
+  authorName             String    @default("Financeiro Disk") @map("author_name")
+  historyJson            Json?     @map("history_json")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId, scope, status])
+  @@index([eventId])
+  @@index([producerId])
+  @@schema("financeiro")
+  @@map("commercial_tax_rules")
+}
+
 model FinancialJournal {
   id         String   @id @default(uuid()) @db.Uuid
   tenantId   String   @map("tenant_id") @db.Uuid

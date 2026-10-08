@@ -21,6 +21,7 @@ import {
   Landmark,
   Users,
   Layers,
+  Percent,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { FinancialDashboard } from './financeiro/FinancialDashboard';
@@ -35,6 +36,7 @@ import { SettlementCentralView } from './financeiro/SettlementCentralView';
 import { ProducerFinancialCentralView } from './financeiro/ProducerFinancialCentralView';
 import { RefundsAndCancellationsView } from './financeiro/RefundsAndCancellationsView';
 import { GatewaysModuleView } from './GatewaysModuleView';
+import { TaxRulesCommercialView } from './financeiro/TaxRulesCommercialView';
 import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
 
 export type FinancialTab =
@@ -42,6 +44,7 @@ export type FinancialTab =
   | 'producers'
   | 'refunds'
   | 'gateways'
+  | 'tax-rules'
   | 'dashboard'
   | 'payables'
   | 'receivables'
@@ -117,7 +120,8 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
   // Sync sub tab if passed externally
   useEffect(() => {
     if (activeSubTab) {
-      if (activeSubTab.startsWith('gw-') || activeSubTab === 'gateways') setActiveTab('gateways');
+      if (activeSubTab === 'fin-tax-rules' || activeSubTab === 'tax-rules') setActiveTab('tax-rules');
+      else if (activeSubTab.startsWith('gw-') || activeSubTab === 'gateways') setActiveTab('gateways');
       else if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
       else if (activeSubTab.includes('refund') || activeSubTab.includes('cancellation')) setActiveTab('refunds');
       else if (activeSubTab.includes('settlement') || activeSubTab.includes('clearing')) setActiveTab('settlement');
@@ -386,7 +390,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-bold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              12 Módulos Ativos · Sem Carrossel
+              13 Módulos Ativos · Sem Carrossel
             </span>
           </div>
         </div>
@@ -470,6 +474,26 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
               }`}
             >
               8 Módulos
+            </span>
+          </button>
+
+          {/* 5. TAXAS & REGRAS COMERCIAIS */}
+          <button
+            onClick={() => setActiveTab('tax-rules')}
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+              activeTab === 'tax-rules'
+                ? 'bg-blue-800 text-white shadow-md ring-2 ring-blue-500/40 border border-blue-800'
+                : 'bg-white hover:bg-blue-50/70 text-slate-800 border border-blue-300 hover:border-blue-500'
+            }`}
+          >
+            <Percent className={`w-4 h-4 shrink-0 ${activeTab === 'tax-rules' ? 'text-white' : 'text-blue-700'}`} />
+            <span className="whitespace-nowrap">Taxas & Regras Comerciais</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'tax-rules' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+              }`}
+            >
+              MDR & Spread
             </span>
           </button>
 
@@ -643,6 +667,8 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       {activeTab === 'refunds' && <RefundsAndCancellationsView />}
 
       {activeTab === 'gateways' && <GatewaysModuleView activeSection={activeSubTab} />}
+
+      {activeTab === 'tax-rules' && <TaxRulesCommercialView />}
 
       {activeTab === 'dashboard' && (
         <FinancialDashboard
