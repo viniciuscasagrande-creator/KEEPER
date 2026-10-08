@@ -20,6 +20,7 @@ import {
   CreditCard,
   Landmark,
   Users,
+  Layers,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { FinancialDashboard } from './financeiro/FinancialDashboard';
@@ -360,33 +361,51 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
   return (
     <div className="space-y-4">
       {/* 1. Barra de Menus do Financeiro — FIXA E DESTACADA NA TELA (Sem Carrossel / Previsão para Novos Menus) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3.5 space-y-2">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-            <span className="font-black text-slate-800 uppercase tracking-wider text-[11px]">
-              Módulos e Operações Financeiras
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 space-y-3.5">
+        {/* Header do Card Principal — Tipografia Corporativa Padronizada */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-blue-600 shadow-2xs shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-slate-900 uppercase tracking-wider text-xs">
+                  MÓDULOS E OPERAÇÕES FINANCEIRAS
+                </h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                  Painel Fixo
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                Central unificada de liquidação Disk, carteiras de eventos, repasses aos produtores, estornos e tesouraria
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-bold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              12 Módulos Ativos · Sem Carrossel
             </span>
           </div>
-          <span className="text-[11px] text-slate-400 font-medium">
-            Menu permanente fixo na tela · Sem rolagem escondida
-          </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        {/* Grade de Botões Padronizados com Altura Fixa, Tipografia Uniforme e Bordas Temáticas */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
           {/* 1. PAINEL PRINCIPAL FINANCEIRO DISK */}
           <button
             onClick={() => setActiveTab('settlement')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'settlement'
                 ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400/40 border border-blue-600'
-                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-blue-50/70 text-slate-800 border border-blue-300 hover:border-blue-500'
             }`}
           >
-            <Landmark className={`w-4 h-4 ${activeTab === 'settlement' ? 'text-white' : 'text-blue-600'}`} />
-            <span>PAINEL PRINCIPAL FINANCEIRO DISK</span>
+            <Landmark className={`w-4 h-4 shrink-0 ${activeTab === 'settlement' ? 'text-white' : 'text-blue-600'}`} />
+            <span className="whitespace-nowrap">Painel Principal Financeiro Disk</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'settlement' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
               }`}
             >
@@ -397,16 +416,16 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 2. PRODUTORES & EVENTOS */}
           <button
             onClick={() => setActiveTab('producers')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'producers'
                 ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 border border-indigo-600'
-                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-indigo-50/70 text-slate-800 border border-indigo-300 hover:border-indigo-500'
             }`}
           >
-            <Users className={`w-4 h-4 ${activeTab === 'producers' ? 'text-white' : 'text-indigo-600'}`} />
-            <span>Produtores & Eventos</span>
+            <Users className={`w-4 h-4 shrink-0 ${activeTab === 'producers' ? 'text-white' : 'text-indigo-600'}`} />
+            <span className="whitespace-nowrap">Produtores & Eventos</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'producers' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-800'
               }`}
             >
@@ -417,16 +436,16 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 3. ESTORNOS & CANCELAMENTOS */}
           <button
             onClick={() => setActiveTab('refunds')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'refunds'
                 ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
-                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-rose-50/70 text-slate-800 border border-rose-300 hover:border-rose-500'
             }`}
           >
-            <ShieldAlert className={`w-4 h-4 ${activeTab === 'refunds' ? 'text-white' : 'text-rose-600'}`} />
-            <span>Estornos & Cancelamentos</span>
+            <ShieldAlert className={`w-4 h-4 shrink-0 ${activeTab === 'refunds' ? 'text-white' : 'text-rose-600'}`} />
+            <span className="whitespace-nowrap">Estornos & Cancelamentos</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'refunds' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800'
               }`}
             >
@@ -437,16 +456,16 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 4. GATEWAYS & ADQUIRENTES */}
           <button
             onClick={() => setActiveTab('gateways')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'gateways'
                 ? 'bg-blue-900 text-white shadow-md ring-2 ring-blue-500/40 border border-blue-900'
-                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 hover:border-slate-500'
             }`}
           >
-            <CreditCard className={`w-4 h-4 ${activeTab === 'gateways' ? 'text-white' : 'text-blue-600'}`} />
-            <span>Gateways & Adquirentes</span>
+            <CreditCard className={`w-4 h-4 shrink-0 ${activeTab === 'gateways' ? 'text-white' : 'text-blue-700'}`} />
+            <span className="whitespace-nowrap">Gateways & Adquirentes</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'gateways' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
               }`}
             >
@@ -457,126 +476,161 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 5. CENTRAL FINANCEIRA */}
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'dashboard'
                 ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-400/40 border border-slate-900'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <LayoutDashboard className={`w-4 h-4 ${activeTab === 'dashboard' ? 'text-white' : 'text-blue-600'}`} />
-            <span>Central Financeira</span>
+            <LayoutDashboard className={`w-4 h-4 shrink-0 ${activeTab === 'dashboard' ? 'text-white' : 'text-slate-600'}`} />
+            <span className="whitespace-nowrap">Central Financeira</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'dashboard' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+              }`}
+            >
+              Consolidado
+            </span>
           </button>
 
-          {/* 4. CONTAS A PAGAR */}
+          {/* 6. CONTAS A PAGAR */}
           <button
             onClick={() => setActiveTab('payables')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'payables'
                 ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-rose-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <ArrowUpRight className={`w-4 h-4 ${activeTab === 'payables' ? 'text-white' : 'text-rose-600'}`} />
-            <span>Contas a Pagar</span>
+            <ArrowUpRight className={`w-4 h-4 shrink-0 ${activeTab === 'payables' ? 'text-white' : 'text-rose-600'}`} />
+            <span className="whitespace-nowrap">Contas a Pagar</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'payables' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
               }`}
             >
-              {payables.filter((p) => p.status !== 'PAID').length}
+              {payables.filter((p) => p.status !== 'PAID').length} Pendentes
             </span>
           </button>
 
-          {/* 5. CONTAS A RECEBER */}
+          {/* 7. CONTAS A RECEBER */}
           <button
             onClick={() => setActiveTab('receivables')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'receivables'
                 ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400/40 border border-emerald-600'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-emerald-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <ArrowDownLeft className={`w-4 h-4 ${activeTab === 'receivables' ? 'text-white' : 'text-emerald-600'}`} />
-            <span>Contas a Receber</span>
+            <ArrowDownLeft className={`w-4 h-4 shrink-0 ${activeTab === 'receivables' ? 'text-white' : 'text-emerald-600'}`} />
+            <span className="whitespace-nowrap">Contas a Receber</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                 activeTab === 'receivables' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'
               }`}
             >
-              {receivables.filter((r) => r.status !== 'PAID').length}
+              {receivables.filter((r) => r.status !== 'PAID').length} Abertos
             </span>
           </button>
 
-          {/* 6. TESOURARIA & BANCOS */}
+          {/* 8. TESOURARIA & BANCOS */}
           <button
             onClick={() => setActiveTab('treasury')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'treasury'
-                ? 'bg-slate-800 text-white shadow-md ring-2 ring-slate-400/40 border border-slate-800'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                ? 'bg-sky-800 text-white shadow-md ring-2 ring-sky-400/40 border border-sky-800'
+                : 'bg-white hover:bg-sky-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <Building2 className={`w-4 h-4 ${activeTab === 'treasury' ? 'text-white' : 'text-slate-600'}`} />
-            <span>Tesouraria & Bancos</span>
-          </button>
-
-          {/* 7. CONCILIAÇÃO 1:1 */}
-          <button
-            onClick={() => setActiveTab('reconciliation')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
-              activeTab === 'reconciliation'
-                ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 border border-indigo-600'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
-            }`}
-          >
-            <CheckCheck className={`w-4 h-4 ${activeTab === 'reconciliation' ? 'text-white' : 'text-indigo-600'}`} />
-            <span>Conciliação 1:1</span>
+            <Building2 className={`w-4 h-4 shrink-0 ${activeTab === 'treasury' ? 'text-white' : 'text-sky-700'}`} />
+            <span className="whitespace-nowrap">Tesouraria & Bancos</span>
             <span
-              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                activeTab === 'reconciliation' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'treasury' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'
               }`}
             >
-              98%
+              3 Contas
             </span>
           </button>
 
-          {/* 8. FLUXO DE CAIXA */}
+          {/* 9. CONCILIAÇÃO 1:1 */}
+          <button
+            onClick={() => setActiveTab('reconciliation')}
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+              activeTab === 'reconciliation'
+                ? 'bg-violet-700 text-white shadow-md ring-2 ring-violet-400/40 border border-violet-700'
+                : 'bg-white hover:bg-violet-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <CheckCheck className={`w-4 h-4 shrink-0 ${activeTab === 'reconciliation' ? 'text-white' : 'text-violet-700'}`} />
+            <span className="whitespace-nowrap">Conciliação 1:1</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'reconciliation' ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'
+              }`}
+            >
+              98% OFX
+            </span>
+          </button>
+
+          {/* 10. FLUXO DE CAIXA */}
           <button
             onClick={() => setActiveTab('cashflow')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'cashflow'
-                ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-400/40 border border-emerald-700'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                ? 'bg-teal-700 text-white shadow-md ring-2 ring-teal-400/40 border border-teal-700'
+                : 'bg-white hover:bg-teal-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <TrendingUp className={`w-4 h-4 ${activeTab === 'cashflow' ? 'text-white' : 'text-emerald-600'}`} />
-            <span>Fluxo de Caixa</span>
+            <TrendingUp className={`w-4 h-4 shrink-0 ${activeTab === 'cashflow' ? 'text-white' : 'text-teal-700'}`} />
+            <span className="whitespace-nowrap">Fluxo de Caixa</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'cashflow' ? 'bg-white/20 text-white' : 'bg-teal-100 text-teal-800'
+              }`}
+            >
+              D+30
+            </span>
           </button>
 
-          {/* 9. ORÇAMENTO */}
+          {/* 11. ORÇAMENTO */}
           <button
             onClick={() => setActiveTab('budget')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'budget'
-                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-400/40 border border-purple-600'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                ? 'bg-purple-700 text-white shadow-md ring-2 ring-purple-400/40 border border-purple-700'
+                : 'bg-white hover:bg-purple-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <PieChart className={`w-4 h-4 ${activeTab === 'budget' ? 'text-white' : 'text-purple-600'}`} />
-            <span>Orçamento</span>
+            <PieChart className={`w-4 h-4 shrink-0 ${activeTab === 'budget' ? 'text-white' : 'text-purple-700'}`} />
+            <span className="whitespace-nowrap">Orçamento</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'budget' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800'
+              }`}
+            >
+              Prev/Real
+            </span>
           </button>
 
-          {/* 10. CRÉDITO & RISCO */}
+          {/* 12. CRÉDITO & RISCO */}
           <button
             onClick={() => setActiveTab('credit')}
-            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'credit'
                 ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-400/40 border border-amber-600'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+                : 'bg-white hover:bg-amber-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
             }`}
           >
-            <ShieldCheck className={`w-4 h-4 ${activeTab === 'credit' ? 'text-white' : 'text-amber-600'}`} />
-            <span>Crédito & Risco</span>
+            <ShieldCheck className={`w-4 h-4 shrink-0 ${activeTab === 'credit' ? 'text-white' : 'text-amber-600'}`} />
+            <span className="whitespace-nowrap">Crédito & Risco</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                activeTab === 'credit' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+              }`}
+            >
+              Score
+            </span>
           </button>
         </div>
       </div>
