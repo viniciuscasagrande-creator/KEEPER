@@ -3,15 +3,7 @@
   "services": {
     "api": {
       "root": "apps/api",
-      "framework": "nestjs",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "worker",
-          "format": "url",
-          "env": "WORKER_URL"
-        }
-      ]
+      "framework": "nestjs"
     },
     "web": {
       "root": "apps/web",
@@ -19,15 +11,7 @@
     },
     "worker": {
       "root": "apps/worker",
-      "framework": "nestjs",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "api",
-          "format": "url",
-          "env": "API_URL"
-        }
-      ]
+      "framework": "nestjs"
     }
   },
   "rewrites": [

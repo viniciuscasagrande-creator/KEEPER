@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { SettlementService, SimulateSplitInput } from './settlement.service';
+import { SettlementService, type SimulateSplitInput } from './settlement.service';
 
 @ApiTags('Financeiro / Central Financeira do Produtor & Câmara de Liquidação')
 @Controller('financeiro/settlement')
