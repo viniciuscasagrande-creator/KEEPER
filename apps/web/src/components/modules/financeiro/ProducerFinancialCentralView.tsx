@@ -199,6 +199,8 @@ export function ProducerFinancialCentralView() {
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
               <span>FINANCEIRO</span>
               <span>/</span>
+              <span>PAINEL PRINCIPAL FINANCEIRO DISK</span>
+              <span>/</span>
               <span className="font-bold text-slate-800">CENTRAL DE PRODUTORES</span>
             </div>
             <h1 className="text-xl font-black text-slate-900 tracking-tight mt-0.5 flex items-center gap-2">

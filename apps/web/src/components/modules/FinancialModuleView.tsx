@@ -349,145 +349,185 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
 
   return (
     <div className="space-y-4">
-      {/* 1. NetSuite Horizontal Secondary Tab Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/75 px-3 overflow-x-auto">
-          <div className="flex space-x-1 shrink-0">
-            <button
-              onClick={() => setActiveTab('settlement')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'settlement'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Landmark className="w-3.5 h-3.5 text-blue-600" />
-              <span>Câmara de Liquidação</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
-                DiskIngressos
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('producers')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'producers'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Produtores & Eventos</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
-                Regras 1:1
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'dashboard'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5 text-blue-600" />
-              <span>Central Financeira</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('payables')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'payables'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />
-              <span>Contas a Pagar</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
-                {payables.filter((p) => p.status !== 'PAID').length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('receivables')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'receivables'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Contas a Receber</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                {receivables.filter((r) => r.status !== 'PAID').length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('treasury')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'treasury'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-slate-600" />
-              <span>Tesouraria & Bancos</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('reconciliation')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'reconciliation'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <CheckCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Conciliação 1:1</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                98%
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('cashflow')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'cashflow'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Fluxo de Caixa</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('budget')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'budget'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <PieChart className="w-3.5 h-3.5 text-purple-600" />
-              <span>Orçamento</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('credit')}
-              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-                activeTab === 'credit'
-                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
-                  : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-              <span>Crédito & Risco</span>
-            </button>
+      {/* 1. Barra de Menus do Financeiro — FIXA E DESTACADA NA TELA (Sem Carrossel / Previsão para Novos Menus) */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3.5 space-y-2">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            <span className="font-black text-slate-800 uppercase tracking-wider text-[11px]">
+              Módulos e Operações Financeiras
+            </span>
           </div>
+          <span className="text-[11px] text-slate-400 font-medium">
+            Menu permanente fixo na tela · Sem rolagem escondida
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {/* 1. PAINEL PRINCIPAL FINANCEIRO DISK */}
+          <button
+            onClick={() => setActiveTab('settlement')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'settlement'
+                ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400/40 border border-blue-600'
+                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <Landmark className={`w-4 h-4 ${activeTab === 'settlement' ? 'text-white' : 'text-blue-600'}`} />
+            <span>PAINEL PRINCIPAL FINANCEIRO DISK</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'settlement' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+              }`}
+            >
+              DiskIngressos
+            </span>
+          </button>
+
+          {/* 2. PRODUTORES & EVENTOS */}
+          <button
+            onClick={() => setActiveTab('producers')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'producers'
+                ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 border border-indigo-600'
+                : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <Users className={`w-4 h-4 ${activeTab === 'producers' ? 'text-white' : 'text-indigo-600'}`} />
+            <span>Produtores & Eventos</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'producers' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-800'
+              }`}
+            >
+              Regras 1:1
+            </span>
+          </button>
+
+          {/* 3. CENTRAL FINANCEIRA */}
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'dashboard'
+                ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-400/40 border border-slate-900'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <LayoutDashboard className={`w-4 h-4 ${activeTab === 'dashboard' ? 'text-white' : 'text-blue-600'}`} />
+            <span>Central Financeira</span>
+          </button>
+
+          {/* 4. CONTAS A PAGAR */}
+          <button
+            onClick={() => setActiveTab('payables')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'payables'
+                ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <ArrowUpRight className={`w-4 h-4 ${activeTab === 'payables' ? 'text-white' : 'text-rose-600'}`} />
+            <span>Contas a Pagar</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'payables' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
+              }`}
+            >
+              {payables.filter((p) => p.status !== 'PAID').length}
+            </span>
+          </button>
+
+          {/* 5. CONTAS A RECEBER */}
+          <button
+            onClick={() => setActiveTab('receivables')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'receivables'
+                ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400/40 border border-emerald-600'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <ArrowDownLeft className={`w-4 h-4 ${activeTab === 'receivables' ? 'text-white' : 'text-emerald-600'}`} />
+            <span>Contas a Receber</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'receivables' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'
+              }`}
+            >
+              {receivables.filter((r) => r.status !== 'PAID').length}
+            </span>
+          </button>
+
+          {/* 6. TESOURARIA & BANCOS */}
+          <button
+            onClick={() => setActiveTab('treasury')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'treasury'
+                ? 'bg-slate-800 text-white shadow-md ring-2 ring-slate-400/40 border border-slate-800'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <Building2 className={`w-4 h-4 ${activeTab === 'treasury' ? 'text-white' : 'text-slate-600'}`} />
+            <span>Tesouraria & Bancos</span>
+          </button>
+
+          {/* 7. CONCILIAÇÃO 1:1 */}
+          <button
+            onClick={() => setActiveTab('reconciliation')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'reconciliation'
+                ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 border border-indigo-600'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <CheckCheck className={`w-4 h-4 ${activeTab === 'reconciliation' ? 'text-white' : 'text-indigo-600'}`} />
+            <span>Conciliação 1:1</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                activeTab === 'reconciliation' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-700'
+              }`}
+            >
+              98%
+            </span>
+          </button>
+
+          {/* 8. FLUXO DE CAIXA */}
+          <button
+            onClick={() => setActiveTab('cashflow')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'cashflow'
+                ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-400/40 border border-emerald-700'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <TrendingUp className={`w-4 h-4 ${activeTab === 'cashflow' ? 'text-white' : 'text-emerald-600'}`} />
+            <span>Fluxo de Caixa</span>
+          </button>
+
+          {/* 9. ORÇAMENTO */}
+          <button
+            onClick={() => setActiveTab('budget')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'budget'
+                ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-400/40 border border-purple-600'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <PieChart className={`w-4 h-4 ${activeTab === 'budget' ? 'text-white' : 'text-purple-600'}`} />
+            <span>Orçamento</span>
+          </button>
+
+          {/* 10. CRÉDITO & RISCO */}
+          <button
+            onClick={() => setActiveTab('credit')}
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-2xs ${
+              activeTab === 'credit'
+                ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-400/40 border border-amber-600'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <ShieldCheck className={`w-4 h-4 ${activeTab === 'credit' ? 'text-white' : 'text-amber-600'}`} />
+            <span>Crédito & Risco</span>
+          </button>
         </div>
       </div>
 

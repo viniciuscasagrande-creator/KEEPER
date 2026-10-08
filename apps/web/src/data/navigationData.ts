@@ -31,10 +31,10 @@ export const navigationModules: ModuleNav[] = [
     icon: 'DollarSign',
     groups: [
       {
-        groupName: 'Câmara de Liquidação (DiskIngressos)',
+        groupName: 'Painel Principal Financeiro Disk',
         items: [
-          { id: 'fin-settlement', label: 'Câmara de Liquidação', description: 'Conta de liquidação, repasses e carteiras', badge: 'Escrow', badgeColor: 'bg-blue-100 text-blue-800' },
-          { id: 'fin-producers', label: 'Central de Produtores & Eventos', description: 'Busca por produtor, carteira de eventos e regras de taxas', badge: 'Principal', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'fin-settlement', label: 'Painel Principal Financeiro Disk', description: 'Conta de liquidação, repasses e carteiras', badge: 'Principal', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'fin-producers', label: 'Central de Produtores & Eventos', description: 'Busca por produtor, carteira de eventos e regras de taxas', badge: 'Destaque', badgeColor: 'bg-indigo-100 text-indigo-800' },
           { id: 'fin-event-wallets', label: 'Carteiras dos Eventos', description: 'Posição financeira de cada evento' },
           { id: 'fin-fees', label: 'Parametrização de Taxas', description: 'Spread, Advance, Ribeit e Conveniência' },
           { id: 'fin-split-simulator', label: 'Simulador de Split de Venda' },

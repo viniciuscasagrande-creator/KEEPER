@@ -175,11 +175,11 @@ export function SettlementCentralView() {
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <span>Financeiro</span>
             <span>/</span>
-            <span className="font-semibold text-slate-800">Câmara de Liquidação</span>
+            <span className="font-semibold text-slate-800">Painel Principal Financeiro Disk</span>
           </div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-0.5 flex items-center gap-2">
             <Landmark className="w-5 h-5 text-blue-600" />
-            Câmara de Liquidação DiskIngressos & Carteiras de Eventos
+            Painel Principal Financeiro DiskIngressos & Carteiras de Eventos
           </h1>
         </div>
 
