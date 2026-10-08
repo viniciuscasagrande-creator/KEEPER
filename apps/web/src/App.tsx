@@ -11,14 +11,17 @@ import { RecentMovementsTable } from './components/dashboard/RecentMovementsTabl
 import { CommandCenterModal } from './components/modals/CommandCenterModal';
 import { QuickEntryDrawer } from './components/drawers/QuickEntryDrawer';
 import { ApprovalsDrawer } from './components/drawers/ApprovalsDrawer';
+import { FinancialModuleView } from './components/modules/FinancialModuleView';
+import { AccountingModuleView } from './components/modules/AccountingModuleView';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
 export function App() {
-  const [activeModule, setActiveModule] = useState('painel');
+  const [activeModule, setActiveModule] = useState('dashboard');
   const [isCommandCenterOpen, setIsCommandCenterOpen] = useState(false);
   const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
   const [isApprovalsOpen, setIsApprovalsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -34,7 +37,22 @@ export function App() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setRefreshCounter((c) => c + 1);
     setTimeout(() => setIsRefreshing(false), 600);
+  };
+
+  const handleSelectSubModule = (subModuleId: string) => {
+    if (subModuleId.startsWith('fin-')) {
+      setActiveModule('financeiro');
+    } else if (subModuleId.startsWith('acc-')) {
+      setActiveModule('contabil');
+    } else if (subModuleId === 'quick-entry') {
+      setIsQuickEntryOpen(true);
+    } else if (subModuleId === 'approvals') {
+      setIsApprovalsOpen(true);
+    } else {
+      setActiveModule('dashboard');
+    }
   };
 
   return (
@@ -50,78 +68,90 @@ export function App() {
       <HorizontalNav
         activeModuleId={activeModule}
         onSelectModule={(id) => setActiveModule(id)}
+        onSelectSubModule={handleSelectSubModule}
       />
 
-      {/* 3. Main Operational Dashboard */}
+      {/* 3. Main Operational Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Context bar / Breadcrumb & Refresh */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span>Home</span>
-              <span>/</span>
-              <span>Controladoria & Finanças</span>
-              <span>/</span>
-              <span className="font-semibold text-slate-800">Painel Executivo</span>
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-1">
-              Visão Geral Consolidada Multiempresa
-            </h1>
-          </div>
+        {activeModule === 'financeiro' ? (
+          <FinancialModuleView onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
+        ) : activeModule === 'contabil' ? (
+          <AccountingModuleView />
+        ) : (
+          <>
+            {/* Context bar / Breadcrumb & Refresh */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+              <div>
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <span>Home</span>
+                  <span>/</span>
+                  <span>Controladoria & Finanças</span>
+                  <span>/</span>
+                  <span className="font-semibold text-slate-800">Painel Executivo</span>
+                </div>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-1">
+                  Visão Geral Consolidada Multiempresa
+                </h1>
+              </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 font-medium shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              <span>Competência: <strong>Outubro / 2026</strong></span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 font-medium shadow-2xs">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Competência: <strong>Outubro / 2026</strong></span>
+                </div>
+                <button
+                  onClick={handleRefresh}
+                  className="p-2 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition-colors"
+                  title="Atualizar dados do Razão e Tesouraria"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+                </button>
+                <button
+                  onClick={() => alert('Exportando relatório consolidado DRE/Balanço em PDF...')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Relatório Executivo</span>
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleRefresh}
-              className="p-2 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition-colors"
-              title="Atualizar dados do Razão e Tesouraria"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
-            </button>
-            <button
-              onClick={() => alert('Exportando relatório consolidado DRE/Balanço em PDF...')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Relatório Executivo</span>
-            </button>
-          </div>
-        </div>
 
-        {/* 4. Top Quick Widgets: Reminders, Tiles, KPI Meter */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-          <div className="md:col-span-4">
-            <RemindersWidget onOpenApprovals={() => setIsApprovalsOpen(true)} />
-          </div>
-          <div className="md:col-span-5">
-            <QuickTilesWidget
-              onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
-              onOpenApprovals={() => setIsApprovalsOpen(true)}
+            {/* Top Quick Widgets: Reminders, Tiles, KPI Meter */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+              <div className="md:col-span-4">
+                <RemindersWidget onOpenApprovals={() => setIsApprovalsOpen(true)} />
+              </div>
+              <div className="md:col-span-5">
+                <QuickTilesWidget
+                  onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
+                  onOpenApprovals={() => setIsApprovalsOpen(true)}
+                />
+              </div>
+              <div className="md:col-span-3">
+                <KpiMeterWidget refreshTrigger={refreshCounter} />
+              </div>
+            </div>
+
+            {/* Main KPI Numbers Grid */}
+            <KpiGrid refreshTrigger={refreshCounter} />
+
+            {/* Charts & Alerts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-8">
+                <FinancialChartWidget />
+              </div>
+              <div className="lg:col-span-4">
+                <AlertsCenterWidget />
+              </div>
+            </div>
+
+            {/* High-Density Operational Movements Table */}
+            <RecentMovementsTable
+              refreshTrigger={refreshCounter}
+              onMovementUpdated={() => setRefreshCounter((c) => c + 1)}
             />
-          </div>
-          <div className="md:col-span-3">
-            <KpiMeterWidget />
-          </div>
-        </div>
-
-        {/* 5. Main KPI Numbers Grid */}
-        <KpiGrid />
-
-        {/* 6. Charts & Alerts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8">
-            <FinancialChartWidget />
-          </div>
-          <div className="lg:col-span-4">
-            <AlertsCenterWidget />
-          </div>
-        </div>
-
-        {/* 7. High-Density Operational Movements Table */}
-        <RecentMovementsTable />
+          </>
+        )}
       </main>
 
       {/* 8. Modals & Drawers */}
@@ -135,6 +165,7 @@ export function App() {
       <QuickEntryDrawer
         isOpen={isQuickEntryOpen}
         onClose={() => setIsQuickEntryOpen(false)}
+        onCreated={() => setRefreshCounter((c) => c + 1)}
       />
 
       <ApprovalsDrawer

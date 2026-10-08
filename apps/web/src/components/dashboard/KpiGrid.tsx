@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -8,21 +8,56 @@ import {
   Wallet,
   Calendar,
 } from 'lucide-react';
+import { api } from '../../services/api';
 
-export function KpiGrid() {
+interface KpiGridProps {
+  refreshTrigger?: number;
+}
+
+export function KpiGrid({ refreshTrigger }: KpiGridProps) {
+  const [cashBalance, setCashBalance] = useState<number>(3240180);
+  const [payablesOpen, setPayablesOpen] = useState<number>(1150350);
+  const [receivablesOpen, setReceivablesOpen] = useState<number>(1745200);
+  const [netOperatingExpenses, setNetOperatingExpenses] = useState<number>(928450);
+
+  useEffect(() => {
+    async function loadSummary() {
+      try {
+        const summary = await api.getFinancialSummary();
+        if (summary) {
+          if (typeof summary.totalCashBalance === 'number') {
+            setCashBalance(summary.totalCashBalance);
+          }
+          if (typeof summary.totalPayablesOpen === 'number') {
+            setPayablesOpen(summary.totalPayablesOpen);
+          }
+          if (typeof summary.totalReceivablesOpen === 'number') {
+            setReceivablesOpen(summary.totalReceivablesOpen);
+          }
+        }
+      } catch (err) {
+        // Keeps graceful defaults
+      }
+    }
+    loadSummary();
+  }, [refreshTrigger]);
+
+  const fmt = (val: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(val);
+
   const kpis = [
     {
-      label: 'Receita Operacional',
-      value: 'R$ 1.745.200',
+      label: 'Receita Operacional / Receber',
+      value: fmt(receivablesOpen),
       period: 'Outubro / 2026',
       change: '+13,4%',
       isPositive: true,
-      sub: 'vs. mês anterior (R$ 1,53M)',
+      sub: 'Títulos em aberto e faturados',
       color: 'border-l-blue-600',
     },
     {
       label: 'Despesas Operacionais',
-      value: 'R$ 928.450',
+      value: fmt(netOperatingExpenses),
       period: 'Outubro / 2026',
       change: '+8,6%',
       isPositive: false,
@@ -30,21 +65,21 @@ export function KpiGrid() {
       color: 'border-l-amber-500',
     },
     {
-      label: 'Contas a Pagar (30d)',
-      value: 'R$ 1.150.350',
+      label: 'Contas a Pagar (Aberto)',
+      value: fmt(payablesOpen),
       period: 'Próximos 30 dias',
       change: '-5,4%',
       isPositive: true,
-      sub: '26 títulos pendentes de liquidação',
+      sub: 'Obrigações provisionadas',
       color: 'border-l-rose-500',
     },
     {
       label: 'Saldo Bancário Consolidado',
-      value: 'R$ 3.240.180',
+      value: fmt(cashBalance),
       period: 'Posição em Tempo Real',
       change: '+5,1%',
       isPositive: true,
-      sub: 'Conciliação bancária 100% em dia',
+      sub: 'Disponibilidade líquida em tesouraria',
       color: 'border-l-emerald-500',
     },
   ];
