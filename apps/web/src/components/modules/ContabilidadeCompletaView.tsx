@@ -38,6 +38,11 @@ import {
   Scale,
   Building,
   Filter,
+  ChevronDown,
+  PanelRight,
+  PanelLeft,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { ACCOUNTING_PATHS, AccountingRequest } from '../../services/contabilidadeClient';
 import { api } from '../../services/api';
@@ -74,6 +79,8 @@ interface SectionDef {
   group: 'Visão Geral' | 'Escrituração & Livros' | 'Demonstrações' | 'Controladoria & Integração' | 'Governança';
   endpoint: string;
   purpose: string;
+  badge?: string;
+  badgeColor?: string;
   modal?: 'account' | 'entry' | 'period';
 }
 
@@ -258,6 +265,9 @@ export function ContabilidadeCompletaView({ request = api.accountingRequest, ini
   // Navegação dos 18 submenus
   const [sectionId, setSectionId] = useState<ContabilSectionId>((initialSection as ContabilSectionId) || 'acc-dashboard');
   const [sidebarSearch, setSidebarSearch] = useState('');
+  const [sidebarSide, setSidebarSide] = useState<'right' | 'left'>('left');
+  const [sidebarTheme, setSidebarTheme] = useState<'light' | 'dark'>('light');
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -443,6 +453,21 @@ export function ContabilidadeCompletaView({ request = api.accountingRequest, ini
     }
     return groups;
   }, [filteredSections]);
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [groupName]: !prev[groupName] }));
+  };
+
+  const collapseAll = () => {
+    const allGroups = ['Escrituração & Razão', 'Demonstrações Oficiais', 'Controladoria & Integração', 'Governança & Arquivos'];
+    const nextState: Record<string, boolean> = {};
+    allGroups.forEach((g) => { nextState[g] = true; });
+    setCollapsedGroups(nextState);
+  };
+
+  const expandAll = () => {
+    setCollapsedGroups({});
+  };
 
   // Lista de produtores filtrados
   const activeProducer = useMemo(() => {
@@ -715,75 +740,317 @@ export function ContabilidadeCompletaView({ request = api.accountingRequest, ini
         </div>
       )}
 
-      {/* 2. Layout Principal: Menu Lateral dos 18 Submenus + Conteúdo Central */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        {/* Menu Lateral com os 18 Submenus Padronizados */}
-        <aside className="xl:col-span-3 space-y-3">
-          <div className="bg-slate-900 text-slate-100 rounded-2xl p-3.5 shadow-sm border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-blue-400" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Submenus Contábeis
-                </span>
+      {/* 2. Layout Principal: Menu Lateral dos 18 Submenus Contábeis + Conteúdo Central */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+        {/* Menu Lateral com os 18 Submenus Padronizados — PROPORCIONAL À PÁGINA */}
+        <aside
+          className={`xl:col-span-3 space-y-3 sticky top-4 self-start ${
+            sidebarSide === 'right' ? 'xl:order-2 order-1' : 'xl:order-1 order-1'
+          }`}
+        >
+          <div
+            className={`rounded-2xl p-4 shadow-sm border transition-colors space-y-3.5 ${
+              sidebarTheme === 'light'
+                ? 'bg-white text-slate-800 border-slate-200/90'
+                : 'bg-slate-900 text-slate-100 border-slate-800'
+            }`}
+          >
+            {/* Header da Barra Lateral */}
+            <div
+              className={`flex items-center justify-between pb-3 border-b ${
+                sidebarTheme === 'light' ? 'border-slate-100' : 'border-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs ${
+                    sidebarTheme === 'light'
+                      ? 'bg-blue-50 border border-blue-200/80 text-blue-600'
+                      : 'bg-blue-900/40 border border-blue-700/50 text-blue-400'
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`text-xs font-bold uppercase tracking-wider ${
+                        sidebarTheme === 'light' ? 'text-slate-900' : 'text-slate-200'
+                      }`}
+                    >
+                      Submenus Contábeis
+                    </span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${
+                        sidebarTheme === 'light'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                          : 'bg-blue-900/60 text-blue-300 border border-blue-700/50'
+                      }`}
+                    >
+                      18 Áreas
+                    </span>
+                  </div>
+                  <p
+                    className={`text-[10px] font-medium ${
+                      sidebarTheme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                    }`}
+                  >
+                    4 Grupos de Escrituração
+                  </p>
+                </div>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-900/60 text-blue-300 border border-blue-700/50">
-                18 Áreas
+
+              {/* Controles de Posição (Direita/Esquerda) e Tema (Claro/Escuro) */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSidebarSide((s) => (s === 'right' ? 'left' : 'right'))}
+                  className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                    sidebarTheme === 'light'
+                      ? 'bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-blue-600 border-slate-200'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700'
+                  }`}
+                  title={`Mover menu contábil para a ${sidebarSide === 'right' ? 'Esquerda' : 'Direita'}`}
+                >
+                  {sidebarSide === 'right' ? (
+                    <PanelRight className="w-3.5 h-3.5 text-blue-600" />
+                  ) : (
+                    <PanelLeft className="w-3.5 h-3.5 text-blue-600" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSidebarTheme((t) => (t === 'light' ? 'dark' : 'light'))}
+                  className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                    sidebarTheme === 'light'
+                      ? 'bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-amber-600 border-slate-200'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 border-slate-700'
+                  }`}
+                  title={`Alternar visual para ${sidebarTheme === 'light' ? 'Escuro' : 'Claro'}`}
+                >
+                  {sidebarTheme === 'light' ? (
+                    <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-blue-300" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Ações de Expandir/Recolher Todos */}
+            <div
+              className={`flex items-center justify-between px-1 text-[11px] font-medium ${
+                sidebarTheme === 'light' ? 'text-slate-500' : 'text-slate-400'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={collapseAll}
+                className="hover:text-blue-600 cursor-pointer transition-colors"
+              >
+                Recolher todos
+              </button>
+              <span className="opacity-40">·</span>
+              <button
+                type="button"
+                onClick={expandAll}
+                className="hover:text-blue-600 cursor-pointer transition-colors"
+              >
+                Expandir todos
+              </button>
+              <span className="opacity-40">·</span>
+              <span
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  sidebarTheme === 'light'
+                    ? 'bg-slate-100 text-slate-600'
+                    : 'bg-slate-800 text-slate-400'
+                }`}
+              >
+                {sidebarSide === 'right' ? 'Painel à Direita' : 'Painel à Esquerda'}
               </span>
             </div>
 
             {/* Busca Rápida de Menus */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
                 value={sidebarSearch}
                 onChange={(e) => setSidebarSearch(e.target.value)}
-                placeholder="Filtrar submenus..."
-                className="w-full h-8 pl-8 pr-3 bg-slate-800/80 border border-slate-700 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                placeholder="Filtrar submenus contábeis..."
+                className={`w-full h-8 pl-8 pr-7 rounded-xl text-xs transition-colors focus:outline-hidden focus:ring-1 focus:ring-blue-500 ${
+                  sidebarTheme === 'light'
+                    ? 'bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 text-slate-800 placeholder-slate-400'
+                    : 'bg-slate-800/80 border border-slate-700 text-slate-200 placeholder-slate-500'
+                }`}
               />
+              {sidebarSearch && (
+                <button
+                  type="button"
+                  onClick={() => setSidebarSearch('')}
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
-            {/* Lista Agrupada dos 18 Submenus */}
-            <div className="space-y-4 max-h-[720px] overflow-y-auto pr-1 no-scrollbar">
-              {Object.entries(groupedSections).map(([groupName, sections]) => (
-                <div key={groupName} className="space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-                    {groupName}
-                  </div>
-                  <div className="space-y-0.5">
-                    {sections.map((item) => {
-                      const Icon = item.icon;
-                      const isCurrent = sectionId === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            setSectionId(item.id);
-                          }}
-                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                            isCurrent
-                              ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                              : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+            {/* Lista Agrupada dos 18 Submenus — ALTURA PROPORCIONAL À PÁGINA */}
+            <div className="space-y-3.5 max-h-[calc(100vh-140px)] min-h-[820px] overflow-y-auto pr-1 select-none no-scrollbar">
+              {Object.entries(groupedSections).map(([groupName, sections]) => {
+                const isCollapsed = !!collapsedGroups[groupName];
+                return (
+                  <div key={groupName} className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(groupName)}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer border ${
+                        sidebarTheme === 'light'
+                          ? 'bg-slate-50 hover:bg-slate-100/80 text-slate-700 hover:text-slate-900 border-slate-200/60'
+                          : 'bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>{groupName}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-md font-semibold ${
+                            sidebarTheme === 'light'
+                              ? 'bg-white border border-slate-200 text-slate-600 shadow-2xs'
+                              : 'bg-slate-900 border border-slate-700 text-slate-400'
                           }`}
                         >
-                          <div className="flex items-center gap-2 truncate">
-                            <Icon className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-white' : 'text-slate-400'}`} />
-                            <span className="truncate">{item.title}</span>
-                          </div>
-                          <ChevronRight className={`w-3 h-3 shrink-0 ${isCurrent ? 'text-white' : 'text-slate-500'}`} />
-                        </button>
-                      );
-                    })}
+                          {sections.length}
+                        </span>
+                      </div>
+                      {isCollapsed ? (
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      )}
+                    </button>
+
+                    {!isCollapsed && (
+                      <div className="space-y-0.5 pl-0.5">
+                        {sections.map((item) => {
+                          const Icon = item.icon;
+                          const isCurrent = sectionId === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setSectionId(item.id);
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer ${
+                                isCurrent
+                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs shadow-blue-600/25 ring-1 ring-blue-500'
+                                  : sidebarTheme === 'light'
+                                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent font-medium'
+                                  : 'text-slate-300 hover:text-white hover:bg-slate-800/70 border border-transparent font-medium'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                <Icon
+                                  className={`w-3.5 h-3.5 shrink-0 ${
+                                    isCurrent
+                                      ? 'text-white'
+                                      : sidebarTheme === 'light'
+                                      ? 'text-slate-400 group-hover:text-blue-600'
+                                      : 'text-slate-400'
+                                  }`}
+                                />
+                                <span className="truncate">{item.title}</span>
+                              </div>
+                              {item.badge ? (
+                                <span
+                                  className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                                    isCurrent
+                                      ? 'bg-white/20 text-white border border-white/20'
+                                      : item.badgeColor ||
+                                        (sidebarTheme === 'light'
+                                          ? 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                                          : 'bg-blue-950 text-blue-300')
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              ) : (
+                                <ChevronRight
+                                  className={`w-3 h-3 shrink-0 ${
+                                    isCurrent
+                                      ? 'text-white'
+                                      : sidebarTheme === 'light'
+                                      ? 'text-slate-300'
+                                      : 'text-slate-500'
+                                  }`}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Card de Resumo de Governança Contábil no Rodapé da Barra Lateral */}
+              <div className="pt-2">
+                <div
+                  className={`p-3 rounded-xl border text-[11px] space-y-1.5 ${
+                    sidebarTheme === 'light'
+                      ? 'bg-gradient-to-br from-blue-50/60 via-slate-50 to-indigo-50/50 border-blue-100/80'
+                      : 'bg-slate-800/60 border-slate-700 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`font-bold flex items-center gap-1.5 ${
+                        sidebarTheme === 'light' ? 'text-slate-800' : 'text-slate-200'
+                      }`}
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                      Governança Contábil Disk
+                    </span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                        sidebarTheme === 'light'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-blue-900/80 text-blue-300'
+                      }`}
+                    >
+                      CRC Ativo
+                    </span>
+                  </div>
+                  <p
+                    className={`text-[10px] leading-tight ${
+                      sidebarTheme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                    }`}
+                  >
+                    100% Partidas Dobradas. Controle auxiliar segregado por produtor e evento.
+                  </p>
+                  <div
+                    className={`flex items-center justify-between text-[10px] pt-1.5 border-t ${
+                      sidebarTheme === 'light'
+                        ? 'text-slate-600 border-blue-100/60'
+                        : 'text-slate-400 border-slate-700/60'
+                    }`}
+                  >
+                    <span>Posição: <strong>{sidebarSide === 'right' ? 'À Direita' : 'À Esquerda'}</strong></span>
+                    <span>Visual: <strong>{sidebarTheme === 'light' ? 'Claro' : 'Escuro'}</strong></span>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </aside>
 
         {/* Conteúdo Central da Seção Selecionada */}
-        <main className="xl:col-span-9 space-y-4">
+        <main
+          className={`space-y-4 xl:col-span-9 ${
+            sidebarSide === 'right' ? 'xl:order-1 order-2' : 'xl:order-2 order-2'
+          }`}
+        >
           {/* Header da Subseção com Indicação do Ambiente Ativo */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
