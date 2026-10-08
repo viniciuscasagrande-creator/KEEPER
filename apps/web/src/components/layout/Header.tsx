@@ -23,14 +23,14 @@ export function Header({
   onOpenQuickEntry,
   onOpenApprovals,
 }: HeaderProps) {
-  const [activeCompany, setActiveCompany] = useState('ACME Matriz Brasil (0001)');
+  const [activeCompany, setActiveCompany] = useState('DISK ERP KEEPER');
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
   const companies = [
-    'ACME Matriz Brasil (0001)',
-    'ACME Filial São Paulo (0002)',
-    'ACME Filial Rio de Janeiro (0003)',
-    'ACME Logística Sul (0004)',
+    'DISK ERP KEEPER',
+    'DISK ERP - Filial Curitiba',
+    'DISK ERP - Filial São Paulo',
+    'DISK ERP - Operações Rio',
   ];
 
   return (

@@ -2,13 +2,13 @@ import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTenantDto {
-  @ApiProperty({ example: 'Grupo ACME', description: 'Display name of tenant' })
+  @ApiProperty({ example: 'Grupo DISK KEEPER', description: 'Display name of tenant' })
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   name!: string;
 
-  @ApiPropertyOptional({ example: 'ACME Participações S.A.', description: 'Corporate legal name' })
+  @ApiPropertyOptional({ example: 'DISK Participações S.A.', description: 'Corporate legal name' })
   @IsOptional()
   @IsString()
   legalName?: string;

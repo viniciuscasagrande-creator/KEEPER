@@ -2,13 +2,13 @@ import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCompanyDto {
-  @ApiProperty({ example: 'ACME Matriz Brasil Ltda', description: 'Legal entity corporate name' })
+  @ApiProperty({ example: 'DISK ERP KEEPER Ltda', description: 'Legal entity corporate name' })
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   legalName!: string;
 
-  @ApiPropertyOptional({ example: 'ACME Brasil', description: 'Trade name' })
+  @ApiPropertyOptional({ example: 'DISK ERP KEEPER', description: 'Trade name' })
   @IsOptional()
   @IsString()
   tradeName?: string;
