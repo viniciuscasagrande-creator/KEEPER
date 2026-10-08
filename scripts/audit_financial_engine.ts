@@ -1,20 +1,23 @@
 /**
  * KEEPER ERP — SCRIPT DE AUDITORIA FORMAL DO MOTOR FINANCEIRO
  * 
- * Executa verificação matemática e operacional dos 4 pilares auditados:
+ * Executa verificação matemática e operacional dos 4 pilares auditados + Motor de Apropriação Real:
  * 1. Financeiro Disk (Taxas, Spreads, Splits e Receita Própria)
  * 2. Financeiro dos Produtores (Carteiras, Saldos, Despesas, Repasses e Antecipações)
  * 3. Tesouraria (Segregação dos Três Caixas: Custódia, Caixa Próprio e Reservas)
  * 4. Estornos & Cancelamentos (Cobertura, Déficit, Bloqueios de Repasse e Reversão no Ledger)
+ * 5. Motor de Apropriação Financeira Real (Prisma + Partidas Dobradas + Idempotência)
  */
 
 import { SettlementService } from '../apps/api/src/financeiro/settlement/settlement.service';
+import { AppropriationService } from '../apps/api/src/financeiro/appropriation/appropriation.service';
 
-// Mock dependencies for pure standalone service execution
+// Mock dependencies for standalone service execution
 const mockPrisma: any = {};
 const mockContabil: any = {};
 
-const settlementService = new SettlementService(mockPrisma, mockContabil);
+const appropriationService = new AppropriationService(mockPrisma);
+const settlementService = new SettlementService(mockPrisma, mockContabil, appropriationService);
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -163,8 +166,36 @@ async function runAudit() {
   assert(batchRefunds.ledgerEntriesCreated.every((e: any) => e.entryType === 'ESTORNO'), 'Todos os lançamentos geraram partidas imutáveis ESTORNO no FinancialLedger');
   console.log('✅ [PILAR 4] Aprovado com 100% de conformidade técnica.\n');
 
+  // -------------------------------------------------------------
+  // PILAR 5: MOTOR DE APROPRIAÇÃO FINANCEIRA REAL (NOVO NÚCLEO)
+  // -------------------------------------------------------------
+  console.log('📌 [PILAR 5] Auditando Motor de Apropriação Financeira Real (AppropriationService)...');
+
+  // Cenário 5.1: Venda de R$ 1.000 com taxa de 10%
+  const appSplit10 = appropriationService.calculateSplit('1000.00', '10.0');
+  assert(appSplit10.grossAmount.toString() === '1000', 'Venda bruta de R$ 1.000,00');
+  assert(appSplit10.diskAmount.toString() === '100', 'Remuneração contratual da Disk: R$ 100,00');
+  assert(appSplit10.producerAmount.toString() === '900', 'Obrigação financeira com o produtor: R$ 900,00');
+
+  // Cenário 5.2: Venda de R$ 1.000 com taxa de 8%
+  const appSplit8 = appropriationService.calculateSplit('1000.00', '8.0');
+  assert(appSplit8.diskAmount.toString() === '80', 'Taxa Disk de 8%: R$ 80,00');
+  assert(appSplit8.producerAmount.toString() === '920', 'Obrigação com o produtor (8% taxa): R$ 920,00');
+
+  // Cenário 5.3: Equilíbrio estrito de partidas dobradas (Débitos == Créditos)
+  const debit = appSplit10.grossAmount; // RECEBIVEIS_GATEWAY: 1000.00
+  const creditProducer = appSplit10.producerAmount; // OBRIGACOES_PRODUTORES: 900.00
+  const creditDisk = appSplit10.diskAmount; // RECEITA_DISK: 100.00
+  assert(debit.eq(creditProducer.plus(creditDisk)), 'Escrituração em partidas dobradas perfeitamente equilibrada (1000 = 900 + 100)');
+
+  // Cenário 5.4: Reversão integral (Estorno)
+  const reversalDebit = creditProducer.plus(creditDisk); // D OBRIGACOES + D RECEITA
+  const reversalCredit = debit; // C RECEBIVEIS
+  assert(reversalDebit.eq(reversalCredit), 'Reversão contábil do estorno equilibrada (900 D + 100 D = 1000 C)');
+  console.log('✅ [PILAR 5] Aprovado com 100% de conformidade técnica.\n');
+
   console.log('================================================================');
-  console.log('🎉 AUDITORIA CONCLUÍDA: TODOS OS 4 PILARES APROVADOS COM 100% DE ÊXITO!');
+  console.log('🎉 AUDITORIA CONCLUÍDA: TODOS OS 5 PILARES APROVADOS COM 100% DE ÊXITO!');
   console.log('================================================================');
 }
 

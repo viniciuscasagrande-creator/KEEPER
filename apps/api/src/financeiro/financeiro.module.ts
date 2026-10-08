@@ -5,11 +5,14 @@ import { FinanceiroController } from './financeiro.controller';
 import { FinanceiroService } from './financeiro.service';
 import { SettlementController } from './settlement/settlement.controller';
 import { SettlementService } from './settlement/settlement.service';
+import { AppropriationModule } from './appropriation/appropriation.module';
+import { AppropriationService } from './appropriation/appropriation.service';
+import { AppropriationController } from './appropriation/appropriation.controller';
 
 @Module({
-  imports: [ContabilModule],
-  controllers: [FinanceiroController, SettlementController],
-  providers: [PrismaService, FinanceiroService, SettlementService],
-  exports: [FinanceiroService, SettlementService],
+  imports: [ContabilModule, AppropriationModule],
+  controllers: [FinanceiroController, SettlementController, AppropriationController],
+  providers: [PrismaService, FinanceiroService, SettlementService, AppropriationService],
+  exports: [FinanceiroService, SettlementService, AppropriationService],
 })
 export class FinanceiroModule {}

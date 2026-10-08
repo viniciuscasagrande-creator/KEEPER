@@ -1387,6 +1387,60 @@ model SaleRefundRequest {
   @@map("sale_refund_requests")
 }
 
+model SaleAppropriation {
+  id             String   @id @default(uuid()) @db.Uuid
+  tenantId       String   @map("tenant_id") @db.Uuid
+  companyId      String   @map("company_id") @db.Uuid
+  saleId         String   @map("sale_id")
+  eventId        String   @map("event_id") @db.Uuid
+  producerId     String   @map("producer_id") @db.Uuid
+
+  grossAmount    Decimal  @map("gross_amount") @db.Decimal(19, 4)
+  diskAmount     Decimal  @map("disk_amount") @db.Decimal(19, 4)
+  producerAmount Decimal  @map("producer_amount") @db.Decimal(19, 4)
+
+  feeRuleId      String   @map("fee_rule_id") @db.Uuid
+  feeSnapshot    Json     @map("fee_snapshot")
+  status         String   @default("APPROPRIATED")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([tenantId, saleId])
+  @@index([tenantId, eventId])
+  @@index([tenantId, producerId])
+  @@schema("financeiro")
+  @@map("sale_appropriations")
+}
+
+model FinancialJournal {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  sourceType String   @map("source_type")
+  sourceId   String   @map("source_id")
+  status     String   @default("POSTED")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  postings   FinancialPosting[]
+
+  @@unique([tenantId, sourceType, sourceId])
+  @@schema("financeiro")
+  @@map("financial_journals")
+}
+
+model FinancialPosting {
+  id        String   @id @default(uuid()) @db.Uuid
+  journalId String   @map("journal_id") @db.Uuid
+  account   String
+  side      String
+  amount    Decimal  @db.Decimal(19, 4)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  journal FinancialJournal @relation(fields: [journalId], references: [id])
+
+  @@index([journalId])
+  @@schema("financeiro")
+  @@map("financial_postings")
+}
+
 model AccountingAccount {
   id            String @id @default(uuid()) @db.Uuid
   tenantId      String @map("tenant_id") @db.Uuid
