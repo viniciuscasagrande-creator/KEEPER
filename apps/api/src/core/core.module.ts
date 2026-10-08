@@ -6,6 +6,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AuditModule } from './audit/audit.module';
 import { WorkflowModule } from './workflow/workflow.module';
+import { WorkerClientModule } from './worker/worker-client.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     PermissionsModule,
     AuditModule,
     WorkflowModule,
+    WorkerClientModule,
   ],
   exports: [
     AuthModule,
@@ -25,6 +27,7 @@ import { WorkflowModule } from './workflow/workflow.module';
     PermissionsModule,
     AuditModule,
     WorkflowModule,
+    WorkerClientModule,
   ],
 })
 export class CoreModule {}

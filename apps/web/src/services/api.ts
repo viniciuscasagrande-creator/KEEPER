@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_URL || 'http://localhost:4000/api/v1';
+  (import.meta as any).env?.VITE_API_URL || '/api/v1';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('auth_token') || 'demo-token';

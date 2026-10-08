@@ -5,10 +5,12 @@ import { WorkerModule } from './worker.module';
 
 async function bootstrap() {
   const logger = new Logger('WorkerBootstrap');
-  const app = await NestFactory.createApplicationContext(WorkerModule);
+  const app = await NestFactory.create(WorkerModule);
   app.enableShutdownHooks();
 
-  logger.log('⚙️ ERP Background Worker service is running and listening for jobs...');
+  const port = process.env.PORT || 4001;
+  await app.listen(port);
+  logger.log(`⚙️ ERP Background Worker service is listening on port ${port}...`);
 }
 
 bootstrap();
