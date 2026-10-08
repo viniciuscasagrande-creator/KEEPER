@@ -3,31 +3,49 @@ import {
   DollarSign,
   ArrowUpRight,
   ArrowDownLeft,
-  Calendar,
-  Search,
-  Filter,
-  Plus,
-  CreditCard,
   Building2,
   CheckCircle2,
   Clock,
   AlertTriangle,
   ArrowRightLeft,
-  Download,
-  X,
-  Check,
+  CheckCheck,
+  TrendingUp,
+  PieChart,
+  ShieldCheck,
   RefreshCw,
+  Plus,
+  LayoutDashboard,
+  X,
+  CreditCard,
 } from 'lucide-react';
 import { api } from '../../services/api';
+import { FinancialDashboard } from './financeiro/FinancialDashboard';
+import { PayablesView } from './financeiro/PayablesView';
+import { ReceivablesView } from './financeiro/ReceivablesView';
+import { TreasuryView } from './financeiro/TreasuryView';
+import { ReconciliationView } from './financeiro/ReconciliationView';
+import { CashflowView } from './financeiro/CashflowView';
+import { BudgetView } from './financeiro/BudgetView';
+import { CreditView } from './financeiro/CreditView';
+import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
+
+export type FinancialTab =
+  | 'dashboard'
+  | 'payables'
+  | 'receivables'
+  | 'treasury'
+  | 'reconciliation'
+  | 'cashflow'
+  | 'budget'
+  | 'credit';
 
 interface FinancialModuleViewProps {
   onOpenQuickEntry: () => void;
+  activeSubTab?: string;
 }
 
-export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewProps) {
-  const [activeTab, setActiveTab] = useState<'payables' | 'receivables' | 'accounts' | 'transfers'>('payables');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: FinancialModuleViewProps) {
+  const [activeTab, setActiveTab] = useState<FinancialTab>('dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -64,6 +82,10 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
     },
   ]);
 
+  // Drawer & Modal States
+  const [selectedPayableDetail, setSelectedPayableDetail] = useState<PayableDetailItem | null>(null);
+  const [isPayableDrawerOpen, setIsPayableDrawerOpen] = useState(false);
+
   // Transfer Modal State
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [transferFrom, setTransferFrom] = useState('acc-1');
@@ -72,10 +94,24 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
   const [transferDate, setTransferDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [transferSuccess, setTransferSuccess] = useState<string | null>(null);
 
-  // Liquidation Modal State
+  // Quick Liquidation Modal State
   const [liquidatingTitle, setLiquidatingTitle] = useState<any | null>(null);
   const [liquidationDate, setLiquidationDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [liquidationSuccess, setLiquidationSuccess] = useState<string | null>(null);
+
+  // Sync sub tab if passed externally
+  useEffect(() => {
+    if (activeSubTab) {
+      if (activeSubTab.includes('payable')) setActiveTab('payables');
+      else if (activeSubTab.includes('receivable') || activeSubTab.includes('billing')) setActiveTab('receivables');
+      else if (activeSubTab.includes('account')) setActiveTab('treasury');
+      else if (activeSubTab.includes('reconciliation')) setActiveTab('reconciliation');
+      else if (activeSubTab.includes('cashflow')) setActiveTab('cashflow');
+      else if (activeSubTab.includes('budget')) setActiveTab('budget');
+      else if (activeSubTab.includes('credit')) setActiveTab('credit');
+      else if (activeSubTab === 'dash-fin') setActiveTab('dashboard');
+    }
+  }, [activeSubTab]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -89,47 +125,66 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
       if (payablesRes.status === 'fulfilled' && Array.isArray(payablesRes.value) && payablesRes.value.length > 0) {
         setPayables(payablesRes.value);
       } else {
-        // Fallback robust mock
         setPayables([
           {
             id: 'p-1',
             titleNumber: 'PAG-2026-00431',
             supplierName: 'Amazon Web Services Latam Ltda',
             documentNumber: 'AWS-98124',
+            issueDate: '2026-10-01',
             dueDate: '2026-10-08',
             totalAmount: 38450.75,
             status: 'PAID',
+            costCenter: 'CC-101 - Infraestrutura Cloud & TI',
             category: { name: 'Infraestrutura Cloud & TI' },
+            installments: [
+              { id: 'inst-1', installmentNumber: 1, dueDate: '2026-10-08', amount: 38450.75, status: 'PAID' },
+            ],
           },
           {
             id: 'p-2',
             titleNumber: 'PAG-2026-00430',
             supplierName: 'Office Tower Gestão Predial S.A.',
-            documentNumber: '23791.02931',
+            documentNumber: 'BOL-23791',
+            issueDate: '2026-09-25',
             dueDate: '2026-10-05',
             totalAmount: 22800.0,
             status: 'OVERDUE',
+            costCenter: 'CC-204 - Operações Prediais',
             category: { name: 'Locação e Condomínio' },
+            installments: [
+              { id: 'inst-2', installmentNumber: 1, dueDate: '2026-10-05', amount: 22800.0, status: 'OVERDUE' },
+            ],
           },
           {
             id: 'p-3',
             titleNumber: 'PAG-2026-00429',
             supplierName: 'Deloitte Touche Tohmatsu Auditores',
             documentNumber: 'NF-10492',
+            issueDate: '2026-10-02',
             dueDate: '2026-10-12',
             totalAmount: 65000.0,
             status: 'OPEN',
+            costCenter: 'CC-302 - Controladoria & Auditoria',
             category: { name: 'Auditoria Externa Q3' },
+            installments: [
+              { id: 'inst-3', installmentNumber: 1, dueDate: '2026-10-12', amount: 65000.0, status: 'OPEN' },
+            ],
           },
           {
             id: 'p-4',
             titleNumber: 'PAG-2026-00428',
             supplierName: 'Receita Federal do Brasil (RFB)',
-            documentNumber: 'DARF-IRPJ',
+            documentNumber: 'DARF-IRPJ-2026',
+            issueDate: '2026-10-01',
             dueDate: '2026-10-31',
             totalAmount: 214600.0,
             status: 'OPEN',
+            costCenter: 'CC-401 - Tributos e Encargos',
             category: { name: 'Tributos Federais' },
+            installments: [
+              { id: 'inst-4', installmentNumber: 1, dueDate: '2026-10-31', amount: 214600.0, status: 'OPEN' },
+            ],
           },
         ]);
       }
@@ -143,6 +198,7 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
             titleNumber: 'REC-2026-00892',
             customerName: 'TechCorp Brasil Tecnologia S.A.',
             documentNumber: 'NF-45291',
+            issueDate: '2026-10-01',
             dueDate: '2026-10-10',
             totalAmount: 145000.0,
             status: 'OPEN',
@@ -153,6 +209,7 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
             titleNumber: 'REC-2026-00891',
             customerName: 'Varejo Global Comércio e Distribuição',
             documentNumber: 'NF-88192',
+            issueDate: '2026-09-20',
             dueDate: '2026-10-15',
             totalAmount: 87500.0,
             status: 'OPEN',
@@ -163,10 +220,22 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
             titleNumber: 'REC-2026-00890',
             customerName: 'Hospital das Clínicas Metropolitano',
             documentNumber: 'NF-39012',
+            issueDate: '2026-09-28',
             dueDate: '2026-10-06',
             totalAmount: 112000.0,
             status: 'PAID',
             category: { name: 'Consultoria e Customizações' },
+          },
+          {
+            id: 'r-4',
+            titleNumber: 'REC-2026-00889',
+            customerName: 'Indústria Metalúrgica Progresso S.A.',
+            documentNumber: 'NF-38102',
+            issueDate: '2026-08-30',
+            dueDate: '2026-09-25',
+            totalAmount: 184500.0,
+            status: 'OVERDUE',
+            category: { name: 'Implantação ERP On-Premise' },
           },
         ]);
       }
@@ -195,7 +264,7 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
       })
     );
 
-    setTransferSuccess('Transferência interbancária executada! Partida contábil registrada no razão.');
+    setTransferSuccess('Transferência interbancária executada com sucesso! Lançamento contábil registrado no razão.');
     setTimeout(() => {
       setTransferSuccess(null);
       setIsTransferModalOpen(false);
@@ -219,13 +288,12 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
         prev.map((p) => (p.id === liquidatingTitle.id ? { ...p, status: 'PAID' } : p))
       );
 
-      setLiquidationSuccess(`Título ${liquidatingTitle.titleNumber} baixado com sucesso!`);
+      setLiquidationSuccess(`Título ${liquidatingTitle.titleNumber} liquidado com sucesso!`);
       setTimeout(() => {
         setLiquidationSuccess(null);
         setLiquidatingTitle(null);
       }, 1500);
     } catch {
-      // Local fallback
       setPayables((prev) =>
         prev.map((p) => (p.id === liquidatingTitle.id ? { ...p, status: 'PAID' } : p))
       );
@@ -237,335 +305,216 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
     }
   };
 
-  const totalCashBalance = accounts.reduce((acc, curr) => acc + Number(curr.currentBalance || 0), 0);
-  const totalPayablesOpen = payables
-    .filter((p) => p.status !== 'PAID' && p.status !== 'CANCELLED')
-    .reduce((acc, curr) => acc + Number(curr.totalAmount || 0), 0);
-  const totalReceivablesOpen = receivables
-    .filter((r) => r.status !== 'PAID' && r.status !== 'CANCELLED')
-    .reduce((acc, curr) => acc + Number(curr.totalAmount || 0), 0);
+  const handleReceiveTitle = (item: any) => {
+    setReceivables((prev) =>
+      prev.map((r) => (r.id === item.id ? { ...r, status: 'PAID' } : r))
+    );
+  };
 
-  const filteredPayables = payables.filter((p) => {
-    if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-    if (
-      searchTerm &&
-      !p.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !p.titleNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  const filteredReceivables = receivables.filter((r) => {
-    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
-    if (
-      searchTerm &&
-      !r.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !r.titleNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
+  const handleOpenPayableDrawer = (item: any) => {
+    setSelectedPayableDetail({
+      id: item.id,
+      titleNumber: item.titleNumber,
+      supplierName: item.supplierName,
+      documentNumber: item.documentNumber,
+      issueDate: item.issueDate || '2026-10-01',
+      dueDate: item.dueDate,
+      totalAmount: Number(item.totalAmount),
+      status: item.status,
+      costCenter: item.costCenter || 'CC-101 - Geral',
+      category: item.category || { name: 'Despesa Operacional' },
+      installments: item.installments || [
+        {
+          id: `inst-${item.id}`,
+          installmentNumber: 1,
+          dueDate: item.dueDate,
+          amount: Number(item.totalAmount),
+          status: item.status,
+        },
+      ],
+    });
+    setIsPayableDrawerOpen(true);
+  };
 
   const fmt = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
   return (
-    <div className="space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>ERP</span>
-            <span>/</span>
-            <span className="font-semibold text-slate-800">Módulo Financeiro & Tesouraria</span>
-          </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
-            Gestão Financeira e Contas Correntes
-          </h1>
-        </div>
+    <div className="space-y-4">
+      {/* 1. NetSuite Horizontal Secondary Tab Bar */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/75 px-3 overflow-x-auto">
+          <div className="flex space-x-1 shrink-0">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'dashboard'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5 text-blue-600" />
+              <span>Central Financeira</span>
+            </button>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setRefreshKey((k) => k + 1)}
-            className="p-2 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition-colors"
-            title="Recarregar dados"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
-          </button>
-          <button
-            onClick={() => setIsTransferModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
-          >
-            <ArrowRightLeft className="w-3.5 h-3.5 text-blue-600" />
-            <span>Transferência Interbancária</span>
-          </button>
-          <button
-            onClick={onOpenQuickEntry}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Novo Título</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Financial KPIs Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-emerald-500 p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500">Disponibilidade Imediata (Bancos)</div>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono">
-            {fmt(totalCashBalance)}
-          </div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-1 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" />
-            3 Contas ativas e conciliadas
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-rose-500 p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500">Total Contas a Pagar em Aberto</div>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono text-rose-600">
-            {fmt(totalPayablesOpen)}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            {payables.filter((p) => p.status !== 'PAID').length} títulos pendentes de liquidação
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-blue-600 p-4 shadow-2xs">
-          <div className="text-xs font-semibold text-slate-500">Total Contas a Receber em Aberto</div>
-          <div className="text-2xl font-black text-slate-900 mt-1 font-mono text-blue-700">
-            {fmt(totalReceivablesOpen)}
-          </div>
-          <div className="text-[11px] text-slate-500 mt-1">
-            {receivables.filter((r) => r.status !== 'PAID').length} faturas aguardando compensação
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="border-b border-slate-200 bg-slate-50/75 px-4 flex items-center justify-between">
-          <div className="flex space-x-1">
             <button
               onClick={() => setActiveTab('payables')}
-              className={`py-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
                 activeTab === 'payables'
-                  ? 'border-blue-600 text-blue-600 bg-white'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <ArrowUpRight className="w-3.5 h-3.5 text-rose-600" />
-              <span>Contas a Pagar ({payables.length})</span>
+              <span>Contas a Pagar</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
+                {payables.filter((p) => p.status !== 'PAID').length}
+              </span>
             </button>
+
             <button
               onClick={() => setActiveTab('receivables')}
-              className={`py-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
                 activeTab === 'receivables'
-                  ? 'border-blue-600 text-blue-600 bg-white'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Contas a Receber ({receivables.length})</span>
+              <span>Contas a Receber</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                {receivables.filter((r) => r.status !== 'PAID').length}
+              </span>
             </button>
+
             <button
-              onClick={() => setActiveTab('accounts')}
-              className={`py-3 px-4 text-xs font-bold border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === 'accounts'
-                  ? 'border-blue-600 text-blue-600 bg-white'
+              onClick={() => setActiveTab('treasury')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'treasury'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <Building2 className="w-3.5 h-3.5 text-slate-600" />
-              <span>Contas Bancárias & Saldos</span>
+              <span>Tesouraria & Bancos</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('reconciliation')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'reconciliation'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CheckCheck className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Conciliação 1:1</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                98%
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('cashflow')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'cashflow'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Fluxo de Caixa</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('budget')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'budget'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <PieChart className="w-3.5 h-3.5 text-purple-600" />
+              <span>Orçamento</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('credit')}
+              className={`py-3 px-3 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'credit'
+                  ? 'border-blue-600 text-blue-600 bg-white shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <span>Crédito & Risco</span>
             </button>
           </div>
-
-          {/* Search bar inside tab */}
-          <div className="flex items-center gap-2 py-2">
-            <div className="relative">
-              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por parceiro ou código..."
-                className="pl-7 pr-3 py-1 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600 w-48 text-slate-800"
-              />
-            </div>
-          </div>
         </div>
-
-        {/* Tab 1: Payables */}
-        {activeTab === 'payables' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px]">
-                  <th className="py-2.5 px-4">Código / NF</th>
-                  <th className="py-2.5 px-4">Fornecedor Favorecido</th>
-                  <th className="py-2.5 px-4">Categoria Contábil</th>
-                  <th className="py-2.5 px-4">Vencimento</th>
-                  <th className="py-2.5 px-4 text-right">Valor Nominal</th>
-                  <th className="py-2.5 px-4 text-center">Status</th>
-                  <th className="py-2.5 px-4 text-center w-28">Ação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPayables.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-4 font-mono font-medium text-slate-800">
-                      <div>{item.titleNumber}</div>
-                      <div className="text-[10px] text-slate-400">{item.documentNumber || 'S/N'}</div>
-                    </td>
-                    <td className="py-2.5 px-4 font-semibold text-slate-800">{item.supplierName}</td>
-                    <td className="py-2.5 px-4 text-slate-600">{item.category?.name || 'Despesa'}</td>
-                    <td className="py-2.5 px-4 font-mono text-slate-600">
-                      {new Date(item.dueDate).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-bold text-slate-900">
-                      {fmt(Number(item.totalAmount))}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      {item.status === 'PAID' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3" /> Liquidado
-                        </span>
-                      ) : item.status === 'OVERDUE' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                          <AlertTriangle className="w-3 h-3" /> Em Atraso
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                          <Clock className="w-3 h-3" /> A Vencer
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      {item.status !== 'PAID' ? (
-                        <button
-                          onClick={() => setLiquidatingTitle(item)}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px] font-semibold flex items-center gap-1 mx-auto transition-colors"
-                        >
-                          <CreditCard className="w-3 h-3" />
-                          <span>Baixar</span>
-                        </button>
-                      ) : (
-                        <span className="text-[11px] text-emerald-700 font-semibold flex items-center justify-center gap-0.5">
-                          <Check className="w-3 h-3" /> Pago
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Tab 2: Receivables */}
-        {activeTab === 'receivables' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px]">
-                  <th className="py-2.5 px-4">Código / NF</th>
-                  <th className="py-2.5 px-4">Cliente Pagador</th>
-                  <th className="py-2.5 px-4">Conta de Receita</th>
-                  <th className="py-2.5 px-4">Vencimento</th>
-                  <th className="py-2.5 px-4 text-right">Valor Nominal</th>
-                  <th className="py-2.5 px-4 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredReceivables.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-4 font-mono font-medium text-slate-800">
-                      <div>{item.titleNumber}</div>
-                      <div className="text-[10px] text-slate-400">{item.documentNumber || 'S/N'}</div>
-                    </td>
-                    <td className="py-2.5 px-4 font-semibold text-slate-800">{item.customerName}</td>
-                    <td className="py-2.5 px-4 text-slate-600">{item.category?.name || 'Receita Bruta'}</td>
-                    <td className="py-2.5 px-4 font-mono text-slate-600">
-                      {new Date(item.dueDate).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-mono font-bold text-emerald-700">
-                      {fmt(Number(item.totalAmount))}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      {item.status === 'PAID' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3" /> Recebido
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                          <Clock className="w-3 h-3" /> Em Aberto
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Tab 3: Bank Accounts */}
-        {activeTab === 'accounts' && (
-          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {accounts.map((acc) => (
-              <div
-                key={acc.id}
-                className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-sm transition-all"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                      <Building2 className="w-5 h-5" />
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-slate-800 text-sm">{acc.name}</h4>
-                      <p className="text-[11px] text-slate-400">Banco {acc.bankCode}</p>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                    Conciliado
-                  </span>
-                </div>
-
-                <div className="my-4 space-y-1 text-xs">
-                  <div className="flex justify-between text-slate-500">
-                    <span>Agência / Conta:</span>
-                    <span className="font-mono font-medium text-slate-700">
-                      Ag. {acc.agency} / CC {acc.accountNumber}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-slate-500">
-                    <span>Tipo:</span>
-                    <span className="font-medium text-slate-700">
-                      {acc.type === 'CHECKING' ? 'Conta Corrente' : 'Aplicação Financeira'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-500">Saldo Disponível:</span>
-                  <span className="text-base font-black text-slate-900 font-mono">
-                    {fmt(Number(acc.currentBalance))}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Transfer Modal */}
+      {/* 2. Active Tab Sub-view Content */}
+      {activeTab === 'dashboard' && (
+        <FinancialDashboard
+          onOpenNewPayable={onOpenQuickEntry}
+          onOpenNewReceivable={onOpenQuickEntry}
+          onOpenTransfer={() => setIsTransferModalOpen(true)}
+          onNavigateTab={(tab) => setActiveTab(tab as FinancialTab)}
+        />
+      )}
+
+      {activeTab === 'payables' && (
+        <PayablesView
+          payables={payables}
+          isLoading={isLoading}
+          onRefresh={() => setRefreshKey((k) => k + 1)}
+          onOpenNewPayable={onOpenQuickEntry}
+          onSelectTitle={handleOpenPayableDrawer}
+          onQuickLiquidate={(item) => setLiquidatingTitle(item)}
+        />
+      )}
+
+      {activeTab === 'receivables' && (
+        <ReceivablesView
+          receivables={receivables}
+          isLoading={isLoading}
+          onRefresh={() => setRefreshKey((k) => k + 1)}
+          onOpenNewReceivable={onOpenQuickEntry}
+          onReceiveTitle={handleReceiveTitle}
+        />
+      )}
+
+      {activeTab === 'treasury' && (
+        <TreasuryView
+          accounts={accounts}
+          onOpenTransfer={() => setIsTransferModalOpen(true)}
+          onRefresh={() => setRefreshKey((k) => k + 1)}
+          isLoading={isLoading}
+        />
+      )}
+
+      {activeTab === 'reconciliation' && (
+        <ReconciliationView onRefresh={() => setRefreshKey((k) => k + 1)} />
+      )}
+
+      {activeTab === 'cashflow' && <CashflowView />}
+
+      {activeTab === 'budget' && <BudgetView />}
+
+      {activeTab === 'credit' && <CreditView />}
+
+      {/* 3. Lateral Drawer for Payable Details */}
+      <PayableDetailsDrawer
+        isOpen={isPayableDrawerOpen}
+        onClose={() => setIsPayableDrawerOpen(false)}
+        titleItem={selectedPayableDetail}
+        onUpdated={() => {
+          setRefreshKey((k) => k + 1);
+          setIsPayableDrawerOpen(false);
+        }}
+      />
+
+      {/* 4. Interbank Transfer Modal */}
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-2xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
@@ -666,7 +615,7 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
         </div>
       )}
 
-      {/* Liquidation Modal */}
+      {/* 5. Quick Liquidation Modal */}
       {liquidatingTitle && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-2xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
@@ -696,7 +645,7 @@ export function FinancialModuleView({ onOpenQuickEntry }: FinancialModuleViewPro
 
             <div className="my-4 space-y-3 text-xs">
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500">Fornecedor:</div>
+                <div className="text-slate-500">Fornecedor Favorecido:</div>
                 <div className="font-bold text-slate-800 text-sm">{liquidatingTitle.supplierName}</div>
                 <div className="mt-2 flex justify-between font-mono">
                   <span className="text-slate-500">Valor a Pagar:</span>

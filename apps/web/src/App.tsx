@@ -21,6 +21,7 @@ export function App() {
   const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false);
   const [isApprovalsOpen, setIsApprovalsOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeSubModule, setActiveSubModule] = useState<string | undefined>();
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   // Global Ctrl+K / Cmd+K listener
@@ -42,7 +43,8 @@ export function App() {
   };
 
   const handleSelectSubModule = (subModuleId: string) => {
-    if (subModuleId.startsWith('fin-')) {
+    setActiveSubModule(subModuleId);
+    if (subModuleId.startsWith('fin-') || subModuleId === 'dash-fin') {
       setActiveModule('financeiro');
     } else if (subModuleId.startsWith('acc-')) {
       setActiveModule('contabil');
@@ -67,14 +69,20 @@ export function App() {
       {/* 2. Horizontal Navigation with Mega Dropdowns */}
       <HorizontalNav
         activeModuleId={activeModule}
-        onSelectModule={(id) => setActiveModule(id)}
+        onSelectModule={(id) => {
+          setActiveModule(id);
+          setActiveSubModule(undefined);
+        }}
         onSelectSubModule={handleSelectSubModule}
       />
 
       {/* 3. Main Operational Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {activeModule === 'financeiro' ? (
-          <FinancialModuleView onOpenQuickEntry={() => setIsQuickEntryOpen(true)} />
+          <FinancialModuleView
+            onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
+            activeSubTab={activeSubModule}
+          />
         ) : activeModule === 'contabil' ? (
           <AccountingModuleView />
         ) : (

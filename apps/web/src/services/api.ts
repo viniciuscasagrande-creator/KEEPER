@@ -48,6 +48,27 @@ export const api = {
     return request<any[]>(`/financeiro/titulos-pagar${query ? `?${query}` : ''}`);
   },
 
+  getPayableById: async (id: string) => {
+    return request<any>(`/financeiro/titulos-pagar/${id}`);
+  },
+
+  getAgingSummary: async () => {
+    return request<any>('/financeiro/aging');
+  },
+
+  createTransfer: async (data: {
+    sourceAccountId: string;
+    destinationAccountId: string;
+    amount: number;
+    transferDate: string;
+    description?: string;
+  }) => {
+    return request<any>('/financeiro/transferencias', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   createPayableTitle: async (data: {
     description: string;
     documentNumber?: string;

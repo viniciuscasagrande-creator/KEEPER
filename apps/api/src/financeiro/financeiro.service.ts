@@ -123,6 +123,153 @@ export class FinanceiroService {
     });
   }
 
+  async getPayableById(tenantId: string, companyId: string, id: string) {
+    const title = await this.prisma.payableTitle.findFirst({
+      where: { id, tenantId, companyId },
+      include: {
+        installments: {
+          orderBy: { installmentNumber: 'asc' },
+        },
+        category: { select: { id: true, name: true } },
+      },
+    });
+
+    if (!title) {
+      throw new NotFoundException(`Título a pagar com ID '${id}' não encontrado.`);
+    }
+
+    return title;
+  }
+
+  async getAgingSummary(tenantId: string, companyId: string) {
+    const now = new Date();
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    const d7 = new Date(todayEnd.getTime() + 7 * 86400000);
+    const d30 = new Date(todayEnd.getTime() + 30 * 86400000);
+    const d60 = new Date(todayEnd.getTime() + 60 * 86400000);
+
+    const [
+      payablesOverdue,
+      payablesToday,
+      payables7d,
+      payables30d,
+      payables60dPlus,
+      receivablesOverdue,
+      receivablesToday,
+      receivables7d,
+      receivables30d,
+      receivables60dPlus,
+    ] = await Promise.all([
+      this.prisma.payableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { lt: now },
+          status: { in: [TitleStatus.OPEN, TitleStatus.OVERDUE] },
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.payableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gte: now, lte: todayEnd },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.payableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: todayEnd, lte: d7 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.payableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: d7, lte: d30 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.payableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: d60 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.receivableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { lt: now },
+          status: { in: [TitleStatus.OPEN, TitleStatus.OVERDUE] },
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.receivableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gte: now, lte: todayEnd },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.receivableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: todayEnd, lte: d7 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.receivableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: d7, lte: d30 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.receivableInstallment.aggregate({
+        where: {
+          title: { tenantId, companyId },
+          dueDate: { gt: d60 },
+          status: TitleStatus.OPEN,
+        },
+        _sum: { amount: true },
+        _count: true,
+      }),
+    ]);
+
+    return {
+      payables: {
+        overdue: Number(payablesOverdue._sum.amount || 0),
+        today: Number(payablesToday._sum.amount || 0),
+        d7: Number(payables7d._sum.amount || 0),
+        d30: Number(payables30d._sum.amount || 0),
+        d60Plus: Number(payables60dPlus._sum.amount || 0),
+      },
+      receivables: {
+        overdue: Number(receivablesOverdue._sum.amount || 0),
+        today: Number(receivablesToday._sum.amount || 0),
+        d7: Number(receivables7d._sum.amount || 0),
+        d30: Number(receivables30d._sum.amount || 0),
+        d60Plus: Number(receivables60dPlus._sum.amount || 0),
+      },
+    };
+  }
+
   async createPayableTitle(
     tenantId: string,
     companyId: string,

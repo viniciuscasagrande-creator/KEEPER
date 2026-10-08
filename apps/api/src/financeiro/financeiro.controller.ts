@@ -103,6 +103,31 @@ export class FinanceiroController {
     });
   }
 
+  @Get('titulos-pagar/:id')
+  @RequirePermissions('financeiro.titulos.visualizar')
+  @ApiOperation({ summary: 'Obter título a pagar detalhado com suas parcelas e histórico' })
+  async getPayableById(
+    @CurrentTenant() tenantId: string,
+    @Param('id') id: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.financeiroService.getPayableById(tenantId, effectiveCompanyId, id);
+  }
+
+  @Get('aging')
+  @RequirePermissions('financeiro.relatorios.visualizar')
+  @ApiOperation({ summary: 'Distribuição de contas a pagar e receber por vencimento (Aging)' })
+  async getAging(
+    @CurrentTenant() tenantId: string,
+    @Headers('x-company-id') companyId?: string,
+    @CurrentUser('companyId') userCompanyId?: string,
+  ) {
+    const effectiveCompanyId = this.getEffectiveCompanyId(companyId, userCompanyId);
+    return this.financeiroService.getAgingSummary(tenantId, effectiveCompanyId);
+  }
+
   @Post('titulos-pagar')
   @RequirePermissions('financeiro.titulos.criar')
   @ApiOperation({ summary: 'Lançar novo título a pagar com parcelamento automático e provisão contábil' })
