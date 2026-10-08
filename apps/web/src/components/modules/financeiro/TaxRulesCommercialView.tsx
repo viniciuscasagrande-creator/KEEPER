@@ -559,21 +559,21 @@ export function TaxRulesCommercialView() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-900 text-white shadow-2xs">
+              <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-900 text-white shadow-2xs">
                 FINANCEIRO DISK
               </span>
-              <span className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
                 NÍVEL 1 • DISK (Todos os Produtores)
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                 Spread Comercial Disk: 1,22%
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5 pt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5 pt-1">
               <Sliders className="w-6 h-6 text-blue-600" />
               Taxas & Regras Comerciais
             </h1>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-500 font-normal">
               Configuração de MDR, spread comercial Disk (1,22%), parcelamento e vigências contratuais.
             </p>
           </div>
@@ -640,11 +640,11 @@ export function TaxRulesCommercialView() {
             {/* Botão Central de Aprovações (com indicador 7 no registro) */}
             <button
               onClick={() => setIsApprovalsModalOpen(true)}
-              className="h-10 px-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl shadow-2xs transition-colors flex items-center gap-2 text-xs font-black cursor-pointer"
+              className="h-10 px-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl shadow-2xs transition-colors flex items-center gap-2 text-xs font-bold cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4 text-indigo-600" />
               <span>Central de Aprovações</span>
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white">
                 {summary?.pendingApprovalsCount || 7}
               </span>
             </button>
@@ -730,7 +730,7 @@ export function TaxRulesCommercialView() {
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Total de Regras Ativas
             </span>
-            <div className="text-2xl font-black text-slate-900 mt-1">
+            <div className="text-2xl font-bold text-slate-900 mt-1">
               {rules.filter((r) => r.status === 'ACTIVE').length} Regras
             </div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">
@@ -748,7 +748,7 @@ export function TaxRulesCommercialView() {
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Spread Bruto Médio
             </span>
-            <div className="text-2xl font-black text-emerald-700 mt-1">
+            <div className="text-2xl font-bold text-emerald-700 mt-1">
               {summary ? fmtPct(summary.avgGrossSpread) : '+3,44%'}
             </div>
             <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
@@ -766,7 +766,7 @@ export function TaxRulesCommercialView() {
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               MDR Médio Adquirentes
             </span>
-            <div className="text-2xl font-black text-amber-700 mt-1">
+            <div className="text-2xl font-bold text-amber-700 mt-1">
               {summary ? `${summary.avgMdr.toFixed(2).replace('.', ',')}%` : '1,96%'}
             </div>
             <div className="text-[11px] text-slate-500 font-medium mt-0.5">
@@ -784,7 +784,7 @@ export function TaxRulesCommercialView() {
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Regras Customizadas
             </span>
-            <div className="text-2xl font-black text-purple-700 mt-1">
+            <div className="text-2xl font-bold text-purple-700 mt-1">
               {summary?.customRulesCount || 2} Específicas
             </div>
             <div className="text-[11px] text-purple-600 font-semibold mt-0.5">
@@ -802,7 +802,7 @@ export function TaxRulesCommercialView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-800/40 pb-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-blue-400" />
-            <h3 className="text-sm font-black tracking-wide uppercase">
+            <h3 className="text-sm font-bold tracking-wide uppercase">
               Governança & Hierarquia de Aplicação de Taxas
             </h3>
           </div>
@@ -815,7 +815,7 @@ export function TaxRulesCommercialView() {
           {/* Nível 1: Evento */}
           <div className="bg-white/10 rounded-xl p-3 border border-white/15 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-rose-500 text-white">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500 text-white">
                 PRIORIDADE 1 • MÁXIMA
               </span>
               <span className="text-xs font-bold text-rose-300">Sobrepõe Todas</span>
@@ -829,7 +829,7 @@ export function TaxRulesCommercialView() {
           {/* Nível 2: Produtor */}
           <div className="bg-white/10 rounded-xl p-3 border border-white/15 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-indigo-500 text-white">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500 text-white">
                 PRIORIDADE 2 • INTERMEDIÁRIA
               </span>
               <span className="text-xs font-bold text-indigo-300">Por Produtor</span>
@@ -843,7 +843,7 @@ export function TaxRulesCommercialView() {
           {/* Nível 3: Geral Disk */}
           <div className="bg-white/10 rounded-xl p-3 border border-white/15 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500 text-white">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">
                 PRIORIDADE 3 • PADRÃO
               </span>
               <span className="text-xs font-bold text-blue-300">Global Fallback</span>
@@ -874,7 +874,7 @@ export function TaxRulesCommercialView() {
           {/* Barra de Ações & Filtros da Matriz */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Percent className="w-4 h-4 text-blue-600" />
                 Matriz Vigente de Tarifas, MDR e Spreads Comerciais
               </h3>
@@ -893,7 +893,7 @@ export function TaxRulesCommercialView() {
               </button>
               <button
                 onClick={handleOpenNewRuleModal}
-                className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Nova Taxa / Regra</span>
@@ -1031,7 +1031,7 @@ export function TaxRulesCommercialView() {
 
                       {/* 4. TAXA COBRADA */}
                       <td className="py-3 px-3 text-right">
-                        <span className="font-black text-slate-900 text-sm">
+                        <span className="font-bold text-slate-900 text-sm">
                           {Number(rule.chargedRate).toFixed(2).replace('.', ',')}%
                         </span>
                       </td>
@@ -1045,7 +1045,7 @@ export function TaxRulesCommercialView() {
 
                       {/* 6. SPREAD LÍQUIDO */}
                       <td className="py-3 px-3 text-right">
-                        <span className="inline-flex items-center font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                        <span className="inline-flex items-center font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                           {fmtPct(grossSpread)}
                         </span>
                       </td>
@@ -1151,7 +1151,7 @@ export function TaxRulesCommercialView() {
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Calculator className="w-4 h-4 text-emerald-600" />
                 Simulador de Spread Líquido & Margem Transacional
               </h3>
@@ -1176,7 +1176,7 @@ export function TaxRulesCommercialView() {
                   step="0.01"
                   value={simSaleAmount}
                   onChange={(e) => setSimSaleAmount(e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-black text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1189,7 +1189,7 @@ export function TaxRulesCommercialView() {
                   step="0.01"
                   value={simChargedRate}
                   onChange={(e) => setSimChargedRate(e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-black text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1202,7 +1202,7 @@ export function TaxRulesCommercialView() {
                   step="0.01"
                   value={simMdrRate}
                   onChange={(e) => setSimMdrRate(e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-black text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1215,7 +1215,7 @@ export function TaxRulesCommercialView() {
                   step="0.01"
                   value={simFixedFee}
                   onChange={(e) => setSimFixedFee(e.target.value)}
-                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-black text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -1226,14 +1226,14 @@ export function TaxRulesCommercialView() {
                 <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
                   Resultado Financeiro Apurado
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-white">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500 text-white">
                   Spread Bruto: +{((simResult.grossSpreadBps || 520) / 100).toFixed(2)}%
                 </span>
               </div>
 
               <div className="space-y-1">
                 <div className="text-xs text-slate-300">Margem Líquida Disk por Ingresso:</div>
-                <div className="text-3xl font-black text-emerald-300">
+                <div className="text-3xl font-bold text-emerald-300">
                   {fmt((simResult.netMarginCents || 5200) / 100)}
                 </div>
               </div>
@@ -1261,7 +1261,7 @@ export function TaxRulesCommercialView() {
       {activeTab === 'politicas' && (
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-5">
           <div className="border-b border-slate-100 pb-3">
-            <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-600" />
               Políticas de Parcelamento, Split & Prazos de Liquidação
             </h3>
@@ -1324,7 +1324,7 @@ export function TaxRulesCommercialView() {
             {/* Header do Modal */}
             <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black flex items-center gap-2">
+                <h3 className="text-base font-bold flex items-center gap-2">
                   <Percent className="w-4 h-4 text-blue-400" />
                   {editingRule ? `Editar Taxa - Versão v${(editingRule.version || 1) + 1}` : '+ Nova Taxa / Regra Comercial'}
                 </h3>
@@ -1517,7 +1517,7 @@ export function TaxRulesCommercialView() {
                     required
                     value={formMdrRate}
                     onChange={(e) => setFormMdrRate(e.target.value)}
-                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-black text-slate-900"
+                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
                   />
                   <span className="text-[10px] text-slate-400">Custo descontado pela adquirente</span>
                 </div>
@@ -1532,7 +1532,7 @@ export function TaxRulesCommercialView() {
                     required
                     value={formChargedRate}
                     onChange={(e) => setFormChargedRate(e.target.value)}
-                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-black text-blue-700"
+                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-bold text-blue-700"
                   />
                   <span className="text-[10px] text-slate-400">Taxa comercial acordada/praticada</span>
                 </div>
@@ -1540,10 +1540,10 @@ export function TaxRulesCommercialView() {
                 {/* BLOCO VERDE: Spread Bruto / Margem Líquida em Tempo Real */}
                 <div className="sm:col-span-12 bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                    <span className="text-xs font-bold text-emerald-950 uppercase tracking-wide">
                       SPREAD BRUTO / MARGEM LÍQUIDA APURADA
                     </span>
-                    <span className="text-sm font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-lg border border-emerald-300">
+                    <span className="text-sm font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-lg border border-emerald-300">
                       {fmtPct(previewSpread)}
                     </span>
                   </div>
@@ -1694,7 +1694,7 @@ export function TaxRulesCommercialView() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-sm transition-colors flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>Salvar e Publicar Regra</span>
@@ -1711,7 +1711,7 @@ export function TaxRulesCommercialView() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 my-6">
             <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black flex items-center gap-2">
+                <h3 className="text-base font-bold flex items-center gap-2">
                   <Calculator className="w-4 h-4 text-emerald-400" />
                   Simulador Financeiro de Spread & Rentabilidade
                 </h3>
@@ -1738,7 +1738,7 @@ export function TaxRulesCommercialView() {
                     step="0.01"
                     value={simModalSaleAmount}
                     onChange={(e) => setSimModalSaleAmount(e.target.value)}
-                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-black text-slate-900"
+                    className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900"
                   />
                 </div>
 
@@ -1799,7 +1799,7 @@ export function TaxRulesCommercialView() {
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-slate-700">Regra Aplicada por Hierarquia:</span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                       modalSim.resolvedScope === 'EVENT'
                         ? 'bg-rose-100 text-rose-800 border border-rose-300'
                         : modalSim.resolvedScope === 'PRODUCER'
@@ -1823,19 +1823,19 @@ export function TaxRulesCommercialView() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                   <div className="p-2 bg-white/10 rounded-lg">
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">Venda</span>
-                    <span className="text-sm font-black text-white">{fmt(modalSim.saleVal)}</span>
+                    <span className="text-sm font-bold text-white">{fmt(modalSim.saleVal)}</span>
                   </div>
                   <div className="p-2 bg-white/10 rounded-lg">
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">Taxa ({modalSim.chargedPct}%)</span>
-                    <span className="text-sm font-black text-blue-300">{fmt(modalSim.chargedFeeAmount)}</span>
+                    <span className="text-sm font-bold text-blue-300">{fmt(modalSim.chargedFeeAmount)}</span>
                   </div>
                   <div className="p-2 bg-white/10 rounded-lg">
                     <span className="text-[10px] text-slate-400 font-bold block uppercase">MDR ({modalSim.mdrPct}%)</span>
-                    <span className="text-sm font-black text-rose-300">{fmt(modalSim.mdrCostAmount)}</span>
+                    <span className="text-sm font-bold text-rose-300">{fmt(modalSim.mdrCostAmount)}</span>
                   </div>
                   <div className="p-2 bg-emerald-900/60 rounded-lg border border-emerald-500/50">
                     <span className="text-[10px] text-emerald-300 font-bold block uppercase">Spread (+{modalSim.spreadPct}%)</span>
-                    <span className="text-sm font-black text-emerald-300">{fmt(modalSim.netMarginAmount)}</span>
+                    <span className="text-sm font-bold text-emerald-300">{fmt(modalSim.netMarginAmount)}</span>
                   </div>
                 </div>
 
@@ -1871,7 +1871,7 @@ export function TaxRulesCommercialView() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 my-6">
             <div className="px-6 py-4 bg-indigo-900 text-white flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black flex items-center gap-2">
+                <h3 className="text-base font-bold flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-indigo-400" />
                   Central de Aprovações de Regras Comerciais
                 </h3>
@@ -1951,7 +1951,7 @@ export function TaxRulesCommercialView() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150 my-6">
             <div className="px-6 py-4 bg-purple-900 text-white flex items-center justify-between">
               <div>
-                <h3 className="text-base font-black flex items-center gap-2">
+                <h3 className="text-base font-bold flex items-center gap-2">
                   <History className="w-4 h-4 text-purple-300" />
                   Histórico de Versões e Auditoria
                 </h3>
@@ -1976,7 +1976,7 @@ export function TaxRulesCommercialView() {
               <div className="space-y-3 relative pl-6 border-l-2 border-purple-200 ml-2">
                 <div className="relative">
                   <span className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-emerald-600 ring-4 ring-emerald-100"></span>
-                  <div className="text-xs font-black text-slate-900">
+                  <div className="text-xs font-bold text-slate-900">
                     Versão Atual (v{selectedHistoryRule.version || 2}) • Em Vigor
                   </div>
                   <div className="text-[11px] text-slate-500 font-medium">
@@ -1989,7 +1989,7 @@ export function TaxRulesCommercialView() {
 
                 <div className="relative pt-3">
                   <span className="absolute -left-[31px] top-4 w-3 h-3 rounded-full bg-slate-400 ring-4 ring-slate-100"></span>
-                  <div className="text-xs font-black text-slate-700">
+                  <div className="text-xs font-bold text-slate-700">
                     Versão Anterior (v1) • Arquivada para Auditoria
                   </div>
                   <div className="text-[11px] text-slate-500 font-medium">

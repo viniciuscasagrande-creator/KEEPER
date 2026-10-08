@@ -367,29 +367,29 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       {/* 1. Barra de Menus do Financeiro — FIXA E DESTACADA NA TELA (Sem Carrossel / Previsão para Novos Menus) */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 space-y-3.5">
         {/* Header do Card Principal — Tipografia Corporativa Padronizada */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200/80 flex items-center justify-center text-blue-600 shadow-2xs shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-sm shadow-blue-500/25 shrink-0">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-black text-slate-900 uppercase tracking-wider text-xs">
-                  MÓDULOS E OPERAÇÕES FINANCEIRAS
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-sm sm:text-[15px] font-bold text-slate-900 tracking-tight">
+                  Módulos & Operações Financeiras
                 </h2>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
                   Painel Fixo
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+              <p className="text-xs text-slate-500 font-normal mt-0.5 leading-relaxed">
                 Central unificada de liquidação Disk, carteiras de eventos, repasses aos produtores, estornos e tesouraria
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-bold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="inline-flex items-center gap-2 text-xs text-slate-700 font-medium bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               13 Módulos Ativos · Sem Carrossel
             </span>
           </div>
@@ -400,7 +400,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 1. PAINEL PRINCIPAL FINANCEIRO DISK */}
           <button
             onClick={() => setActiveTab('settlement')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'settlement'
                 ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-400/40 border border-blue-600'
                 : 'bg-white hover:bg-blue-50/70 text-slate-800 border border-blue-300 hover:border-blue-500'
@@ -409,7 +409,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <Landmark className={`w-4 h-4 shrink-0 ${activeTab === 'settlement' ? 'text-white' : 'text-blue-600'}`} />
             <span className="whitespace-nowrap">Painel Principal Financeiro Disk</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'settlement' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
               }`}
             >
@@ -420,7 +420,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 2. PRODUTORES & EVENTOS */}
           <button
             onClick={() => setActiveTab('producers')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'producers'
                 ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 border border-indigo-600'
                 : 'bg-white hover:bg-indigo-50/70 text-slate-800 border border-indigo-300 hover:border-indigo-500'
@@ -429,7 +429,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <Users className={`w-4 h-4 shrink-0 ${activeTab === 'producers' ? 'text-white' : 'text-indigo-600'}`} />
             <span className="whitespace-nowrap">Produtores & Eventos</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'producers' ? 'bg-white/20 text-white' : 'bg-indigo-100 text-indigo-800'
               }`}
             >
@@ -440,7 +440,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 3. ESTORNOS & CANCELAMENTOS */}
           <button
             onClick={() => setActiveTab('refunds')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'refunds'
                 ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
                 : 'bg-white hover:bg-rose-50/70 text-slate-800 border border-rose-300 hover:border-rose-500'
@@ -449,7 +449,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <ShieldAlert className={`w-4 h-4 shrink-0 ${activeTab === 'refunds' ? 'text-white' : 'text-rose-600'}`} />
             <span className="whitespace-nowrap">Estornos & Cancelamentos</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'refunds' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800'
               }`}
             >
@@ -460,7 +460,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 4. GATEWAYS & ADQUIRENTES */}
           <button
             onClick={() => setActiveTab('gateways')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'gateways'
                 ? 'bg-blue-900 text-white shadow-md ring-2 ring-blue-500/40 border border-blue-900'
                 : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 hover:border-slate-500'
@@ -469,7 +469,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <CreditCard className={`w-4 h-4 shrink-0 ${activeTab === 'gateways' ? 'text-white' : 'text-blue-700'}`} />
             <span className="whitespace-nowrap">Gateways & Adquirentes</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'gateways' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
               }`}
             >
@@ -480,7 +480,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 5. TAXAS & REGRAS COMERCIAIS */}
           <button
             onClick={() => setActiveTab('tax-rules')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'tax-rules'
                 ? 'bg-blue-800 text-white shadow-md ring-2 ring-blue-500/40 border border-blue-800'
                 : 'bg-white hover:bg-blue-50/70 text-slate-800 border border-blue-300 hover:border-blue-500'
@@ -489,7 +489,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <Percent className={`w-4 h-4 shrink-0 ${activeTab === 'tax-rules' ? 'text-white' : 'text-blue-700'}`} />
             <span className="whitespace-nowrap">Taxas & Regras Comerciais</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'tax-rules' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
               }`}
             >
@@ -500,7 +500,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 5. CENTRAL FINANCEIRA */}
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'dashboard'
                 ? 'bg-slate-900 text-white shadow-md ring-2 ring-slate-400/40 border border-slate-900'
                 : 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -509,7 +509,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <LayoutDashboard className={`w-4 h-4 shrink-0 ${activeTab === 'dashboard' ? 'text-white' : 'text-slate-600'}`} />
             <span className="whitespace-nowrap">Central Financeira</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'dashboard' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
               }`}
             >
@@ -520,7 +520,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 6. CONTAS A PAGAR */}
           <button
             onClick={() => setActiveTab('payables')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'payables'
                 ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-400/40 border border-rose-600'
                 : 'bg-white hover:bg-rose-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -529,7 +529,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <ArrowUpRight className={`w-4 h-4 shrink-0 ${activeTab === 'payables' ? 'text-white' : 'text-rose-600'}`} />
             <span className="whitespace-nowrap">Contas a Pagar</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'payables' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
               }`}
             >
@@ -540,7 +540,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 7. CONTAS A RECEBER */}
           <button
             onClick={() => setActiveTab('receivables')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'receivables'
                 ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400/40 border border-emerald-600'
                 : 'bg-white hover:bg-emerald-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -549,7 +549,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <ArrowDownLeft className={`w-4 h-4 shrink-0 ${activeTab === 'receivables' ? 'text-white' : 'text-emerald-600'}`} />
             <span className="whitespace-nowrap">Contas a Receber</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'receivables' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'
               }`}
             >
@@ -560,7 +560,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 8. TESOURARIA & BANCOS */}
           <button
             onClick={() => setActiveTab('treasury')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'treasury'
                 ? 'bg-sky-800 text-white shadow-md ring-2 ring-sky-400/40 border border-sky-800'
                 : 'bg-white hover:bg-sky-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -569,7 +569,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <Building2 className={`w-4 h-4 shrink-0 ${activeTab === 'treasury' ? 'text-white' : 'text-sky-700'}`} />
             <span className="whitespace-nowrap">Tesouraria & Bancos</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'treasury' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'
               }`}
             >
@@ -580,7 +580,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 9. CONCILIAÇÃO 1:1 */}
           <button
             onClick={() => setActiveTab('reconciliation')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'reconciliation'
                 ? 'bg-violet-700 text-white shadow-md ring-2 ring-violet-400/40 border border-violet-700'
                 : 'bg-white hover:bg-violet-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -589,7 +589,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <CheckCheck className={`w-4 h-4 shrink-0 ${activeTab === 'reconciliation' ? 'text-white' : 'text-violet-700'}`} />
             <span className="whitespace-nowrap">Conciliação 1:1</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'reconciliation' ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-700'
               }`}
             >
@@ -600,7 +600,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 10. FLUXO DE CAIXA */}
           <button
             onClick={() => setActiveTab('cashflow')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'cashflow'
                 ? 'bg-teal-700 text-white shadow-md ring-2 ring-teal-400/40 border border-teal-700'
                 : 'bg-white hover:bg-teal-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -609,7 +609,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <TrendingUp className={`w-4 h-4 shrink-0 ${activeTab === 'cashflow' ? 'text-white' : 'text-teal-700'}`} />
             <span className="whitespace-nowrap">Fluxo de Caixa</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'cashflow' ? 'bg-white/20 text-white' : 'bg-teal-100 text-teal-800'
               }`}
             >
@@ -620,7 +620,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 11. ORÇAMENTO */}
           <button
             onClick={() => setActiveTab('budget')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'budget'
                 ? 'bg-purple-700 text-white shadow-md ring-2 ring-purple-400/40 border border-purple-700'
                 : 'bg-white hover:bg-purple-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -629,7 +629,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <PieChart className={`w-4 h-4 shrink-0 ${activeTab === 'budget' ? 'text-white' : 'text-purple-700'}`} />
             <span className="whitespace-nowrap">Orçamento</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'budget' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800'
               }`}
             >
@@ -640,7 +640,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
           {/* 12. CRÉDITO & RISCO */}
           <button
             onClick={() => setActiveTab('credit')}
-            className={`h-10 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
+            className={`h-10 px-3.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shadow-2xs cursor-pointer ${
               activeTab === 'credit'
                 ? 'bg-amber-600 text-white shadow-md ring-2 ring-amber-400/40 border border-amber-600'
                 : 'bg-white hover:bg-amber-50/70 text-slate-800 border border-slate-300 hover:border-slate-400'
@@ -649,7 +649,7 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
             <ShieldCheck className={`w-4 h-4 shrink-0 ${activeTab === 'credit' ? 'text-white' : 'text-amber-600'}`} />
             <span className="whitespace-nowrap">Crédito & Risco</span>
             <span
-              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
                 activeTab === 'credit' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
               }`}
             >
