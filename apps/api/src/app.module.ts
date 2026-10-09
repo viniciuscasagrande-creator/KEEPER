@@ -17,6 +17,7 @@ import { ProjetosModule } from './projetos/projetos.module';
 import { AtivosModule } from './ativos/ativos.module';
 import { IntegracoesModule } from './integracoes/integracoes.module';
 import { InteligenciaModule } from './inteligencia/inteligencia.module';
+import { SentinelModule } from './inteligencia/sentinel/sentinel.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { InteligenciaModule } from './inteligencia/inteligencia.module';
     AtivosModule,
     IntegracoesModule,
     InteligenciaModule,
+    SentinelModule,
   ],
   providers: [
     {

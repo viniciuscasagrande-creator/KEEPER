@@ -366,6 +366,21 @@ export const navigationModules: ModuleNav[] = [
         ],
       },
       {
+        groupName: 'Monitoramento Inteligente (10)',
+        items: [
+          { id: 'intel-sent-central', label: 'Central de Monitoramento', description: 'Visão geral das verificações e saúde dos módulos', badge: 'Sentinel', badgeColor: 'bg-rose-100 text-rose-800' },
+          { id: 'intel-sent-alertas', label: 'Alertas em Tempo Real', description: 'Alertas e ocorrências abertas pendentes', badge: '3 Críticos', badgeColor: 'bg-rose-100 text-rose-700' },
+          { id: 'intel-sent-auditoria', label: 'Auditoria Inteligente', description: 'Verificação contínua de inconsistências contábeis e fiscais' },
+          { id: 'intel-sent-riscos', label: 'Riscos e Anomalias', description: 'Comportamentos suspeitos, fraudes e desvios estatísticos' },
+          { id: 'intel-sent-regras', label: 'Regras de Monitoramento', description: 'Condições determinísticas, limites e prioridades' },
+          { id: 'intel-sent-agentes', label: 'Agentes de IA', description: 'Agentes especializados por departamento (Finanças, Eventos, Fiscal, RH)' },
+          { id: 'intel-sent-tratativas', label: 'Automações e Tratativas', description: 'Encaminhamento, planos de ação e acompanhamento' },
+          { id: 'intel-sent-historico', label: 'Histórico de Ocorrências', description: 'Evidências imutáveis, pareceres e resoluções' },
+          { id: 'intel-sent-relatorios', label: 'Relatórios de Inteligência', description: 'Tendências, SLA de resolução e efetividade de alertas' },
+          { id: 'intel-sent-config', label: 'Configurações da IA', description: 'Modelos (Local vs API), permissões e integrações' },
+        ],
+      },
+      {
         groupName: 'Inteligência Financeira (6)',
         items: [
           { id: 'intel-fin-receitas', label: 'Inteligência de Receitas', description: 'Desdobramento por conveniência, PDV e serviços' },

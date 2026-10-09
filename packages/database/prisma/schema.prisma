@@ -2278,3 +2278,41 @@ model WebhookDelivery {
   @@schema("integracoes")
   @@map("webhook_deliveries")
 }
+
+// Keeper Sentinel: nenhuma operacao de pagamento ou escrita no ledger.
+model SentinelAlert {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  fingerprint String
+  module      String
+  severity    String
+  title       String
+  description String
+  sourceId    String?  @map("source_id")
+  evidence    Json
+  status      String   @default("OPEN")
+  assignedTo  String?  @map("assigned_to")
+  openedAt    DateTime @default(now()) @map("opened_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  closedAt    DateTime? @map("closed_at")
+  events      SentinelAlertEvent[]
+
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId, status, severity])
+  @@schema("core")
+  @@map("sentinel_alerts")
+}
+
+model SentinelAlertEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  alertId   String   @map("alert_id") @db.Uuid
+  actorId   String?  @map("actor_id")
+  action    String
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  alert     SentinelAlert @relation(fields: [alertId], references: [id])
+
+  @@index([alertId, createdAt])
+  @@schema("core")
+  @@map("sentinel_alert_events")
+}

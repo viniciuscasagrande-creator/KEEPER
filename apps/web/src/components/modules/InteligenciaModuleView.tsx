@@ -53,6 +53,14 @@ import {
   Grid,
   Compass,
   ArrowLeft,
+  Clock,
+  Ticket,
+  CheckSquare,
+  X,
+  Radio,
+  History,
+  Server,
+  Globe,
 } from 'lucide-react';
 import {
   inteligenciaClient,
@@ -62,6 +70,16 @@ import {
   ScenarioSimulationResult,
   EventPerformanceItem,
 } from '../../services/inteligenciaClient';
+import {
+  sentinelClient,
+  SentinelAlert,
+  SentinelRule,
+  SentinelAgent,
+  SentinelKpis,
+  SentinelDepartment,
+  SentinelSeverity,
+  SentinelOverview,
+} from '../../services/sentinelClient';
 
 interface Props {
   activeSection?: string;
@@ -113,7 +131,83 @@ export const INTEL_SUBMENUS: IntelSubmenuDef[] = [
     badgeColor: 'bg-amber-100 text-amber-800',
   },
 
-  // 2. Inteligência Financeira (6)
+  // 2. Monitoramento Inteligente (10) — KEEPER SENTINEL
+  {
+    id: 'intel-sent-central',
+    label: 'Central de Monitoramento',
+    group: 'Monitoramento Inteligente',
+    icon: Activity,
+    purpose: 'Visão geral das verificações contínuas e integridade dos módulos do Keeper.',
+    badge: 'Sentinel',
+    badgeColor: 'bg-rose-100 text-rose-800',
+  },
+  {
+    id: 'intel-sent-alertas',
+    label: 'Alertas em Tempo Real',
+    group: 'Monitoramento Inteligente',
+    icon: AlertTriangle,
+    purpose: 'Alertas críticos determinísticos e ocorrências ativas abertas no sistema.',
+    badge: '3 Críticos',
+    badgeColor: 'bg-rose-100 text-rose-700',
+  },
+  {
+    id: 'intel-sent-auditoria',
+    label: 'Auditoria Inteligente',
+    group: 'Monitoramento Inteligente',
+    icon: CheckSquare,
+    purpose: 'Verificação contínua de inconsistências de Ledger, banco e tributos.',
+  },
+  {
+    id: 'intel-sent-riscos',
+    label: 'Riscos e Anomalias',
+    group: 'Monitoramento Inteligente',
+    icon: ShieldAlert,
+    purpose: 'Comportamentos suspeitos, riscos de solvência e desvios de padrão.',
+  },
+  {
+    id: 'intel-sent-regras',
+    label: 'Regras de Monitoramento',
+    group: 'Monitoramento Inteligente',
+    icon: SlidersHorizontal,
+    purpose: 'Condições determinísticas, limites fiduciários e prioridades de checagem.',
+  },
+  {
+    id: 'intel-sent-agentes',
+    label: 'Agentes de IA',
+    group: 'Monitoramento Inteligente',
+    icon: Bot,
+    purpose: 'Agentes digitais especializados por departamento (Finanças, Eventos, Fiscal, RH, Compras).',
+  },
+  {
+    id: 'intel-sent-tratativas',
+    label: 'Automações e Tratativas',
+    group: 'Monitoramento Inteligente',
+    icon: Workflow,
+    purpose: 'Encaminhamento supervisionado, planos de mitigação e acompanhamento.',
+  },
+  {
+    id: 'intel-sent-historico',
+    label: 'Histórico de Ocorrências',
+    group: 'Monitoramento Inteligente',
+    icon: Clock,
+    purpose: 'Evidências imutáveis, pareceres técnicos e resoluções registradas.',
+  },
+  {
+    id: 'intel-sent-relatorios',
+    label: 'Relatórios de Inteligência',
+    group: 'Monitoramento Inteligente',
+    icon: FileText,
+    purpose: 'Tendências, SLA de resolução e índice de eficácia dos alertas.',
+  },
+  {
+    id: 'intel-sent-config',
+    label: 'Configurações da IA',
+    group: 'Monitoramento Inteligente',
+    icon: Cpu,
+    purpose: 'Modelos de execução (Local On-Prem vs Cloud API), alçadas e chaves.',
+  },
+
+  // 3. Inteligência Financeira (6)
   {
     id: 'intel-fin-receitas',
     label: 'Inteligência de Receitas',
@@ -350,8 +444,9 @@ export const INTEL_SUBMENUS: IntelSubmenuDef[] = [
 ];
 
 export const GROUPS_LIST = [
-  'Todos (35)',
+  'Todos (45)',
   'Visão Executiva (4)',
+  'Monitoramento Inteligente (10)',
   'Inteligência Financeira (6)',
   'Inteligência de Eventos (5)',
   'Inteligência Empresarial (5)',
@@ -399,6 +494,16 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   // Filtros de Alertas
   const [alertSeverityFilter, setAlertSeverityFilter] = useState<string>('all');
 
+  // Estados do Keeper Sentinel (Monitoramento Inteligente & Auditoria Digital)
+  const [sentinelData, setSentinelData] = useState<SentinelOverview | null>(null);
+  const [sentinelDeptFilter, setSentinelDeptFilter] = useState<string>('Todas');
+  const [sentinelSeverityFilter, setSentinelSeverityFilter] = useState<string>('all');
+  const [sentinelStatusFilter, setSentinelStatusFilter] = useState<string>('all');
+  const [sentinelSelectedAlert, setSentinelSelectedAlert] = useState<SentinelAlert | null>(null);
+  const [sentinelResolutionNote, setSentinelResolutionNote] = useState<string>('');
+  const [sentinelTab, setSentinelTab] = useState<'ocorrencias' | 'agentes' | 'regras' | 'config'>('ocorrencias');
+  const [isProcessingSentinel, setIsProcessingSentinel] = useState<boolean>(false);
+
   // Sincronizar com props externas
   useEffect(() => {
     if (activeSection && activeSection !== sectionId) {
@@ -422,12 +527,14 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   const loadData = async () => {
     try {
       setIsRefreshing(true);
-      const [dash, evts] = await Promise.all([
+      const [dash, evts, sent] = await Promise.all([
         inteligenciaClient.getDashboard(),
         inteligenciaClient.getEventPerformance(),
+        sentinelClient.getOverview(),
       ]);
       setDashboardData(dash);
       setEventPerformances(evts);
+      setSentinelData(sent);
     } catch {
       showNotification('Erro ao sincronizar inteligência com o servidor. Usando dados locais.');
     } finally {
@@ -439,6 +546,36 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleStartTreatment = async (alertId: string) => {
+    setIsProcessingSentinel(true);
+    await sentinelClient.startTreatment(alertId);
+    const updated = await sentinelClient.getOverview();
+    setSentinelData(updated);
+    if (sentinelSelectedAlert && sentinelSelectedAlert.id === alertId) {
+      setSentinelSelectedAlert({
+        ...sentinelSelectedAlert,
+        status: 'EM_TRATAMENTO',
+      });
+    }
+    setIsProcessingSentinel(false);
+    showNotification('Ocorrência colocada em tratamento pelo gestor.');
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    if (!sentinelResolutionNote.trim()) {
+      showNotification('Por favor, informe a justificativa da resolução.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    await sentinelClient.resolveAlert(alertId, sentinelResolutionNote);
+    const updated = await sentinelClient.getOverview();
+    setSentinelData(updated);
+    setSentinelSelectedAlert(null);
+    setSentinelResolutionNote('');
+    setIsProcessingSentinel(false);
+    showNotification('Ocorrência resolvida e arquivada com evidências no Sentinel.');
+  };
 
   // Executar simulação what-if
   const handleRunSimulation = async () => {
@@ -519,6 +656,17 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     if (alertSeverityFilter === 'all') return dashboardData.alertasInteligentes;
     return dashboardData.alertasInteligentes.filter((a) => a.severidade === alertSeverityFilter);
   }, [dashboardData, alertSeverityFilter]);
+
+  // Filtrar ocorrências do Keeper Sentinel
+  const filteredSentinelAlerts = useMemo(() => {
+    if (!sentinelData) return [];
+    return sentinelData.alertas.filter((al) => {
+      const matchDept = sentinelDeptFilter === 'Todas' || al.departamento === sentinelDeptFilter;
+      const matchSev = sentinelSeverityFilter === 'all' || al.severidade === sentinelSeverityFilter;
+      const matchStatus = sentinelStatusFilter === 'all' || al.status === sentinelStatusFilter;
+      return matchDept && matchSev && matchStatus;
+    });
+  }, [sentinelData, sentinelDeptFilter, sentinelSeverityFilter, sentinelStatusFilter]);
 
   // =========================================================================
   // VIEW: DASHBOARD EXECUTIVO PRINCIPAL (CARDS MAIORES, MAIS LARGOS E HUB)
@@ -1884,8 +2032,804 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   };
 
   // =========================================================================
-  // VIEW GENÉRICA PARA SUBMENUS ADICIONAIS COM RETORNO AO HUB
+  // VIEW: KEEPER SENTINEL — MONITORAMENTO INTELIGENTE & AUDITORIA DIGITAL
   // =========================================================================
+  const renderSentinelMonitoring = () => {
+    const kpis = sentinelData?.kpis || {
+      alertasCriticos: 3,
+      atencaoNecessaria: 12,
+      emTratamento: 8,
+      resolvidosHoje: 24,
+      taxaResolucaoPercent: 94.2,
+      tempoMedioRespostaMin: 18,
+      verificacoesPorMinuto: 1450,
+      regrasAtivas: 28,
+    };
+
+    const departmentList = [
+      'Todas',
+      'Financeiro',
+      'Eventos & Produtores',
+      'Contabilidade',
+      'Fiscal',
+      'RH & DP',
+      'Compras',
+      'Segurança & Operação',
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* 1. Header do Sentinel com Identificação e Níveis de Autonomia */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-rose-900 text-white flex items-center justify-center shadow-md">
+                  <ShieldAlert className="w-6 h-6 text-rose-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-100">
+                      Keeper Sentinel · Auditoria Digital Permanente
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Worker Ativo ({kpis.verificacoesPorMinuto} scans/min)
+                    </span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+                    Central de Monitoramento Inteligente
+                  </h2>
+                </div>
+              </div>
+              <p className="text-slate-600 text-xs sm:text-sm max-w-4xl leading-relaxed">
+                Monitor contínuo híbrido da <strong className="text-slate-900 font-semibold">DiskIngressos</strong>: 
+                combina validações determinísticas de backend (invariantes matemáticos de repasse, taxas e saldos) 
+                com agentes de IA semântica para investigar anomalias, auditar inconsistências e antecipar riscos operacionais.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+              <button
+                onClick={loadData}
+                disabled={isRefreshing}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-2 border border-slate-200"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-rose-600' : ''}`} />
+                <span>Escanear Agora</span>
+              </button>
+              <button
+                onClick={() => handleSelectSection('intel-exec-dashboard')}
+                className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition flex items-center gap-1.5 border border-slate-300"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Voltar ao BI</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. OS 4 CARDS DO DASHBOARD DE ALERTAS (EXATAMENTE COMO REQUISITADO) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Alertas Críticos */}
+          <div
+            onClick={() => {
+              setSentinelSeverityFilter('CRITICO');
+              setSentinelTab('ocorrencias');
+            }}
+            className="bg-white rounded-2xl border-2 border-rose-200 p-5 shadow-xs hover:shadow-md hover:border-rose-400 transition cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Alertas Críticos</span>
+              <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="text-4xl font-black text-slate-900 tracking-tight">
+                # {kpis.alertasCriticos}
+              </div>
+              <p className="text-xs text-rose-700 font-bold mt-1 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                Requer ação imediata da diretoria
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Atenção Necessária */}
+          <div
+            onClick={() => {
+              setSentinelSeverityFilter('ATENCAO');
+              setSentinelTab('ocorrencias');
+            }}
+            className="bg-white rounded-2xl border border-amber-200 p-5 shadow-xs hover:shadow-md hover:border-amber-400 transition cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Atenção Necessária</span>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="text-4xl font-black text-slate-900 tracking-tight">
+                # {kpis.atencaoNecessaria}
+              </div>
+              <p className="text-xs text-amber-800 font-semibold mt-1">
+                Risco moderado / prazos fiscais
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Em Tratamento */}
+          <div
+            onClick={() => {
+              setSentinelStatusFilter('EM_TRATAMENTO');
+              setSentinelTab('ocorrencias');
+            }}
+            className="bg-white rounded-2xl border border-blue-200 p-5 shadow-xs hover:shadow-md hover:border-blue-400 transition cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Em Tratamento</span>
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="text-4xl font-black text-slate-900 tracking-tight">
+                # {kpis.emTratamento}
+              </div>
+              <p className="text-xs text-blue-800 font-semibold mt-1">
+                Comitês e gestores atuando
+              </p>
+            </div>
+          </div>
+
+          {/* Card 4: Resolvidos Hoje */}
+          <div
+            onClick={() => {
+              setSentinelStatusFilter('RESOLVIDO');
+              setSentinelTab('ocorrencias');
+            }}
+            className="bg-white rounded-2xl border border-emerald-200 p-5 shadow-xs hover:shadow-md hover:border-emerald-400 transition cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Resolvidos Hoje</span>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="text-4xl font-black text-slate-900 tracking-tight">
+                # {kpis.resolvidosHoje}
+              </div>
+              <p className="text-xs text-emerald-800 font-semibold mt-1">
+                {kpis.taxaResolucaoPercent}% taxa de eficácia diária
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Sub-Navegação Interna do Sentinel */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-6 pt-3 flex items-center gap-2 overflow-x-auto">
+            <button
+              onClick={() => setSentinelTab('ocorrencias')}
+              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+                sentinelTab === 'ocorrencias'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
+              Ocorrências Detectadas ({filteredSentinelAlerts.length})
+            </button>
+
+            <button
+              onClick={() => setSentinelTab('agentes')}
+              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+                sentinelTab === 'agentes'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Bot className="w-4 h-4 text-rose-600" />
+              Agentes Especializados ({sentinelData?.agentes.length || 6})
+            </button>
+
+            <button
+              onClick={() => setSentinelTab('regras')}
+              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+                sentinelTab === 'regras'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4 text-rose-600" />
+              Regras Determinísticas ({sentinelData?.regras.length || 6})
+            </button>
+
+            <button
+              onClick={() => setSentinelTab('config')}
+              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+                sentinelTab === 'config'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Cpu className="w-4 h-4 text-rose-600" />
+              Infraestrutura & Configuração IA
+            </button>
+          </div>
+
+          <div className="p-6">
+            {/* TAB 1: OCORRÊNCIAS DETECTADAS */}
+            {sentinelTab === 'ocorrencias' && (
+              <div className="space-y-5">
+                {/* Barra de Filtros por Departamento e Severidade */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Departamento:
+                    </span>
+                    <select
+                      value={sentinelDeptFilter}
+                      onChange={(e) => setSentinelDeptFilter(e.target.value)}
+                      className="text-xs font-bold bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      {departmentList.map((dept) => (
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
+                      ))}
+                    </select>
+
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-2">
+                      Severidade:
+                    </span>
+                    <select
+                      value={sentinelSeverityFilter}
+                      onChange={(e) => setSentinelSeverityFilter(e.target.value)}
+                      className="text-xs font-bold bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      <option value="all">Todas as Severidades</option>
+                      <option value="CRITICO">Crítico</option>
+                      <option value="ATENCAO">Atenção</option>
+                      <option value="ALERTA">Alerta</option>
+                      <option value="INFO">Info</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSentinelDeptFilter('Todas');
+                        setSentinelSeverityFilter('all');
+                        setSentinelStatusFilter('all');
+                      }}
+                      className="text-xs text-slate-500 hover:text-slate-800 font-semibold underline"
+                    >
+                      Limpar Filtros
+                    </button>
+                    <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
+                      Exibindo {filteredSentinelAlerts.length} de {sentinelData?.alertas.length || 7} ocorrências
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tabela / Feed de Ocorrências Detectadas */}
+                <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="py-3 px-4">Severidade</th>
+                        <th className="py-3 px-4">Departamento</th>
+                        <th className="py-3 px-4">Ocorrência & Entidade Afetada</th>
+                        <th className="py-3 px-4">Valores / Divergência</th>
+                        <th className="py-3 px-4">Causa Raiz & Ação Recomendada</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                        <th className="py-3 px-4 text-center">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-600">
+                      {filteredSentinelAlerts.map((al) => {
+                        const isCrit = al.severidade === 'CRITICO';
+                        const isAtencao = al.severidade === 'ATENCAO';
+                        return (
+                          <tr
+                            key={al.id}
+                            className={`hover:bg-slate-50/80 transition ${
+                              isCrit ? 'bg-rose-50/30' : isAtencao ? 'bg-amber-50/20' : ''
+                            }`}
+                          >
+                            {/* Severidade */}
+                            <td className="py-3 px-4 whitespace-nowrap">
+                              <span
+                                className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
+                                  isCrit
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                    : isAtencao
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                    : 'bg-blue-100 text-blue-800 border border-blue-200'
+                                }`}
+                              >
+                                {al.severidade}
+                              </span>
+                            </td>
+
+                            {/* Departamento */}
+                            <td className="py-3 px-4 whitespace-nowrap font-bold text-slate-800">
+                              {al.departamento}
+                            </td>
+
+                            {/* Título & Entidade */}
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-slate-900 text-sm">{al.titulo}</div>
+                              <div className="text-[11px] text-indigo-700 font-medium mt-0.5">
+                                📍 {al.entidadeAfetada}
+                              </div>
+                            </td>
+
+                            {/* Valores / Divergência */}
+                            <td className="py-3 px-4">
+                              {al.diferenca !== undefined ? (
+                                <div className="space-y-0.5">
+                                  {al.valorSolicitado && (
+                                    <div className="text-[11px] text-slate-500">
+                                      Solicitado: <strong className="text-slate-800">{formatCurrency(al.valorSolicitado)}</strong>
+                                    </div>
+                                  )}
+                                  {al.valorElegivel && (
+                                    <div className="text-[11px] text-slate-500">
+                                      Elegível: <strong className="text-emerald-700">{formatCurrency(al.valorElegivel)}</strong>
+                                    </div>
+                                  )}
+                                  <div className="text-[11px] font-bold text-rose-700 font-mono">
+                                    Diferença: {formatCurrency(al.diferenca)}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-slate-400 font-medium">Compliance / Prazos</span>
+                              )}
+                            </td>
+
+                            {/* Causa e Ação */}
+                            <td className="py-3 px-4 max-w-sm">
+                              <p className="text-[11px] text-slate-700 line-clamp-2 leading-relaxed font-medium">
+                                {al.causaIdentificada}
+                              </p>
+                              <p className="text-[10px] text-slate-500 mt-1 line-clamp-1 italic">
+                                👉 {al.acaoRecomendada}
+                              </p>
+                            </td>
+
+                            {/* Status */}
+                            <td className="py-3 px-4 text-center whitespace-nowrap">
+                              <span
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                  al.status === 'ABERTO'
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : al.status === 'EM_TRATAMENTO'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-emerald-100 text-emerald-800'
+                                }`}
+                              >
+                                {al.status.replace('_', ' ')}
+                              </span>
+                            </td>
+
+                            {/* Ação */}
+                            <td className="py-3 px-4 text-center whitespace-nowrap">
+                              <button
+                                onClick={() => setSentinelSelectedAlert(al)}
+                                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1 mx-auto"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-rose-400" />
+                                <span>Ver detalhes</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: AGENTES ESPECIALIZADOS DE IA */}
+            {sentinelTab === 'agentes' && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900">Agentes Especializados por Departamento</h3>
+                    <p className="text-xs text-slate-500">Agentes digitais dedicados a auditar fluxos específicos com permissão granular</p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    6 Agentes Online
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {sentinelData?.agentes.map((ag) => (
+                    <div
+                      key={ag.id}
+                      className="p-5 rounded-2xl border border-slate-200/90 bg-white hover:border-rose-300 transition space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
+                            <Bot className="w-5 h-5 text-rose-400" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-xs sm:text-sm text-slate-900">{ag.nome}</h4>
+                            <span className="text-[10px] text-indigo-600 font-bold">{ag.departamento}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          {ag.status}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                        {ag.foco}
+                      </p>
+
+                      <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Autonomia</span>
+                          <strong className="text-slate-800">{ag.autonomia.replace('_', ' ')}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px]">Acurácia Histórica</span>
+                          <strong className="text-emerald-700 font-bold">{ag.acuraciaPercent}%</strong>
+                        </div>
+                      </div>
+
+                      <div className="pt-1 text-[11px] text-slate-400 flex items-center justify-between">
+                        <span>{ag.alertasGerados} alertas emitidos</span>
+                        <span>Ativo {ag.ultimaAtividade}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: REGRAS DETERMINÍSTICAS & INVARIANTES */}
+            {sentinelTab === 'regras' && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900">Motor de Regras Determinísticas & Invariantes de Negócio</h3>
+                    <p className="text-xs text-slate-500">Regras invioláveis executadas diretamente no NestJS e PostgreSQL para proteger os saldos</p>
+                  </div>
+                  <span className="text-xs font-bold text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+                    {sentinelData?.regras.length || 6} Regras Compiladas
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="py-3 px-4">Código</th>
+                        <th className="py-3 px-4">Nome da Regra</th>
+                        <th className="py-3 px-4">Tipo</th>
+                        <th className="py-3 px-4">Expressão Determinística</th>
+                        <th className="py-3 px-4 text-center">Verificações Hoje</th>
+                        <th className="py-3 px-4 text-center">Anomalias</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-600">
+                      {sentinelData?.regras.map((rg) => (
+                        <tr key={rg.id} className="hover:bg-slate-50/80 transition">
+                          <td className="py-3 px-4 font-mono font-bold text-slate-900">{rg.codigo}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{rg.nome}</td>
+                          <td className="py-3 px-4">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                              {rg.tipo}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-mono text-[11px] text-slate-700 max-w-md truncate">
+                            {rg.expressaoRegra}
+                          </td>
+                          <td className="py-3 px-4 text-center font-bold text-indigo-700">
+                            {rg.verificacoesHoje.toLocaleString('pt-BR')}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {rg.anomaliasDetectadas > 0 ? (
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                                {rg.anomaliasDetectadas} ativa(s)
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-emerald-700">0</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                              Ativo
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: CONFIGURAÇÃO & INFRAESTRUTURA IA */}
+            {sentinelTab === 'config' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">Arquitetura & Configuração do Sentinel AI</h3>
+                  <p className="text-xs text-slate-500">Decisão estratégica de infraestrutura: Servidor Próprio On-Premises vs API em Nuvem</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* Opção A: Híbrido Recomendado */}
+                  <div className="p-6 rounded-2xl border-2 border-indigo-600 bg-indigo-50/40 space-y-4 relative">
+                    <span className="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white px-2.5 py-0.5 rounded-full">
+                      Recomendado
+                    </span>
+                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">1. Arquitetura Híbrida Inteligente</h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        95% do monitoramento roda localmente em regras determinísticas (NestJS + PostgreSQL a custo zero). 
+                        Apenas os 5% de anomalias detectadas acionam um modelo semântico para gerar o parecer.
+                      </p>
+                    </div>
+                    <ul className="text-xs text-slate-700 space-y-1.5 font-medium">
+                      <li className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Menor custo operacional
+                      </li>
+                      <li className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Resposta em milissegundos
+                      </li>
+                      <li className="flex items-center gap-1.5 text-emerald-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Sem risco de alucinação contábil
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Opção B: Servidor Local On-Premises */}
+                  <div className="p-6 rounded-2xl border border-slate-200 bg-white space-y-4 hover:border-slate-300 transition">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
+                      <Server className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">2. Modelo Local On-Premises (GPU Disk)</h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Execução de modelo open-source (Llama 3 / Mistral) em servidor dedicado interno da DiskIngressos via Ollama ou vLLM.
+                      </p>
+                    </div>
+                    <ul className="text-xs text-slate-700 space-y-1.5 font-medium">
+                      <li className="flex items-center gap-1.5 text-indigo-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Isolamento 100% interno de dados
+                      </li>
+                      <li className="flex items-center gap-1.5 text-slate-600">
+                        • Requer servidor com GPU (ex: RTX 4090 / A10G)
+                      </li>
+                      <li className="flex items-center gap-1.5 text-slate-600">
+                        • Manutenção de infraestrutura e drivers
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Opção C: API em Nuvem Corporativa */}
+                  <div className="p-6 rounded-2xl border border-slate-200 bg-white space-y-4 hover:border-slate-300 transition">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">
+                      <Globe className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900">3. Modelo Conectado por API Nuvem</h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Conexão via API corporativa (Claude / GPT / Gemini) com contrato de Zero Data Retention (nenhum dado de cliente é retido para treinamento).
+                      </p>
+                    </div>
+                    <ul className="text-xs text-slate-700 space-y-1.5 font-medium">
+                      <li className="flex items-center gap-1.5 text-purple-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Implantação imediata em 1 dia
+                      </li>
+                      <li className="flex items-center gap-1.5 text-purple-700 font-bold">
+                        <Check className="w-3.5 h-3.5" /> Maior capacidade de raciocínio
+                      </li>
+                      <li className="flex items-center gap-1.5 text-slate-600">
+                        • Cobrança por token de consulta
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Parâmetros de Autonomia e Travas de Segurança */}
+                <div className="p-5 rounded-2xl bg-slate-900 text-slate-100 space-y-3 text-xs border border-slate-800">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                    <ShieldCheck className="w-4 h-4" />
+                    Diretriz Absoluta de Autonomia (Trava de Segurança Financeira)
+                  </div>
+                  <p className="text-slate-300 leading-relaxed">
+                    O Sentinel possui autonomia restrita a <strong className="text-white">Observação</strong>,{' '}
+                    <strong className="text-white">Investigação</strong> e{' '}
+                    <strong className="text-white">Ação Supervisionada</strong>. O Sentinel <strong>JAMAIS</strong> realizará repasses, estornos, alterações de taxas ou lançamentos bancários de forma autônoma sem a aprovação explícita e assinatura digital dos gestores autorizados no Keeper ERP.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 4. MODAL DETALHADO DE OCORRÊNCIA (EXATAMENTE COMO REQUISITADO PELO USUÁRIO) */}
+        {sentinelSelectedAlert && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-5 max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 flex items-center justify-center font-bold">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                        Alerta {sentinelSelectedAlert.severidade.toLowerCase()} — {sentinelSelectedAlert.departamento}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {sentinelSelectedAlert.codigo}
+                      </span>
+                    </div>
+                    <h3 className="font-black text-lg text-slate-900 mt-1">
+                      {sentinelSelectedAlert.titulo}
+                    </h3>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSentinelSelectedAlert(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Informações da Ocorrência */}
+              <div className="space-y-4">
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400">Entidade / Evento Afetado</span>
+                  <div className="font-bold text-sm text-slate-900">{sentinelSelectedAlert.entidadeAfetada}</div>
+                  <div className="text-xs text-slate-500 font-medium">{sentinelSelectedAlert.descricao}</div>
+                </div>
+
+                {/* Card de Divergência Financeira quando houver valores */}
+                {sentinelSelectedAlert.diferenca !== undefined && (
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl space-y-3">
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-white p-2.5 rounded-xl border border-rose-100 shadow-2xs">
+                        <span className="text-[10px] font-bold text-slate-500 block uppercase">Solicitado</span>
+                        <strong className="text-sm font-black text-slate-900 block mt-0.5">
+                          {formatCurrency(sentinelSelectedAlert.valorSolicitado || 0)}
+                        </strong>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
+                        <span className="text-[10px] font-bold text-emerald-700 block uppercase">Elegível</span>
+                        <strong className="text-sm font-black text-emerald-800 block mt-0.5">
+                          {formatCurrency(sentinelSelectedAlert.valorElegivel || 0)}
+                        </strong>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-rose-200 shadow-2xs">
+                        <span className="text-[10px] font-bold text-rose-700 block uppercase">Diferença</span>
+                        <strong className="text-sm font-black text-rose-700 block mt-0.5">
+                          {formatCurrency(sentinelSelectedAlert.diferenca)}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-white/80 rounded-xl border border-rose-200 text-xs text-rose-950 font-bold leading-relaxed">
+                      ⚠️ A solicitação excede o valor liberável. Recomenda-se revisar as reservas e obrigações antes da aprovação.
+                    </div>
+                  </div>
+                )}
+
+                {/* Evidências Levantadas */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Evidências Técnicas Levantadas pelo Invariante:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {sentinelSelectedAlert.evidencias.map((ev, idx) => (
+                      <div key={idx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <span className="text-slate-500 text-[11px] block">{ev.rotulo}</span>
+                        <strong className="text-slate-900 font-mono text-xs mt-0.5 block">{ev.valor}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Parecer Semântico da IA Sentinel */}
+                <div className="p-4 bg-indigo-50/60 border border-indigo-200 rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2 text-indigo-900 font-bold text-xs">
+                    <Bot className="w-4 h-4 text-indigo-600" />
+                    Parecer do Motor de Inteligência Sentinel:
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    {sentinelSelectedAlert.causaIdentificada}
+                  </p>
+                  <div className="pt-2 border-t border-indigo-200/60 text-xs text-indigo-950 font-bold">
+                    Recomendação: {sentinelSelectedAlert.acaoRecomendada}
+                  </div>
+                </div>
+
+                {/* Área de Resolução / Tratativa */}
+                {sentinelSelectedAlert.status !== 'RESOLVIDO' ? (
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Justificativa da Resolução / Parecer do Gestor:
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={sentinelResolutionNote}
+                      onChange={(e) => setSentinelResolutionNote(e.target.value)}
+                      placeholder="Descreva a ação adotada (ex: repasse bloqueado e produtor notificado para ajuste do saldo elegível)..."
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
+                    ></textarea>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Ocorrência resolvida e arquivada na trilha de auditoria CDC.
+                  </div>
+                )}
+              </div>
+
+              {/* Botões do Modal */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                <span className="text-[11px] text-slate-400 font-medium">
+                  Responsável: {sentinelSelectedAlert.responsavel}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSentinelSelectedAlert(null)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Fechar
+                  </button>
+
+                  {sentinelSelectedAlert.status === 'ABERTO' && (
+                    <button
+                      type="button"
+                      disabled={isProcessingSentinel}
+                      onClick={() => handleStartTreatment(sentinelSelectedAlert.id)}
+                      className="px-4 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl shadow-2xs transition"
+                    >
+                      Colocar em Tratamento
+                    </button>
+                  )}
+
+                  {sentinelSelectedAlert.status !== 'RESOLVIDO' && (
+                    <button
+                      type="button"
+                      disabled={isProcessingSentinel}
+                      onClick={() => handleResolveAlert(sentinelSelectedAlert.id)}
+                      className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm transition flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Resolver Ocorrência
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
   const renderGenericSubmenu = () => {
     return (
       <div className="space-y-6">
@@ -1982,6 +2926,14 @@ export const InteligenciaModuleView: React.FC<Props> = ({
               </button>
 
               <button
+                onClick={() => handleSelectSection('intel-sent-central')}
+                className="px-4 py-2.5 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 hover:bg-rose-100 font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
+              >
+                <ShieldAlert className="w-4 h-4 text-rose-600" />
+                <span>Sentinel ({sentinelData?.kpis.alertasCriticos || 3} Críticos)</span>
+              </button>
+
+              <button
                 onClick={() => handleSelectSection('intel-ai-simulador')}
                 className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
               >
@@ -2013,11 +2965,13 @@ export const InteligenciaModuleView: React.FC<Props> = ({
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <main className="w-full">
           {sectionId === 'intel-exec-dashboard' && renderDashboardExecutivo()}
+          {sectionId.startsWith('intel-sent-') && renderSentinelMonitoring()}
           {sectionId === 'intel-exec-gerencial' && renderGerencialWaterfall()}
           {sectionId === 'intel-ai-simulador' && renderSimulador()}
           {sectionId === 'intel-ai-assistente' && renderCopilot()}
           {sectionId === 'intel-evt-performance' && renderEventosPerformance()}
           {sectionId !== 'intel-exec-dashboard' &&
+            !sectionId.startsWith('intel-sent-') &&
             sectionId !== 'intel-exec-gerencial' &&
             sectionId !== 'intel-ai-simulador' &&
             sectionId !== 'intel-ai-assistente' &&
