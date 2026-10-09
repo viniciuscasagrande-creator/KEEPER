@@ -700,162 +700,221 @@ export const InteligenciaModuleView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* 2. EVOLUÇÃO MENSAL ILUSTRATIVA: COMPACTA, COM GRÁFICOS SVG E SELETOR DE MODOS */}
+        {/* 2. EVOLUÇÃO MENSAL ILUSTRATIVA: CORES VIVAS, CURVA SVG PROPORCIONAL E BARRAS PIXEL-EXACT */}
         <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
                 <BarChart2 className="w-5 h-5 text-indigo-600" />
                 Evolução Mensal Ilustrativa — Receita Própria vs. Despesas Corporativas
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Escala visual de R$ 80 mil a R$ 240 mil com margem operacional auditável
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                Comparativo histórico auditável na escala visual de R$ 80 mil a R$ 240 mil
               </p>
             </div>
 
-            {/* Seletor de Tipo de Gráfico & Legenda */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-3 text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-slate-700">
-                  <span className="w-3 h-3 rounded-xs bg-indigo-600 inline-block" />
+            {/* Seletor de Tipo de Gráfico & Legenda com Cores Vivas e Distintas */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-4 text-xs font-bold">
+                <span className="flex items-center gap-1.5 text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
+                  <span className="w-3 h-3 rounded-full bg-indigo-600 inline-block shadow-xs" />
                   Receita Disk
                 </span>
-                <span className="flex items-center gap-1.5 font-bold text-slate-700">
-                  <span className="w-3 h-3 rounded-xs bg-slate-300 inline-block" />
+                <span className="flex items-center gap-1.5 text-amber-900 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                  <span className="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-xs" />
                   Despesas Disk
+                </span>
+                <span className="flex items-center gap-1.5 text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                  <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block shadow-xs" />
+                  Margem Líquida
                 </span>
               </div>
 
-              {/* Botões de alternância de gráficos */}
-              <div className="bg-slate-100 p-1 rounded-xl flex gap-1 text-[11px] font-bold">
+              {/* Botões de alternância de gráficos com destaque nítido */}
+              <div className="bg-slate-100 p-1 rounded-xl flex gap-1 text-xs font-black shadow-2xs">
                 <button
                   onClick={() => setChartType('curva')}
-                  className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                     chartType === 'curva'
-                      ? 'bg-white text-indigo-700 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
                 >
-                  <TrendingUp className="w-3 h-3" />
+                  <TrendingUp className="w-3.5 h-3.5" />
                   <span>Curva SVG</span>
                 </button>
                 <button
                   onClick={() => setChartType('barras')}
-                  className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                     chartType === 'barras'
-                      ? 'bg-white text-indigo-700 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
                 >
-                  <BarChart3 className="w-3 h-3" />
+                  <BarChart3 className="w-3.5 h-3.5" />
                   <span>Barras</span>
                 </button>
                 <button
                   onClick={() => setChartType('margem')}
-                  className={`px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                  className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                     chartType === 'margem'
-                      ? 'bg-white text-indigo-700 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
                 >
-                  <Percent className="w-3 h-3" />
+                  <Percent className="w-3.5 h-3.5" />
                   <span>Margem %</span>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ÁREA GRÁFICA INTERATIVA E COMPACTA */}
+          {/* ÁREA GRÁFICA INTERATIVA E ROBUSTA */}
           <div className="pt-4 pb-2">
+            {/* 1. CURVA SVG PROPORCIONAL COM CORES VIVAS E SEM DISTORÇÃO */}
             {chartType === 'curva' && (
-              <div className="space-y-2">
-                <div className="w-full h-52 sm:h-56 relative">
+              <div className="space-y-1">
+                <div className="w-full h-64 sm:h-72 relative bg-slate-50/50 rounded-2xl p-2 border border-slate-100">
                   <svg
-                    viewBox="0 0 500 170"
-                    className="w-full h-full overflow-visible"
-                    preserveAspectRatio="none"
+                    viewBox="0 0 920 230"
+                    className="w-full h-full"
+                    preserveAspectRatio="xMidYMid meet"
                   >
                     <defs>
-                      <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.32" />
-                        <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
+                      <linearGradient id="recGradPro" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.02" />
                       </linearGradient>
-                      <linearGradient id="despGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#94a3b8" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.0" />
-                      </linearGradient>
-                      <linearGradient id="lucroGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                      <linearGradient id="despGradPro" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
                       </linearGradient>
                     </defs>
 
-                    {/* Linhas de grade horizontais sutis */}
-                    {[20, 50, 80, 110, 140].map((y) => (
-                      <line
-                        key={y}
-                        x1="35"
-                        y1={y}
-                        x2="480"
-                        y2={y}
-                        stroke="#e2e8f0"
-                        strokeDasharray="3 3"
-                        strokeWidth="1"
-                      />
+                    {/* Linhas de Grade Horizontais e Rótulos Y */}
+                    {[
+                      { y: 30, label: 'R$ 240 mil' },
+                      { y: 68, label: 'R$ 200 mil' },
+                      { y: 106, label: 'R$ 160 mil' },
+                      { y: 144, label: 'R$ 120 mil' },
+                      { y: 182, label: 'R$ 80 mil' },
+                    ].map((g) => (
+                      <g key={g.y}>
+                        <text
+                          x="70"
+                          y={g.y + 4}
+                          textAnchor="end"
+                          fill="#64748b"
+                          fontSize="11"
+                          fontWeight="600"
+                          fontFamily="monospace"
+                        >
+                          {g.label}
+                        </text>
+                        <line
+                          x1="80"
+                          y1={g.y}
+                          x2="890"
+                          y2={g.y}
+                          stroke="#cbd5e1"
+                          strokeDasharray="4 4"
+                          strokeWidth="1"
+                        />
+                      </g>
                     ))}
 
-                    {/* Área sombreada Receita Própria */}
+                    {/* Linha de Base X */}
+                    <line x1="80" y1="195" x2="890" y2="195" stroke="#94a3b8" strokeWidth="1.5" />
+
+                    {/* Área Preenchida Receita Própria Disk */}
                     <path
-                      d="M 40,88.6 L 145,63.4 L 250,72.5 L 355,51.5 L 460,38.0 L 460,150 L 40,150 Z"
-                      fill="url(#recGrad)"
+                      d="M 100,121 L 295,85 L 490,98 L 685,69 L 880,51 L 880,195 L 100,195 Z"
+                      fill="url(#recGradPro)"
                     />
 
-                    {/* Área sombreada Despesas */}
+                    {/* Área Preenchida Despesas Disk */}
                     <path
-                      d="M 40,119.4 L 145,109.6 L 250,114.5 L 355,100.5 L 460,86.0 L 460,150 L 40,150 Z"
-                      fill="url(#despGrad)"
+                      d="M 100,165 L 295,151 L 490,158 L 685,138 L 880,118 L 880,195 L 100,195 Z"
+                      fill="url(#despGradPro)"
                     />
 
-                    {/* Linha Curva Despesas */}
+                    {/* Curva Linha Despesas (Âmbar Vivo) */}
                     <path
-                      d="M 40,119.4 L 145,109.6 L 250,114.5 L 355,100.5 L 460,86.0"
+                      d="M 100,165 L 295,151 L 490,158 L 685,138 L 880,118"
                       fill="none"
-                      stroke="#94a3b8"
-                      strokeWidth="2.5"
-                    />
-
-                    {/* Linha Curva Receita Própria */}
-                    <path
-                      d="M 40,88.6 L 145,63.4 L 250,72.5 L 355,51.5 L 460,38.0"
-                      fill="none"
-                      stroke="#4f46e5"
+                      stroke="#d97706"
                       strokeWidth="3.5"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
                     />
 
-                    {/* Linha de Lucro / Margem (Tracejada Verde) */}
+                    {/* Curva Linha Receita Própria (Índigo Profundo Vivo) */}
                     <path
-                      d="M 40,135 L 145,123 L 250,127 L 355,121 L 460,122"
+                      d="M 100,121 L 295,85 L 490,98 L 685,69 L 880,51"
                       fill="none"
-                      stroke="#10b981"
-                      strokeDasharray="4 4"
-                      strokeWidth="2"
+                      stroke="#4338ca"
+                      strokeWidth="4"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
                     />
 
-                    {/* Pontos de dados Receita (Círculos interativos com tooltips) */}
+                    {/* Curva Linha Margem / Lucro (Tracejada Esmeralda) */}
+                    <path
+                      d="M 100,155 L 295,135 L 490,140 L 685,132 L 880,133"
+                      fill="none"
+                      stroke="#059669"
+                      strokeDasharray="5 5"
+                      strokeWidth="2.5"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Pontos de dados Receita (Círculos azuis com valores acima) */}
                     {[
-                      { x: 40, y: 88.6, val: 'R$ 142k', mes: 'Mai' },
-                      { x: 145, y: 63.4, val: 'R$ 178k', mes: 'Jun' },
-                      { x: 250, y: 72.5, val: 'R$ 165k', mes: 'Jul' },
-                      { x: 355, y: 51.5, val: 'R$ 195k', mes: 'Ago' },
-                      { x: 460, y: 38.0, val: 'R$ 214k', mes: 'Set' },
+                      { x: 100, y: 121, val: 'R$ 142k', mes: 'Mai' },
+                      { x: 295, y: 85, val: 'R$ 178k', mes: 'Jun' },
+                      { x: 490, y: 98, val: 'R$ 165k', mes: 'Jul' },
+                      { x: 685, y: 69, val: 'R$ 195k', mes: 'Ago' },
+                      { x: 880, y: 51, val: 'R$ 214k', mes: 'Set' },
                     ].map((pt) => (
-                      <g key={pt.mes} className="cursor-pointer group">
-                        <circle cx={pt.x} cy={pt.y} r="5" fill="#4f46e5" stroke="#ffffff" strokeWidth="2" />
+                      <g key={pt.mes}>
+                        {/* Fundo do rótulo */}
+                        <rect
+                          x={pt.x - 26}
+                          y={pt.y - 25}
+                          width="52"
+                          height="18"
+                          rx="4"
+                          fill="#312e81"
+                        />
                         <text
                           x={pt.x}
-                          y={pt.y - 10}
+                          y={pt.y - 12}
                           textAnchor="middle"
-                          fill="#312e81"
+                          fill="#ffffff"
+                          fontSize="10"
+                          fontWeight="bold"
+                        >
+                          {pt.val}
+                        </text>
+                        <circle cx={pt.x} cy={pt.y} r="6" fill="#4338ca" stroke="#ffffff" strokeWidth="2.5" />
+                      </g>
+                    ))}
+
+                    {/* Pontos de dados Despesas (Círculos laranja com valores abaixo) */}
+                    {[
+                      { x: 100, y: 165, val: 'R$ 98k', mes: 'Mai' },
+                      { x: 295, y: 151, val: 'R$ 112k', mes: 'Jun' },
+                      { x: 490, y: 158, val: 'R$ 105k', mes: 'Jul' },
+                      { x: 685, y: 138, val: 'R$ 125k', mes: 'Ago' },
+                      { x: 880, y: 118, val: 'R$ 145k', mes: 'Set' },
+                    ].map((pt) => (
+                      <g key={pt.mes}>
+                        <circle cx={pt.x} cy={pt.y} r="5" fill="#d97706" stroke="#ffffff" strokeWidth="2" />
+                        <text
+                          x={pt.x}
+                          y={pt.y + 16}
+                          textAnchor="middle"
+                          fill="#92400e"
                           fontSize="10"
                           fontWeight="bold"
                         >
@@ -864,146 +923,200 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                       </g>
                     ))}
 
-                    {/* Pontos de dados Despesas */}
+                    {/* Rótulos dos Meses no Eixo X */}
                     {[
-                      { x: 40, y: 119.4, val: 'R$ 98k', mes: 'Mai' },
-                      { x: 145, y: 109.6, val: 'R$ 112k', mes: 'Jun' },
-                      { x: 250, y: 114.5, val: 'R$ 105k', mes: 'Jul' },
-                      { x: 355, y: 100.5, val: 'R$ 125k', mes: 'Ago' },
-                      { x: 460, y: 86.0, val: 'R$ 145k', mes: 'Set' },
-                    ].map((pt) => (
-                      <g key={pt.mes} className="cursor-pointer group">
-                        <circle cx={pt.x} cy={pt.y} r="4" fill="#64748b" stroke="#ffffff" strokeWidth="2" />
-                      </g>
+                      { x: 100, mes: 'Mai' },
+                      { x: 295, mes: 'Jun' },
+                      { x: 490, mes: 'Jul' },
+                      { x: 685, mes: 'Ago' },
+                      { x: 880, mes: 'Set' },
+                    ].map((lx) => (
+                      <text
+                        key={lx.mes}
+                        x={lx.x}
+                        y="215"
+                        textAnchor="middle"
+                        fill="#0f172a"
+                        fontSize="13"
+                        fontWeight="900"
+                      >
+                        {lx.mes}
+                      </text>
                     ))}
                   </svg>
                 </div>
-
-                {/* Eixos X e Escala Inferior */}
-                <div className="flex items-center justify-between text-xs text-slate-700 px-4 pt-1 font-bold">
-                  <span className="text-center w-12">Mai</span>
-                  <span className="text-center w-12">Jun</span>
-                  <span className="text-center w-12">Jul</span>
-                  <span className="text-center w-12">Ago</span>
-                  <span className="text-center w-12">Set</span>
-                </div>
               </div>
             )}
 
+            {/* 2. BARRAS DUPLAS COM ALTURA EXATA EM PIXELS (NUNCA COLAPSA) */}
             {chartType === 'barras' && (
               <div className="pt-2 pb-2">
-                <div className="grid grid-cols-5 gap-3 sm:gap-6 items-end h-48 border-b border-slate-200 px-2">
-                  {monthly.map((m) => {
-                    const maxVal = 240000;
-                    const recHeightPercent = Math.min(100, Math.round((m.receitaPropria / maxVal) * 100));
-                    const expHeightPercent = Math.min(100, Math.round((m.despesasDisk / maxVal) * 100));
+                <div className="bg-slate-50/60 rounded-2xl p-4 border border-slate-200/80">
+                  <div className="grid grid-cols-5 gap-3 sm:gap-6 items-end h-56 border-b border-slate-300 pb-2 px-2">
+                    {monthly.map((m) => {
+                      const maxBarPx = 140; // Altura máxima exata em pixels
+                      const recPx = Math.max(16, Math.round((m.receitaPropria / 240000) * maxBarPx));
+                      const despPx = Math.max(16, Math.round((m.despesasDisk / 240000) * maxBarPx));
 
-                    return (
-                      <div key={m.mes} className="flex flex-col items-center h-full justify-end group">
-                        <div className="flex items-end gap-1.5 sm:gap-3 w-full justify-center h-full pb-2">
-                          {/* Barra Receita */}
-                          <div className="flex flex-col items-center w-6 sm:w-10">
-                            <span className="text-[10px] font-black text-indigo-700 mb-1 whitespace-nowrap">
-                              {Math.round(m.receitaPropria / 1000)}k
-                            </span>
-                            <div
-                              style={{ height: `${recHeightPercent}%` }}
-                              className="w-full bg-indigo-600 rounded-t-lg shadow-xs group-hover:bg-indigo-700 transition-all cursor-pointer"
-                              title={`Receita própria Disk (${m.mes}): ${formatCurrency(m.receitaPropria)}`}
-                            />
+                      return (
+                        <div key={m.mes} className="flex flex-col items-center justify-end h-full group">
+                          {/* Trilho das Barras */}
+                          <div className="flex items-end justify-center gap-2 sm:gap-3 w-full pb-1">
+                            {/* Barra Receita (Indigo Vivo) */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-[11px] font-black text-indigo-900 mb-1 whitespace-nowrap bg-indigo-50 px-1 rounded border border-indigo-200">
+                                {Math.round(m.receitaPropria / 1000)}k
+                              </span>
+                              <div
+                                style={{ height: `${recPx}px` }}
+                                className="w-8 sm:w-14 bg-indigo-600 rounded-t-xl shadow-sm border border-indigo-700 hover:bg-indigo-700 transition-all cursor-pointer"
+                                title={`Receita própria Disk (${m.mes}): ${formatCurrency(m.receitaPropria)}`}
+                              />
+                            </div>
+
+                            {/* Barra Despesas (Âmbar Vivo) */}
+                            <div className="flex flex-col items-center">
+                              <span className="text-[11px] font-black text-amber-900 mb-1 whitespace-nowrap bg-amber-50 px-1 rounded border border-amber-200">
+                                {Math.round(m.despesasDisk / 1000)}k
+                              </span>
+                              <div
+                                style={{ height: `${despPx}px` }}
+                                className="w-8 sm:w-14 bg-amber-500 rounded-t-xl shadow-sm border border-amber-600 hover:bg-amber-600 transition-all cursor-pointer"
+                                title={`Despesas Disk (${m.mes}): ${formatCurrency(m.despesasDisk)}`}
+                              />
+                            </div>
                           </div>
 
-                          {/* Barra Despesas */}
-                          <div className="flex flex-col items-center w-6 sm:w-10">
-                            <span className="text-[10px] font-bold text-slate-500 mb-1 whitespace-nowrap">
-                              {Math.round(m.despesasDisk / 1000)}k
-                            </span>
-                            <div
-                              style={{ height: `${expHeightPercent}%` }}
-                              className="w-full bg-slate-300 rounded-t-lg shadow-xs group-hover:bg-slate-400 transition-all cursor-pointer"
-                              title={`Despesas Disk (${m.mes}): ${formatCurrency(m.despesasDisk)}`}
-                            />
+                          {/* Rótulo do Mês e Lucro Líquido */}
+                          <div className="text-center pt-2.5 w-full border-t border-slate-200">
+                            <span className="text-xs sm:text-sm font-black text-slate-900">{m.mes}</span>
+                            <div className="text-[11px] text-emerald-800 font-extrabold mt-0.5 bg-emerald-50 px-1.5 py-0.5 rounded-md inline-block">
+                              +{Math.round(m.resultado / 1000)}k
+                            </div>
                           </div>
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        <div className="text-center pt-2 w-full">
-                          <span className="text-xs font-black text-slate-900">{m.mes}</span>
-                          <div className="text-[10px] text-emerald-700 font-bold">
-                            +{Math.round(m.resultado / 1000)}k
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {/* Legenda das Barras */}
+                  <div className="flex items-center justify-between text-xs text-slate-600 pt-3 px-2 font-medium">
+                    <span>Valores expressos em milhares de reais (R$ k)</span>
+                    <span className="font-bold text-slate-800">Escala Máxima: R$ 240 mil</span>
+                  </div>
                 </div>
               </div>
             )}
 
+            {/* 3. MARGEM % COM BARRAS EM PIXELS E META DE REFERÊNCIA */}
             {chartType === 'margem' && (
               <div className="pt-2 pb-2">
-                <div className="grid grid-cols-5 gap-3 items-end h-48 border-b border-slate-200 px-2">
-                  {[
-                    { mes: 'Mai', margem: 31.0, lucro: 44000 },
-                    { mes: 'Jun', margem: 37.1, lucro: 66000 },
-                    { mes: 'Jul', margem: 36.4, lucro: 60000 },
-                    { mes: 'Ago', margem: 35.9, lucro: 70000 },
-                    { mes: 'Set', margem: 31.9, lucro: 68450 },
-                  ].map((m) => {
-                    const barHeight = Math.round((m.margem / 45) * 100);
-                    return (
-                      <div key={m.mes} className="flex flex-col items-center h-full justify-end group">
-                        <span className="text-xs font-black text-emerald-800 mb-1">
-                          {m.margem}%
-                        </span>
-                        <div
-                          style={{ height: `${barHeight}%` }}
-                          className="w-10 sm:w-16 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-xl shadow-xs group-hover:from-emerald-700 group-hover:to-emerald-500 transition-all cursor-pointer"
-                          title={`Margem líquida (${m.mes}): ${m.margem}% — Lucro: ${formatCurrency(m.lucro)}`}
-                        />
-                        <div className="text-center pt-2">
-                          <span className="text-xs font-bold text-slate-800">{m.mes}</span>
-                          <div className="text-[10px] text-emerald-700 font-bold mt-0.5">
-                            +{formatCurrency(m.lucro)}
+                <div className="bg-slate-50/60 rounded-2xl p-4 border border-slate-200/80">
+                  <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-200">
+                    <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                      <Percent className="w-4 h-4 text-emerald-600" />
+                      Rentabilidade Operacional Líquida Mensal
+                    </span>
+                    <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                      Meta Mínima: 30%
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-3 items-end h-56 border-b border-slate-300 pb-2 px-2 mt-2">
+                    {[
+                      { mes: 'Mai', margem: 31.0, lucro: 44000, gmv: 1650000 },
+                      { mes: 'Jun', margem: 37.1, lucro: 66000, gmv: 1980000 },
+                      { mes: 'Jul', margem: 36.4, lucro: 60000, gmv: 1820000 },
+                      { mes: 'Ago', margem: 35.9, lucro: 70000, gmv: 2150000 },
+                      { mes: 'Set', margem: 31.9, lucro: 68450, gmv: 2418900 },
+                    ].map((m) => {
+                      const maxMarginPx = 135;
+                      const marginPx = Math.max(20, Math.round((m.margem / 45) * maxMarginPx));
+
+                      return (
+                        <div key={m.mes} className="flex flex-col items-center justify-end h-full group">
+                          {/* Badge de Porcentagem */}
+                          <span className="text-xs sm:text-sm font-black text-emerald-950 mb-1.5 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-lg shadow-2xs">
+                            {m.margem}%
+                          </span>
+
+                          {/* Coluna da Margem */}
+                          <div
+                            style={{ height: `${marginPx}px` }}
+                            className="w-12 sm:w-20 bg-gradient-to-t from-emerald-700 via-emerald-600 to-emerald-500 rounded-t-2xl shadow-sm border border-emerald-600 hover:brightness-105 transition-all cursor-pointer"
+                            title={`Margem Líquida (${m.mes}): ${m.margem}% | Lucro: ${formatCurrency(m.lucro)}`}
+                          />
+
+                          {/* Rótulo do Mês e Lucro */}
+                          <div className="text-center pt-2.5 w-full border-t border-slate-200">
+                            <span className="text-xs sm:text-sm font-black text-slate-900">{m.mes}</span>
+                            <div className="text-[11px] text-emerald-900 font-extrabold mt-0.5">
+                              {formatCurrency(m.lucro)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-600 pt-3 px-2 font-medium">
+                    <span>Todos os meses operaram acima do piso mínimo de 30%</span>
+                    <span className="text-emerald-800 font-bold">Média do período: 34.5%</span>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Escala de referência e Resumo Executivo Compacto */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-3">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Receita Acumulada (Mai-Set)</span>
-                <span className="text-sm font-black text-slate-900 font-mono">R$ 894,3 mil</span>
-                <span className="text-[10px] text-slate-500 block mt-0.5">Média: R$ 178,8k / mês</span>
+              <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/90 shadow-2xs">
+                <span className="text-[10px] font-black text-indigo-900 uppercase block tracking-wider">
+                  Receita Acumulada (Mai-Set)
+                </span>
+                <span className="text-base font-black text-indigo-950 font-mono mt-0.5 block">
+                  R$ 894,3 mil
+                </span>
+                <span className="text-[11px] text-indigo-700 font-bold block mt-1">Média: R$ 178,8k / mês</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Despesas Acumuladas</span>
-                <span className="text-sm font-black text-slate-900 font-mono">R$ 585,8 mil</span>
-                <span className="text-[10px] text-slate-500 block mt-0.5">Média: R$ 117,1k / mês</span>
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/90 shadow-2xs">
+                <span className="text-[10px] font-black text-amber-900 uppercase block tracking-wider">
+                  Despesas Acumuladas
+                </span>
+                <span className="text-base font-black text-amber-950 font-mono mt-0.5 block">
+                  R$ 585,8 mil
+                </span>
+                <span className="text-[11px] text-amber-800 font-bold block mt-1">Média: R$ 117,1k / mês</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200/80">
-                <span className="text-[10px] font-bold text-emerald-800 uppercase block">Superávit Acumulado</span>
-                <span className="text-sm font-black text-emerald-950 font-mono">+R$ 308,4 mil</span>
-                <span className="text-[10px] text-emerald-700 font-bold block mt-0.5">Margem Média: 34.5%</span>
+              <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-300 shadow-2xs">
+                <span className="text-[10px] font-black text-emerald-900 uppercase block tracking-wider">
+                  Superávit Operacional Total
+                </span>
+                <span className="text-base font-black text-emerald-950 font-mono mt-0.5 block">
+                  +R$ 308,4 mil
+                </span>
+                <span className="text-[11px] text-emerald-800 font-extrabold block mt-1">Margem Média: 34.5%</span>
               </div>
 
-              <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200/80 flex flex-col justify-between">
+              <div className="p-3.5 rounded-2xl bg-slate-900 text-white shadow-2xs flex flex-col justify-between">
                 <div>
-                  <span className="text-[10px] font-bold text-indigo-800 uppercase block">Taxa de Eficiência</span>
-                  <span className="text-sm font-black text-indigo-950 font-mono">1,53x</span>
+                  <span className="text-[10px] font-bold text-slate-300 uppercase block tracking-wider">
+                    Taxa de Eficiência
+                  </span>
+                  <span className="text-base font-black text-white font-mono mt-0.5 block">
+                    1,53x
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-bold block">
+                    R$ 1,53 faturado p/ R$ 1,00 gasto
+                  </span>
                 </div>
                 <button
                   onClick={() => handleSelectSection('intel-exec-gerencial')}
-                  className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 flex items-center gap-1 mt-1"
+                  className="text-[11px] font-bold text-indigo-300 hover:text-white flex items-center gap-1 mt-2 self-start transition-colors"
                 >
                   <span>Ver DRE Waterfall</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
