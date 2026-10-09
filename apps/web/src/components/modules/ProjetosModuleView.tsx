@@ -389,7 +389,7 @@ export const ProjetosModuleView: React.FC<Props> = ({
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">
               <HardHat className="w-4 h-4" />
-              <span>Projetos & Infraestrutura de Eventos · DiskIngressos</span>
+              <span>Projetos & Operações de Campo · DiskIngressos</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               Central de Projetos, Conectividade & Operações de Campo
@@ -533,7 +533,7 @@ export const ProjetosModuleView: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-blue-700" />
             <span className="text-sm font-bold text-slate-900">
-              Central de Acesso Rápido — 24 Submenus de Projetos & Infraestrutura
+              Central de Acesso Rápido — 24 Submenus de Projetos
             </span>
             <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-full">
               {filteredSubmenus.length} de 24

@@ -461,7 +461,7 @@ export const navigationModules: ModuleNav[] = [
   },
   {
     id: 'projetos',
-    label: 'Projetos & Infraestrutura',
+    label: 'Projetos',
     icon: 'HardHat',
     groups: [
       {
