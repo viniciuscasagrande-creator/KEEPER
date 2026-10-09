@@ -9,6 +9,7 @@ import {
   Users,
   ShoppingCart,
   Package,
+  Boxes,
   CreditCard,
   Sparkles,
   Settings,
@@ -28,6 +29,7 @@ const iconMap: Record<string, React.ElementType> = {
   Users,
   ShoppingCart,
   Package,
+  Boxes,
   CreditCard,
   Sparkles,
   Settings,
@@ -64,33 +66,33 @@ export function HorizontalNav({
   }, []);
 
   return (
-    <nav ref={navRef} className="bg-slate-900 border-b border-slate-800 shadow-sm relative z-30">
+    <nav ref={navRef} className="bg-slate-900 border-b border-slate-800 shadow-md relative z-30 overflow-y-hidden select-none">
       <div className="max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center space-x-1.5 overflow-x-auto overflow-y-hidden no-scrollbar py-2 min-h-[58px]">
           {navigationModules.map((mod) => {
             const Icon = iconMap[mod.icon] || LayoutDashboard;
             const isActive = activeModuleId === mod.id;
             const isOpen = openDropdownId === mod.id;
 
             return (
-              <div key={mod.id} className="relative">
+              <div key={mod.id} className="relative shrink-0">
                 <button
                   onClick={() => {
                     onSelectModule(mod.id);
                     setOpenDropdownId(isOpen ? null : mod.id);
                   }}
                   onMouseEnter={() => setOpenDropdownId(mod.id)}
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-md text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
+                  className={`flex items-center space-x-2 px-3.5 py-2.5 rounded-lg text-[13px] font-semibold tracking-normal transition-all whitespace-nowrap ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5 opacity-90" />
+                  <Icon className="w-4 h-4 opacity-95 shrink-0" />
                   <span>{mod.label}</span>
                   {mod.groups.length > 0 && (
                     <ChevronDown
-                      className={`w-3 h-3 opacity-60 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      className={`w-3.5 h-3.5 opacity-60 transition-transform duration-150 shrink-0 ${isOpen ? 'rotate-180 text-white' : ''}`}
                     />
                   )}
                 </button>
@@ -99,7 +101,7 @@ export function HorizontalNav({
                 {isOpen && mod.groups.length > 0 && (
                   <div
                     onMouseLeave={() => setOpenDropdownId(null)}
-                    className="absolute left-0 mt-1 w-80 sm:w-96 md:w-[480px] bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+                    className="absolute left-0 mt-2 w-80 sm:w-96 md:w-[500px] max-h-[calc(100vh-130px)] overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
                   >
                     {mod.groups.map((group) => (
                       <div key={group.groupName} className="space-y-1">

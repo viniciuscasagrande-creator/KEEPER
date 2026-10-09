@@ -23,6 +23,7 @@ import { ConfiguracoesModuleView } from './components/modules/ConfiguracoesModul
 import { CrmModuleView } from './components/modules/CrmModuleView';
 import { ContratosModuleView } from './components/modules/ContratosModuleView';
 import { ProjetosModuleView } from './components/modules/ProjetosModuleView';
+import { AtivosModuleView } from './components/modules/AtivosModuleView';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
@@ -141,6 +142,11 @@ export function App() {
           />
         ) : activeModule === 'projetos' ? (
           <ProjetosModuleView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
+          />
+        ) : activeModule === 'ativos' || activeModule === 'patrimonio' ? (
+          <AtivosModuleView
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />

@@ -521,6 +521,67 @@ export const navigationModules: ModuleNav[] = [
     ],
   },
   {
+    id: 'ativos',
+    label: 'Ativos & Hardwares',
+    icon: 'Package',
+    groups: [
+      {
+        groupName: 'Visão Geral & Gestão Patrimonial (4)',
+        items: [
+          { id: 'atv-dashboard', label: 'Dashboard Executivo do Imobilizado', description: 'Status global do parque tecnológico, disponibilidade e valor residual', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'atv-inventario-geral', label: 'Inventário Consolidado de Ativos', description: 'Base cadastral com plaquetação, tags RFID e número de série', badge: '348 Ativos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'atv-tombamento', label: 'Tombamento & Plaquetação', description: 'Entrada de novos equipamentos, emissão de etiquetas e código de barras' },
+          { id: 'atv-depreciacao', label: 'Depreciação Contábil & Vida Útil', description: 'Cálculo de depreciação mensal conforme normas fiscais e contábeis' },
+        ],
+      },
+      {
+        groupName: 'Hardwares de Bilheteria & Portaria (4)',
+        items: [
+          { id: 'atv-catracas', label: 'Catracas Eletrônicas & Pedestais', description: 'Catracas portáteis e fixas de alta vazão para grandes arenas', badge: '47 Unid.', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'atv-pdas-coletores', label: 'PDAs Industriais & Coletores Móveis', description: 'Aparelhos móveis Android Zebra/Honeywell com leitor 2D de alta densidade', badge: '82 Unid.', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'atv-pdvs-impressoras', label: 'PDVs de Bilheteria & Impressoras', description: 'Terminais de venda física e impressoras térmicas Daruma/Elgin' },
+          { id: 'atv-servidores-edge', label: 'Servidores Edge & Infra de Conectividade', description: 'Micro-servidores locais de contingência e no-breaks senoidais' },
+        ],
+      },
+      {
+        groupName: 'Localização, Custódia & Movimentações (4)',
+        items: [
+          { id: 'atv-movimentacoes', label: 'Controle de Saídas & Retornos (Romaneio)', description: 'Romaneios de transporte com leitor de código de barras para eventos' },
+          { id: 'atv-localizacao-tempo-real', label: 'Rastreamento por Venue & Galpão', description: 'Localização em tempo real: Galpão Central, Pedreira, Teatro Positivo' },
+          { id: 'atv-comodatos', label: 'Termos de Comodato para Produtoras', description: 'Cessão temporária de equipamentos com termo de responsabilidade', badge: 'Comodatos', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'atv-seguros-apolices', label: 'Apólices de Seguro contra Danos & Furto', description: 'Gestão de seguros patrimoniais para eventos externos' },
+        ],
+      },
+      {
+        groupName: 'Manutenção Técnica & Ordens de Serviço (4)',
+        items: [
+          { id: 'atv-ordens-servico', label: 'Central de Ordens de Serviço (OS)', description: 'Abertura e acompanhamento de reparos preventivos e corretivos', badge: '2 Abertas', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'atv-preventiva', label: 'Plano de Manutenção Preventiva', description: 'Cronograma periódico de lubrificação, alinhamento e calibração óptica' },
+          { id: 'atv-baterias-pecas', label: 'Baterias & Peças de Reposição', description: 'Gestão de ciclos de bateria de PDAs e cabeças de impressão térmica' },
+          { id: 'atv-laboratorio', label: 'Laboratório Técnico & Bancada', description: 'Testes de bancada e diagnóstico eletrônico de placas controladoras' },
+        ],
+      },
+      {
+        groupName: 'Insumos & Suprimentos de Bilheteria (4)',
+        items: [
+          { id: 'atv-bobinas-termicas', label: 'Bobinas Térmicas de Segurança', description: 'Papel térmico especial com tarja holográfica anti-fraude' },
+          { id: 'atv-pulseiras-rfid', label: 'Pulseiras RFID & Ingressos Holográficos', description: 'Controle de lote de pulseiras para camarotes e áreas VIP' },
+          { id: 'atv-crachas-cordoes', label: 'Crachás de Produção & Cordões Disk', description: 'Insumos térmicos para identificação de staff e imprensa' },
+          { id: 'atv-estoque-minimo', label: 'Alertas de Estoque Mínimo de Insumos', description: 'Gatilhos automáticos de compra para reposição de suprimentos' },
+        ],
+      },
+      {
+        groupName: 'Governança Patrimonial & Auditoria (4)',
+        items: [
+          { id: 'atv-auditoria-inventario', label: 'Auditoria Física de Inventário (RFID)', description: 'Leitura em massa por radiofrequência para conciliação física', badge: 'Imutável', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'atv-baixas-sinistros', label: 'Termos de Baixa, Sucata & Sinistros', description: 'Processo formal de descarte e baixa patrimonial com laudo técnico' },
+          { id: 'atv-relatorios-patrimoniais', label: 'Relatórios Fiscais do Imobilizado', description: 'Demonstrativos para auditoria contábil e balanço patrimonial' },
+          { id: 'atv-config', label: 'Configurações de Ativos & Depreciação', description: 'Taxas anuais, prazos de garantia e categorias de equipamentos' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'inteligencia',
     label: 'Inteligência',
     icon: 'Sparkles',
