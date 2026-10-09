@@ -50,6 +50,9 @@ import {
   ChevronRightSquare,
   BarChart2,
   LineChart,
+  Grid,
+  Compass,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   inteligenciaClient,
@@ -346,15 +349,24 @@ export const INTEL_SUBMENUS: IntelSubmenuDef[] = [
   },
 ];
 
+export const GROUPS_LIST = [
+  'Todos (35)',
+  'Visão Executiva (4)',
+  'Inteligência Financeira (6)',
+  'Inteligência de Eventos (5)',
+  'Inteligência Empresarial (5)',
+  'Inteligência Artificial (6)',
+  'Dados e Relatórios (5)',
+  'Governança e Controle (4)',
+];
+
 export const InteligenciaModuleView: React.FC<Props> = ({
   activeSection = 'intel-exec-dashboard',
   onSelectSection,
 }) => {
   const [sectionId, setSectionId] = useState<string>(activeSection);
-  const [sidebarTheme, setSidebarTheme] = useState<'light' | 'dark'>('light');
-  const [sidebarSide, setSidebarSide] = useState<'left' | 'right'>('right');
-  const [sidebarSearch, setSidebarSearch] = useState<string>('');
-  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [selectedGroupTab, setSelectedGroupTab] = useState<string>('Todos (35)');
+  const [hubSearch, setHubSearch] = useState<string>('');
 
   // Dados da API
   const [dashboardData, setDashboardData] = useState<ExecDashboardResponse | null>(null);
@@ -396,6 +408,8 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   const handleSelectSection = (id: string) => {
     setSectionId(id);
     if (onSelectSection) onSelectSection(id);
+    // Rolagem suave para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const showNotification = (msg: string) => {
@@ -476,25 +490,21 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     }
   };
 
-  // Agrupamento dos 35 submenus
-  const groupedSubmenus = useMemo(() => {
-    const groups: Record<string, IntelSubmenuDef[]> = {};
-    INTEL_SUBMENUS.forEach((sm) => {
-      const match =
-        sm.label.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
-        sm.purpose.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
-        sm.group.toLowerCase().includes(sidebarSearch.toLowerCase());
-      if (match) {
-        if (!groups[sm.group]) groups[sm.group] = [];
-        groups[sm.group].push(sm);
-      }
-    });
-    return groups;
-  }, [sidebarSearch]);
+  // Filtragem dos 35 submenus para o Hub integrado no Dashboard
+  const filteredHubSubmenus = useMemo(() => {
+    return INTEL_SUBMENUS.filter((sm) => {
+      const matchSearch =
+        sm.label.toLowerCase().includes(hubSearch.toLowerCase()) ||
+        sm.purpose.toLowerCase().includes(hubSearch.toLowerCase()) ||
+        sm.group.toLowerCase().includes(hubSearch.toLowerCase());
 
-  const toggleGroup = (group: string) => {
-    setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
-  };
+      const matchGroup =
+        selectedGroupTab === 'Todos (35)' ||
+        sm.group.toLowerCase().includes(selectedGroupTab.split(' ')[0].toLowerCase());
+
+      return matchSearch && matchGroup;
+    });
+  }, [hubSearch, selectedGroupTab]);
 
   const currentSubmenu = INTEL_SUBMENUS.find((s) => s.id === sectionId) || INTEL_SUBMENUS[0];
 
@@ -509,171 +519,9 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     return dashboardData.alertasInteligentes.filter((a) => a.severidade === alertSeverityFilter);
   }, [dashboardData, alertSeverityFilter]);
 
-  // ==========================================
-  // SIDEBAR PROPORCIONAL & EXPANSÍVEL
-  // ==========================================
-  const renderSidebar = () => {
-    const isLight = sidebarTheme === 'light';
-    return (
-      <aside
-        className={`w-full lg:w-80 shrink-0 transition-all duration-300 self-start sticky top-4 min-h-[820px] max-h-[calc(100vh-140px)] flex flex-col rounded-2xl shadow-sm border ${
-          isLight
-            ? 'bg-white border-slate-200/90 text-slate-800'
-            : 'bg-slate-900 border-slate-800 text-slate-100 shadow-xl'
-        }`}
-      >
-        {/* Topo do Sidebar */}
-        <div
-          className={`p-4 border-b flex flex-col gap-3 ${
-            isLight ? 'border-slate-100 bg-slate-50/70 rounded-t-2xl' : 'border-slate-800 bg-slate-950/40 rounded-t-2xl'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs">
-                <Brain className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider block">Inteligência</span>
-                <span className="text-[11px] opacity-75 font-medium">35 submenus · 7 grupos</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setSidebarSide(sidebarSide === 'right' ? 'left' : 'right')}
-                className={`p-1.5 rounded-md text-xs transition-colors ${
-                  isLight ? 'hover:bg-slate-200 text-slate-600' : 'hover:bg-slate-800 text-slate-400'
-                }`}
-                title={sidebarSide === 'right' ? 'Mover menu para a Esquerda' : 'Mover menu para a Direita'}
-              >
-                {sidebarSide === 'right' ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-              </button>
-
-              <button
-                onClick={() => setSidebarTheme(sidebarTheme === 'light' ? 'dark' : 'light')}
-                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-colors ${
-                  isLight ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
-                }`}
-                title="Alternar tema claro/escuro da barra lateral"
-              >
-                {sidebarTheme === 'light' ? 'Escuro' : 'Claro'}
-              </button>
-            </div>
-          </div>
-
-          {/* Busca de submenus */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 opacity-50" />
-            <input
-              type="text"
-              value={sidebarSearch}
-              onChange={(e) => setSidebarSearch(e.target.value)}
-              placeholder="Buscar entre os 35 submenus..."
-              className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border outline-none transition-all ${
-                isLight
-                  ? 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-indigo-500'
-                  : 'bg-slate-800/80 border-slate-700 text-slate-100 placeholder-slate-400 focus:border-indigo-400'
-              }`}
-            />
-          </div>
-        </div>
-
-        {/* Lista rolável de grupos e itens */}
-        <div className="p-2 overflow-y-auto flex-1 space-y-3 custom-scrollbar text-xs">
-          {Object.entries(groupedSubmenus).map(([groupName, items]) => {
-            const isCollapsed = collapsedGroups[groupName];
-            return (
-              <div key={groupName} className="space-y-1">
-                <button
-                  onClick={() => toggleGroup(groupName)}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg font-semibold tracking-wide text-[11px] uppercase transition-colors ${
-                    isLight
-                      ? 'text-slate-600 hover:bg-slate-100'
-                      : 'text-slate-300 hover:bg-slate-800/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>{groupName}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                      {items.length}
-                    </span>
-                  </div>
-                  {isCollapsed ? <ChevronRight className="w-3 h-3 opacity-60" /> : <ChevronDown className="w-3 h-3 opacity-60" />}
-                </button>
-
-                {!isCollapsed && (
-                  <div className="space-y-0.5 pl-1">
-                    {items.map((item) => {
-                      const isActive = item.id === sectionId;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleSelectSection(item.id)}
-                          className={`w-full text-left flex items-center justify-between px-2.5 py-1.8 rounded-lg transition-all group ${
-                            isActive
-                              ? isLight
-                                ? 'bg-indigo-50 text-indigo-700 font-bold border-l-3 border-indigo-600 shadow-2xs'
-                                : 'bg-indigo-950/70 text-indigo-200 font-bold border-l-3 border-indigo-400 shadow-2xs'
-                              : isLight
-                              ? 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-medium'
-                              : 'text-slate-300 hover:bg-slate-800/60 hover:text-white font-medium'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0 pr-1">
-                            <Icon
-                              className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                                isActive
-                                  ? isLight
-                                    ? 'text-indigo-600'
-                                    : 'text-indigo-400'
-                                  : isLight
-                                  ? 'text-slate-400 group-hover:text-slate-600'
-                                  : 'text-slate-500 group-hover:text-slate-300'
-                              }`}
-                            />
-                            <span className="truncate text-xs leading-snug">{item.label}</span>
-                          </div>
-
-                          {item.badge && (
-                            <span
-                              className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider shrink-0 ${
-                                item.badgeColor || 'bg-slate-200 text-slate-700'
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Rodapé da Sidebar */}
-        <div
-          className={`p-3 border-t text-[11px] flex items-center justify-between ${
-            isLight ? 'border-slate-100 bg-slate-50/50 text-slate-500' : 'border-slate-800 bg-slate-950/40 text-slate-400'
-          }`}
-        >
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">Motor IA Ativo</span>
-          </div>
-          <span className="font-mono text-[10px]">Keeper v2.4</span>
-        </div>
-      </aside>
-    );
-  };
-
-  // ==========================================
-  // VIEW: DASHBOARD EXECUTIVO PRINCIPAL
-  // ==========================================
+  // =========================================================================
+  // VIEW: DASHBOARD EXECUTIVO PRINCIPAL (CARDS MAIORES, MAIS LARGOS E HUB)
+  // =========================================================================
   const renderDashboardExecutivo = () => {
     const kpis = dashboardData?.kpis || {
       vendasPlataforma: 2418900.0,
@@ -691,142 +539,194 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     const monthly = dashboardData?.evolucaoMensal || [];
 
     return (
-      <div className="space-y-6">
-        {/* 1. OS 4 CARDS PRINCIPAIS EM CONFORMIDADE COM O PROTÓTIPO */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {/* Card 1: Vendas na Plataforma (GMV) */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vendas na plataforma</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
-                +12.5% MoM
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                R$ 2,4 mi
-              </div>
-              <div className="text-xs font-mono text-slate-500 mt-0.5">
-                {formatCurrency(kpis.vendasPlataforma)}
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-              <span>{kpis.totalIngressos.toLocaleString('pt-BR')} ingressos emitidos</span>
-              <span className="font-semibold text-slate-700">42 eventos</span>
-            </div>
-            <div className="mt-2 text-[10px] text-amber-700 bg-amber-50 px-2 py-1 rounded font-medium flex items-center gap-1">
-              <Lock className="w-3 h-3 shrink-0" />
-              <span>Custódia fiduciária de produtores</span>
-            </div>
+      <div className="space-y-8">
+        {/* 1. OS 4 CARDS PRINCIPAIS: EXPANDIDOS, MAIORES, MAIS LARGOS E IMPONENTES */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <Gauge className="w-5 h-5 text-indigo-600" />
+              Painel Consolidado de Indicadores Principais
+            </h2>
+            <span className="text-xs font-semibold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+              Competência: Outubro / 2026
+            </span>
           </div>
 
-          {/* Card 2: Receita própria Disk */}
-          <div className="bg-white rounded-2xl border border-indigo-200/90 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow bg-gradient-to-br from-white via-indigo-50/20 to-white">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-indigo-700 uppercase tracking-wider">Receita própria Disk</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
-                +9.9% MoM
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-indigo-950 tracking-tight">
-                R$ 214 mil
-              </div>
-              <div className="text-xs font-mono text-indigo-700 mt-0.5">
-                {formatCurrency(kpis.receitaPropriaDisk)}
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-indigo-100 flex items-center justify-between text-[11px] text-indigo-800">
-              <span>Taxas de conveniência & PDV</span>
-              <span className="font-semibold">MDR & Serviços</span>
-            </div>
-            <div className="mt-2 text-[10px] text-indigo-700 bg-indigo-50/80 px-2 py-1 rounded font-medium flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 shrink-0 text-indigo-600" />
-              <span>Receita líquida societária Disk</span>
-            </div>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {/* Card 1: Vendas na Plataforma (GMV) - Ultra Largo */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-7 shadow-xs flex flex-col justify-between hover:shadow-lg hover:border-slate-300 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                    Vendas na Plataforma (GMV)
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-blue-100 text-blue-800">
+                    +12.5% MoM
+                  </span>
+                </div>
 
-          {/* Card 3: Obrigações com produtores */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Obrigações com produtores</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
-                Conta Escrow
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                R$ 1,8 mi
+                <div className="text-4xl xl:text-5xl font-black text-slate-900 tracking-tight mt-1">
+                  R$ 2,4 mi
+                </div>
+                <div className="text-sm font-mono font-semibold text-slate-600 mt-1">
+                  {formatCurrency(kpis.vendasPlataforma)}
+                </div>
               </div>
-              <div className="text-xs font-mono text-slate-500 mt-0.5">
-                {formatCurrency(kpis.obrigacoesProdutores)}
-              </div>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-              <span>28 produtores ativos</span>
-              <span className="font-semibold text-slate-700">Pico 15/10: R$ 420k</span>
-            </div>
-            <div className="mt-2 text-[10px] text-rose-700 bg-rose-50 px-2 py-1 rounded font-medium flex items-center gap-1">
-              <ShieldAlert className="w-3 h-3 shrink-0 text-rose-600" />
-              <span>Segregação patrimonial ativa</span>
-            </div>
-          </div>
 
-          {/* Card 4: Resultado operacional */}
-          <div className="bg-white rounded-2xl border border-emerald-200/90 p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow bg-gradient-to-br from-white via-emerald-50/20 to-white">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Resultado operacional</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                Margem 31.9%
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-emerald-950 tracking-tight">
-                R$ 68 mil
+              <div className="mt-6 pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <span className="font-medium">{kpis.totalIngressos.toLocaleString('pt-BR')} ingressos emitidos</span>
+                  <span className="font-bold text-slate-800">42 eventos ativos</span>
+                </div>
+                <div className="text-xs text-slate-500 flex items-center justify-between">
+                  <span>Ticket Médio: <strong>{formatCurrency(kpis.ticketMedio)}</strong></span>
+                  <span className="text-indigo-600 font-bold">28 Produtores</span>
+                </div>
+                <div className="text-[11px] text-amber-800 bg-amber-50/90 border border-amber-200/80 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                  <span>Custódia fiduciária de produtores (Conta Escrow)</span>
+                </div>
               </div>
-              <div className="text-xs font-mono text-emerald-700 mt-0.5">
-                {formatCurrency(kpis.resultadoOperacional)}
+            </div>
+
+            {/* Card 2: Receita própria Disk - Ultra Largo */}
+            <div className="bg-gradient-to-br from-indigo-50/60 via-white to-indigo-50/20 rounded-3xl border-2 border-indigo-200/90 p-7 shadow-xs flex flex-col justify-between hover:shadow-lg hover:border-indigo-300 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black text-indigo-800 uppercase tracking-wider">
+                    Receita Própria Disk
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-900">
+                    +9.9% MoM
+                  </span>
+                </div>
+
+                <div className="text-4xl xl:text-5xl font-black text-indigo-950 tracking-tight mt-1">
+                  R$ 214 mil
+                </div>
+                <div className="text-sm font-mono font-bold text-indigo-700 mt-1">
+                  {formatCurrency(kpis.receitaPropriaDisk)}
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-indigo-100 space-y-3">
+                <div className="flex items-center justify-between text-xs text-indigo-900">
+                  <span className="font-medium">Taxas de conveniência Web/App</span>
+                  <span className="font-bold">PDVs & Bilheteria</span>
+                </div>
+                <div className="text-xs text-indigo-700 flex items-center justify-between">
+                  <span>Margem sobre GMV: <strong>8.86%</strong></span>
+                  <span className="font-bold text-emerald-700">MDR & Hardwares</span>
+                </div>
+                <div className="text-[11px] text-indigo-800 bg-indigo-100/70 border border-indigo-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-indigo-700" />
+                  <span>Receita líquida própria societária escriturada</span>
+                </div>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800">
-              <span>Despesas: R$ 145,8 mil</span>
-              <span className="font-semibold text-emerald-900">+14.2% MoM</span>
+
+            {/* Card 3: Obrigações com produtores - Ultra Largo */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-7 shadow-xs flex flex-col justify-between hover:shadow-lg hover:border-slate-300 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-extrabold text-slate-600 uppercase tracking-wider">
+                    Obrigações com Produtores
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-purple-100 text-purple-800">
+                    Conta Escrow
+                  </span>
+                </div>
+
+                <div className="text-4xl xl:text-5xl font-black text-slate-900 tracking-tight mt-1">
+                  R$ 1,8 mi
+                </div>
+                <div className="text-sm font-mono font-semibold text-slate-600 mt-1">
+                  {formatCurrency(kpis.obrigacoesProdutores)}
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <span className="font-medium">28 contratos ativos</span>
+                  <span className="font-bold text-slate-800">100% Conciliado</span>
+                </div>
+                <div className="text-xs text-slate-500 flex items-center justify-between">
+                  <span>Pico em 15/10: <strong>R$ 420.000</strong></span>
+                  <span className="text-purple-700 font-bold">TED / PIX Lote</span>
+                </div>
+                <div className="text-[11px] text-rose-800 bg-rose-50/90 border border-rose-200/80 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                  <span>Passivo fiduciário segregado (não é caixa livre)</span>
+                </div>
+              </div>
             </div>
-            <div className="mt-2 text-[10px] text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded font-medium flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 shrink-0 text-emerald-600" />
-              <span>Superávit corporativo líquido</span>
+
+            {/* Card 4: Resultado operacional - Ultra Largo */}
+            <div className="bg-gradient-to-br from-emerald-50/60 via-white to-emerald-50/20 rounded-3xl border-2 border-emerald-200/90 p-7 shadow-xs flex flex-col justify-between hover:shadow-lg hover:border-emerald-300 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">
+                    Resultado Operacional
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900">
+                    Margem 31.9%
+                  </span>
+                </div>
+
+                <div className="text-4xl xl:text-5xl font-black text-emerald-950 tracking-tight mt-1">
+                  R$ 68 mil
+                </div>
+                <div className="text-sm font-mono font-bold text-emerald-700 mt-1">
+                  {formatCurrency(kpis.resultadoOperacional)}
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-emerald-100 space-y-3">
+                <div className="flex items-center justify-between text-xs text-emerald-900">
+                  <span className="font-medium">Despesas Disk: R$ 145,8 mil</span>
+                  <span className="font-black text-emerald-800">+14.2% MoM</span>
+                </div>
+                <div className="text-xs text-emerald-700 flex items-center justify-between">
+                  <span>EBITDA Gerencial: <strong>R$ 82.100</strong></span>
+                  <span className="font-bold">Superávit</span>
+                </div>
+                <div className="text-[11px] text-emerald-900 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-700" />
+                  <span>Lucro operacional consolidado da empresa Disk</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 2. EVOLUÇÃO MENSAL ILUSTRATIVA (MAI A SET) */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        {/* 2. EVOLUÇÃO MENSAL ILUSTRATIVA EXPANDIDA & MAIS LARGA */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-indigo-600" />
-                Evolução mensal ilustrativa
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                <BarChart2 className="w-5 h-5 text-indigo-600" />
+                Evolução Mensal Ilustrativa — Receita Própria vs. Despesas Corporativas Disk
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Comparativo histórico: Receita própria Disk vs. Despesas Disk corporativas
+              <p className="text-xs text-slate-500 mt-1">
+                Comparativo na escala visual de R$ 80 mil a R$ 240 mil destacando a margem operacional gerada
               </p>
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex items-center gap-1.5 font-medium text-slate-700">
-                <span className="w-3 h-3 rounded-xs bg-indigo-600 inline-block" />
-                <span>Receita própria Disk</span>
+            <div className="flex items-center gap-5 text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-800">
+                <span className="w-3.5 h-3.5 rounded-sm bg-indigo-600 inline-block shadow-2xs" />
+                <span>Receita Própria Disk</span>
               </div>
-              <div className="flex items-center gap-1.5 font-medium text-slate-700">
-                <span className="w-3 h-3 rounded-xs bg-slate-300 inline-block" />
-                <span>Despesas Disk</span>
+              <div className="flex items-center gap-2 font-bold text-slate-800">
+                <span className="w-3.5 h-3.5 rounded-sm bg-slate-300 inline-block shadow-2xs" />
+                <span>Despesas Corporativas</span>
               </div>
             </div>
           </div>
 
-          {/* Gráfico de barras comparativas */}
-          <div className="pt-6 pb-2">
-            <div className="grid grid-cols-5 gap-3 sm:gap-6 items-end h-64 border-b border-slate-200 px-2">
+          {/* Gráfico de Barras Amplo */}
+          <div className="pt-8 pb-4">
+            <div className="grid grid-cols-5 gap-4 sm:gap-10 items-end h-80 border-b border-slate-200 px-4">
               {monthly.map((m) => {
                 const maxVal = 240000;
                 const recHeightPercent = Math.min(100, Math.round((m.receitaPropria / maxVal) * 100));
@@ -834,36 +734,39 @@ export const InteligenciaModuleView: React.FC<Props> = ({
 
                 return (
                   <div key={m.mes} className="flex flex-col items-center h-full justify-end group">
-                    <div className="flex items-end gap-1.5 sm:gap-2.5 w-full justify-center h-full pb-2">
+                    <div className="flex items-end gap-2 sm:gap-4 w-full justify-center h-full pb-3">
                       {/* Barra Receita Própria */}
-                      <div className="flex flex-col items-center w-5 sm:w-10">
-                        <span className="text-[10px] font-semibold text-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity mb-1 whitespace-nowrap">
+                      <div className="flex flex-col items-center w-8 sm:w-16">
+                        <span className="text-[11px] font-black text-indigo-700 opacity-90 group-hover:opacity-100 transition-opacity mb-1.5 whitespace-nowrap">
                           {formatCurrency(m.receitaPropria)}
                         </span>
                         <div
                           style={{ height: `${recHeightPercent}%` }}
-                          className="w-full bg-indigo-600 rounded-t-md shadow-2xs group-hover:bg-indigo-700 transition-all cursor-pointer"
+                          className="w-full bg-indigo-600 rounded-t-xl shadow-xs group-hover:bg-indigo-700 transition-all cursor-pointer"
                           title={`Receita própria Disk (${m.mes}): ${formatCurrency(m.receitaPropria)}`}
                         />
                       </div>
 
                       {/* Barra Despesas */}
-                      <div className="flex flex-col items-center w-5 sm:w-10">
-                        <span className="text-[10px] font-semibold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity mb-1 whitespace-nowrap">
+                      <div className="flex flex-col items-center w-8 sm:w-16">
+                        <span className="text-[11px] font-bold text-slate-600 opacity-80 group-hover:opacity-100 transition-opacity mb-1.5 whitespace-nowrap">
                           {formatCurrency(m.despesasDisk)}
                         </span>
                         <div
                           style={{ height: `${expHeightPercent}%` }}
-                          className="w-full bg-slate-300 rounded-t-md shadow-2xs group-hover:bg-slate-400 transition-all cursor-pointer"
+                          className="w-full bg-slate-300 rounded-t-xl shadow-xs group-hover:bg-slate-400 transition-all cursor-pointer"
                           title={`Despesas Disk (${m.mes}): ${formatCurrency(m.despesasDisk)}`}
                         />
                       </div>
                     </div>
 
-                    <div className="text-center pt-2">
-                      <span className="text-xs font-bold text-slate-800">{m.mes}</span>
-                      <div className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+                    <div className="text-center pt-3 border-t border-slate-100 w-full">
+                      <span className="text-sm font-extrabold text-slate-900">{m.mes}</span>
+                      <div className="text-xs text-emerald-700 font-black mt-0.5">
                         +{formatCurrency(m.resultado)}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                        GMV: {formatCurrency(m.gmvTotal)}
                       </div>
                     </div>
                   </div>
@@ -872,7 +775,7 @@ export const InteligenciaModuleView: React.FC<Props> = ({
             </div>
 
             {/* Escala de referência */}
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-3 px-2 font-mono">
+            <div className="flex items-center justify-between text-xs text-slate-500 pt-4 px-4 font-mono font-bold">
               <span>R$ 80 mil</span>
               <span>R$ 120 mil</span>
               <span>R$ 160 mil</span>
@@ -880,34 +783,142 @@ export const InteligenciaModuleView: React.FC<Props> = ({
               <span>R$ 240 mil</span>
             </div>
 
-            <div className="mt-3 text-[11px] text-slate-600 italic bg-slate-50 p-2.5 rounded-lg border border-slate-100 flex items-center justify-between">
-              <span>* Números consolidados auditáveis através dos módulos Contábil e Financeiro da DiskIngressos.</span>
+            <div className="mt-5 text-xs text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="leading-relaxed">
+                * Valores consolidados e auditáveis em conformidade estrita com o módulo Contábil e Financeiro da DiskIngressos.
+              </span>
               <button
                 onClick={() => handleSelectSection('intel-exec-gerencial')}
-                className="text-indigo-600 hover:text-indigo-800 font-bold not-italic flex items-center gap-1"
+                className="px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold text-xs transition-colors flex items-center gap-1.5 shrink-0 self-start"
               >
-                <span>Ver DRE Waterfall</span>
-                <ArrowRight className="w-3 h-3" />
+                <span>Ver DRE Waterfall Passo a Passo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* 3. ANÁLISES INTELIGENTES & ALERTAS PROATIVOS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        {/* 3. CENTRAL DE NAVEGAÇÃO DOS 35 SUBMENUS INTEGRADA DIRETAMENTE NO DASHBOARD */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                Análises inteligentes & detecção proativa
+              <div className="flex items-center gap-2">
+                <Compass className="w-5 h-5 text-indigo-600" />
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">
+                  Central de Navegação de Inteligência — 35 Submenus Integrados
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Acesse diretamente qualquer submenu dos 7 grupos estratégicos sem restrições de espaço lateral.
+              </p>
+            </div>
+
+            {/* Busca rápida nos submenus */}
+            <div className="relative w-full lg:w-80">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <input
+                type="text"
+                value={hubSearch}
+                onChange={(e) => setHubSearch(e.target.value)}
+                placeholder="Filtrar entre os 35 submenus..."
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-600 bg-slate-50/50"
+              />
+            </div>
+          </div>
+
+          {/* Abas dos 7 Grupos */}
+          <div className="py-4 flex flex-wrap gap-2 border-b border-slate-100">
+            {GROUPS_LIST.map((groupTab) => (
+              <button
+                key={groupTab}
+                onClick={() => setSelectedGroupTab(groupTab)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  selectedGroupTab === groupTab
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {groupTab}
+              </button>
+            ))}
+          </div>
+
+          {/* Grade dos Submenus (Cards Maiores e Mais Largos) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-6">
+            {filteredHubSubmenus.map((item) => {
+              const Icon = item.icon;
+              const isCurrent = item.id === sectionId;
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleSelectSection(item.id)}
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group ${
+                    isCurrent
+                      ? 'bg-indigo-50/80 border-indigo-300 shadow-sm ring-2 ring-indigo-500/20'
+                      : 'bg-slate-50/60 border-slate-200/90 hover:bg-white hover:border-slate-300 hover:shadow-md'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform shadow-2xs">
+                        <Icon className="w-4 h-4" />
+                      </div>
+
+                      {item.badge ? (
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                            item.badgeColor || 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-slate-600 uppercase">
+                          {item.group.split(' ')[0]}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
+                      {item.label}
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed line-clamp-2">
+                      {item.purpose}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs font-bold text-indigo-700 group-hover:translate-x-0.5 transition-transform">
+                    <span>Acessar Função</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredHubSubmenus.length === 0 && (
+            <div className="text-center py-12 text-slate-500 text-xs">
+              Nenhum submenu encontrado para o termo "{hubSearch}".
+            </div>
+          )}
+        </div>
+
+        {/* 4. ANÁLISES INTELIGENTES & ALERTAS PROATIVOS EM CARDS LARGOS */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+                Análises Inteligentes & Detecção de Riscos em Tempo Real
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Nesta área, o Keeper apresenta alertas sobre variações de receitas, riscos de liquidez, despesas e tendências detectadas nos dados reais.
+              <p className="text-xs text-slate-500 mt-1">
+                Alertas estratégicos sobre variações de receita, liquidez de eventos e controle orçamentário
               </p>
             </div>
 
             {/* Filtros de severidade */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {[
                 { id: 'all', label: 'Todos' },
                 { id: 'critico', label: 'Crítico' },
@@ -918,7 +929,7 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 <button
                   key={f.id}
                   onClick={() => setAlertSeverityFilter(f.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                     alertSeverityFilter === f.id
                       ? 'bg-slate-900 text-white shadow-2xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -930,7 +941,7 @@ export const InteligenciaModuleView: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             {filteredAlerts.map((alert) => {
               const isCritico = alert.severidade === 'critico';
               const isAlerta = alert.severidade === 'alerta';
@@ -939,19 +950,19 @@ export const InteligenciaModuleView: React.FC<Props> = ({
               return (
                 <div
                   key={alert.id}
-                  className={`p-4 rounded-xl border transition-all ${
+                  className={`p-6 rounded-2xl border transition-all ${
                     isCritico
-                      ? 'bg-rose-50/40 border-rose-200 hover:border-rose-300'
+                      ? 'bg-rose-50/50 border-rose-200/90 hover:border-rose-300'
                       : isAlerta
-                      ? 'bg-amber-50/40 border-amber-200 hover:border-amber-300'
+                      ? 'bg-amber-50/50 border-amber-200/90 hover:border-amber-300'
                       : isAtencao
-                      ? 'bg-blue-50/40 border-blue-200 hover:border-blue-300'
-                      : 'bg-indigo-50/40 border-indigo-200 hover:border-indigo-300'
+                      ? 'bg-blue-50/50 border-blue-200/90 hover:border-blue-300'
+                      : 'bg-indigo-50/50 border-indigo-200/90 hover:border-indigo-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-3">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                      className={`text-[10px] font-black px-2.5 py-0.8 rounded-full uppercase tracking-wider ${
                         isCritico
                           ? 'bg-rose-100 text-rose-800'
                           : isAlerta
@@ -963,21 +974,21 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     >
                       {alert.categoria} · {alert.severidade.toUpperCase()}
                     </span>
-                    <span className="text-[11px] text-slate-600 font-mono">{alert.timestamp}</span>
+                    <span className="text-xs text-slate-600 font-mono">{alert.timestamp}</span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 leading-snug">{alert.titulo}</h3>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">{alert.descricao}</p>
+                  <h3 className="text-base font-bold text-slate-900 leading-snug">{alert.titulo}</h3>
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">{alert.descricao}</p>
 
-                  <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                      <Zap className="w-3.5 h-3.5 text-amber-600" />
+                  <div className="mt-5 pt-4 border-t border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-xs text-slate-600">
+                      <Zap className="w-4 h-4 text-amber-600" />
                       <span>Confiança IA: <strong>{alert.confiancaPercent}%</strong></span>
                     </div>
 
                     <button
                       onClick={() => showNotification(`Ação iniciada para o alerta: ${alert.titulo}`)}
-                      className="px-2.5 py-1 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs transition-colors"
+                      className="px-4 py-1.5 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs transition-colors self-start"
                     >
                       Auditar / Agir
                     </button>
@@ -988,130 +999,108 @@ export const InteligenciaModuleView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* 4. MOTOR DE INTELIGÊNCIA KEEPER — CONEXÃO MULTI-DEPARTAMENTAL */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="pb-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-indigo-600" />
-              Conexão com os demais módulos do ERP Keeper
+        {/* 5. CONEXÃO COM OS DEMAIS MÓDULOS (MOTOR DE INTELIGÊNCIA) */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="pb-6 border-b border-slate-100">
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+              <Cpu className="w-5 h-5 text-indigo-600" />
+              Motor de Inteligência Keeper — Conexão Multi-Departamental
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              O motor de inteligência consolida pipelines de leitura em tempo real sem alterar diretamente os registros de origem.
+            <p className="text-xs text-slate-500 mt-1">
+              Consolidação de dados operacionais em tempo real sem alterar registros nas origens
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
             {(dashboardData?.conexoesModulos || []).map((conn) => (
               <div
                 key={conn.modulo}
-                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col justify-between"
+                className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50 transition-colors flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-slate-900">{conn.modulo}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-900">{conn.modulo}</span>
+                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                       {conn.status}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">{conn.descricao}</p>
                 </div>
-                <div className="mt-3 pt-2 border-t border-slate-200/80 text-[11px] font-mono text-indigo-700 font-semibold">
+                <div className="mt-4 pt-3 border-t border-slate-200 text-xs font-mono text-indigo-700 font-bold">
                   {conn.metricaChave}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-5 p-3.5 bg-indigo-900 text-indigo-100 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-indigo-700 flex items-center justify-center shrink-0">
-                <Brain className="w-4 h-4 text-indigo-200" />
+          <div className="mt-8 p-5 bg-slate-900 text-slate-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs shadow-md border border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 text-white">
+                <Brain className="w-5 h-5" />
               </div>
               <div>
-                <span className="font-bold text-white block">MOTOR DE INTELIGÊNCIA KEEPER</span>
-                <span className="text-indigo-200 text-[11px]">Consolidação, cruzamento, modelos preditivos e recomendações supervisionadas</span>
+                <span className="font-bold text-white text-sm block">MOTOR DE INTELIGÊNCIA KEEPER v2.4</span>
+                <span className="text-slate-300 text-xs">Modelagem preditiva, segregação de liquidez e recomendações supervisionadas</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 onClick={() => handleSelectSection('intel-ai-simulador')}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-xs"
               >
-                <Sliders className="w-3.5 h-3.5" />
+                <Sliders className="w-4 h-4" />
                 <span>Simulador What-If</span>
               </button>
               <button
                 onClick={() => handleSelectSection('intel-ai-assistente')}
-                className="px-3 py-1.5 rounded-lg bg-white text-indigo-900 hover:bg-indigo-50 font-bold text-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs transition-colors flex items-center gap-2 shadow-xs"
               >
-                <Bot className="w-3.5 h-3.5" />
-                <span>Abrir Copilot</span>
+                <Bot className="w-4 h-4 text-purple-600" />
+                <span>Abrir Copilot IA</span>
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* 5. DESDOBRAMENTO DE CANAIS DE RECEITA PRÓPRIA */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="pb-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <PieChart className="w-4 h-4 text-emerald-600" />
-              Composição da receita própria DiskIngressos (Setembro/2026)
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Origem dos R$ 214.320,00 faturados por taxas e prestação de serviços tecnológicos
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-            {(dashboardData?.distribuicaoReceitas || []).map((canal) => (
-              <div key={canal.canal} className="p-4 rounded-xl border border-slate-200 bg-white">
-                <span className="text-xs font-semibold text-slate-600 block h-8 leading-snug">
-                  {canal.canal}
-                </span>
-                <div className="text-xl font-extrabold text-slate-900 mt-1">
-                  {formatCurrency(canal.valor)}
-                </div>
-                <div className="mt-3 flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                  <span className="font-bold text-indigo-700">{canal.percentual}% do total</span>
-                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                    {canal.variacaoMoM}
-                  </span>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
     );
   };
 
-  // ==========================================
-  // VIEW: SIMULADOR DE CENÁRIOS (WHAT-IF)
-  // ==========================================
+  // =========================================================================
+  // VIEW: SIMULADOR DE CENÁRIOS (WHAT-IF) EXPANDIDO EM TELA CHEIA
+  // =========================================================================
   const renderSimulador = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="pb-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-emerald-600" />
-              Simulador de Cenários Preditivos (What-If)
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Ajuste as variáveis de volume de ingressos (GMV), taxa de conveniência média e despesas corporativas para projetar o impacto no resultado operacional.
-            </p>
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                <Sliders className="w-5 h-5 text-emerald-600" />
+                Simulador de Cenários Preditivos (What-If)
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Ajuste os parâmetros para projetar receitas da Disk, obrigações com produtores e resultado operacional.
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleSelectSection('intel-exec-dashboard')}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar ao Dashboard</span>
+            </button>
           </div>
 
-          {/* Painel de Parâmetros com Sliders */}
+          {/* Painel de Parâmetros com Sliders Amplos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 pb-4">
             {/* Slider 1: Variação de GMV */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">Volume de Vendas (GMV)</span>
-                <span className={`font-mono font-extrabold px-2 py-0.5 rounded ${simGmv >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                <span className="font-bold text-slate-800">Volume de Vendas (GMV)</span>
+                <span className={`font-mono font-black text-xs px-2.5 py-1 rounded-lg ${simGmv >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
                   {simGmv > 0 ? `+${simGmv}%` : `${simGmv}%`}
                 </span>
               </div>
@@ -1122,9 +1111,9 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 step="5"
                 value={simGmv}
                 onChange={(e) => setSimGmv(Number(e.target.value))}
-                className="w-full accent-indigo-600 cursor-pointer"
+                className="w-full accent-indigo-600 cursor-pointer h-2"
               />
-              <div className="flex justify-between text-[10px] text-slate-600 font-mono">
+              <div className="flex justify-between text-[11px] text-slate-600 font-mono">
                 <span>-30%</span>
                 <span>Base (R$ 2,4M)</span>
                 <span>+50%</span>
@@ -1132,10 +1121,10 @@ export const InteligenciaModuleView: React.FC<Props> = ({
             </div>
 
             {/* Slider 2: Variação na Taxa de Conveniência */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">Taxa de Conveniência Disk</span>
-                <span className={`font-mono font-extrabold px-2 py-0.5 rounded ${simFee >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                <span className="font-bold text-slate-800">Taxa de Conveniência Disk</span>
+                <span className={`font-mono font-black text-xs px-2.5 py-1 rounded-lg ${simFee >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
                   {simFee > 0 ? `+${simFee}%` : `${simFee}%`}
                 </span>
               </div>
@@ -1146,9 +1135,9 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 step="2"
                 value={simFee}
                 onChange={(e) => setSimFee(Number(e.target.value))}
-                className="w-full accent-indigo-600 cursor-pointer"
+                className="w-full accent-indigo-600 cursor-pointer h-2"
               />
-              <div className="flex justify-between text-[10px] text-slate-600 font-mono">
+              <div className="flex justify-between text-[11px] text-slate-600 font-mono">
                 <span>-20%</span>
                 <span>Base (~8.86%)</span>
                 <span>+30%</span>
@@ -1156,10 +1145,10 @@ export const InteligenciaModuleView: React.FC<Props> = ({
             </div>
 
             {/* Slider 3: Despesas Corporativas */}
-            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">Despesas Corporativas</span>
-                <span className={`font-mono font-extrabold px-2 py-0.5 rounded ${simExpenses <= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                <span className="font-bold text-slate-800">Despesas Corporativas</span>
+                <span className={`font-mono font-black text-xs px-2.5 py-1 rounded-lg ${simExpenses <= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                   {simExpenses > 0 ? `+${simExpenses}%` : `${simExpenses}%`}
                 </span>
               </div>
@@ -1170,9 +1159,9 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 step="5"
                 value={simExpenses}
                 onChange={(e) => setSimExpenses(Number(e.target.value))}
-                className="w-full accent-indigo-600 cursor-pointer"
+                className="w-full accent-indigo-600 cursor-pointer h-2"
               />
-              <div className="flex justify-between text-[10px] text-slate-600 font-mono">
+              <div className="flex justify-between text-[11px] text-slate-600 font-mono">
                 <span>-20%</span>
                 <span>Base (R$ 145k)</span>
                 <span>+40%</span>
@@ -1184,9 +1173,9 @@ export const InteligenciaModuleView: React.FC<Props> = ({
             <button
               onClick={handleRunSimulation}
               disabled={isSimulating}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} />
               <span>Calcular Projeção do Cenário</span>
             </button>
           </div>
@@ -1194,63 +1183,63 @@ export const InteligenciaModuleView: React.FC<Props> = ({
 
         {/* Resultados da Simulação */}
         {simResult && (
-          <div className="bg-white rounded-2xl border border-indigo-200 p-6 shadow-xs space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-600" />
-                <h3 className="text-sm font-bold text-indigo-950">Resultados da Simulação Projetada</h3>
+          <div className="bg-white rounded-3xl border border-indigo-200 p-8 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-indigo-100">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-base font-bold text-indigo-950">Resultados da Simulação Projetada</h3>
               </div>
-              <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-black text-indigo-800 bg-indigo-100 px-3 py-1 rounded-full">
                 Margem Projetada: {simResult.impactoMargemPercent}%
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase">GMV Total Projetado</span>
-                <div className="text-xl font-bold text-slate-900 mt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-xs font-bold text-slate-600 uppercase">GMV Total Projetado</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
                   {formatCurrency(simResult.projecaoGmvTotal)}
                 </div>
-                <span className="text-[10px] text-slate-500 block mt-1">Custódia Produtores: {formatCurrency(simResult.projecaoCustodiaProdutores)}</span>
+                <span className="text-xs text-slate-500 block mt-2">Custódia Produtores: {formatCurrency(simResult.projecaoCustodiaProdutores)}</span>
               </div>
 
-              <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-200">
-                <span className="text-[11px] font-semibold text-indigo-700 uppercase">Receita Própria Projetada</span>
-                <div className="text-xl font-bold text-indigo-950 mt-1">
+              <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                <span className="text-xs font-bold text-indigo-800 uppercase">Receita Própria Projetada</span>
+                <div className="text-2xl font-black text-indigo-950 mt-1">
                   {formatCurrency(simResult.projecaoReceitaDisk)}
                 </div>
-                <span className="text-[10px] text-indigo-600 block mt-1">Taxas & Serviços Disk</span>
+                <span className="text-xs text-indigo-700 block mt-2">Taxas & Serviços Disk</span>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase">Despesas Projetadas</span>
-                <div className="text-xl font-bold text-slate-900 mt-1">
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <span className="text-xs font-bold text-slate-600 uppercase">Despesas Projetadas</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
                   {formatCurrency(simResult.projecaoDespesasDisk)}
                 </div>
-                <span className="text-[10px] text-slate-500 block mt-1">Custos fixos & variáveis</span>
+                <span className="text-xs text-slate-500 block mt-2">Custos fixos & operacionais</span>
               </div>
 
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                <span className="text-[11px] font-semibold text-emerald-800 uppercase">Resultado Operacional</span>
-                <div className="text-xl font-bold text-emerald-950 mt-1">
+              <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <span className="text-xs font-bold text-emerald-800 uppercase">Resultado Operacional</span>
+                <div className="text-2xl font-black text-emerald-950 mt-1">
                   {formatCurrency(simResult.projecaoResultadoOperacional)}
                 </div>
-                <span className="text-[10px] text-emerald-700 font-bold block mt-1">
-                  {simResult.projecaoResultadoOperacional > 68450 ? '▲ Aumento de Lucro' : '▼ Compressão de Margem'}
+                <span className="text-xs text-emerald-700 font-bold block mt-2">
+                  {simResult.projecaoResultadoOperacional > 68450 ? '▲ Aumento de Rentabilidade' : '▼ Compressão de Margem'}
                 </span>
               </div>
             </div>
 
             {/* Recomendações da IA */}
-            <div className="p-4 rounded-xl bg-slate-900 text-slate-100 space-y-2">
-              <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider">
-                <Brain className="w-3.5 h-3.5" />
+            <div className="p-5 rounded-2xl bg-slate-900 text-slate-100 space-y-3">
+              <span className="text-xs font-bold text-indigo-300 flex items-center gap-2 uppercase tracking-wider">
+                <Brain className="w-4 h-4" />
                 Diagnóstico & Parecer Estratégico da IA
               </span>
-              <ul className="space-y-1.5 text-xs text-slate-300">
+              <ul className="space-y-2 text-xs text-slate-300">
                 {simResult.recomendacoesIA.map((rec, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     <span>{rec}</span>
                   </li>
                 ))}
@@ -1262,20 +1251,20 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     );
   };
 
-  // ==========================================
-  // VIEW: ASSISTENTE INTELIGENTE KEEPER (COPILOT)
-  // ==========================================
+  // =========================================================================
+  // VIEW: ASSISTENTE INTELIGENTE KEEPER (COPILOT) EM TELA CHEIA
+  // =========================================================================
   const renderCopilot = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col h-[700px]">
-          <div className="pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs flex flex-col h-[750px]">
+          <div className="pb-6 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-xs">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
                   Assistente Inteligente Keeper Copilot
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -1284,14 +1273,22 @@ export const InteligenciaModuleView: React.FC<Props> = ({
               </div>
             </div>
 
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
-              Modo Auditável (Read-Only)
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                Modo Auditável (Read-Only)
+              </span>
+              <button
+                onClick={() => handleSelectSection('intel-exec-dashboard')}
+                className="px-3 py-1 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50"
+              >
+                Voltar ao Dashboard
+              </button>
+            </div>
           </div>
 
           {/* Quick Prompts Chips */}
           <div className="py-3 flex flex-wrap gap-2 border-b border-slate-100">
-            <span className="text-[11px] font-semibold text-slate-500 self-center mr-1">Sugestões rápidas:</span>
+            <span className="text-xs font-semibold text-slate-500 self-center mr-1">Sugestões rápidas:</span>
             {[
               'Qual foi o GMV total de vendas?',
               'Qual a receita própria da Disk e margem?',
@@ -1301,7 +1298,7 @@ export const InteligenciaModuleView: React.FC<Props> = ({
               <button
                 key={chip}
                 onClick={() => handleSendCopilotQuery(chip)}
-                className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-700 transition-colors"
+                className="text-xs px-3 py-1 rounded-xl bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-700 transition-colors font-medium"
               >
                 {chip}
               </button>
@@ -1316,25 +1313,25 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.sender === 'assistant' && (
-                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-xl p-3.5 rounded-2xl text-xs leading-relaxed ${
+                  className={`max-w-2xl p-4 rounded-2xl text-xs leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-indigo-600 text-white rounded-tr-xs'
+                      ? 'bg-indigo-600 text-white rounded-tr-xs shadow-xs'
                       : 'bg-slate-100 text-slate-800 rounded-tl-xs border border-slate-200/60'
                   }`}
                 >
-                  <p>{msg.text}</p>
+                  <p className="text-xs leading-relaxed">{msg.text}</p>
 
                   {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-slate-200 text-[10px] text-slate-500 flex flex-wrap gap-1 items-center">
-                      <span className="font-semibold">Fontes auditadas:</span>
+                    <div className="mt-2.5 pt-2 border-t border-slate-200 text-[10px] text-slate-500 flex flex-wrap gap-1.5 items-center">
+                      <span className="font-bold">Fontes auditadas:</span>
                       {msg.sources.map((src, sIdx) => (
-                        <span key={sIdx} className="bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                        <span key={sIdx} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 font-mono">
                           {src}
                         </span>
                       ))}
@@ -1343,7 +1340,7 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                 </div>
 
                 {msg.sender === 'user' && (
-                  <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">
                     EU
                   </div>
                 )}
@@ -1359,21 +1356,21 @@ export const InteligenciaModuleView: React.FC<Props> = ({
           </div>
 
           {/* Input Box */}
-          <div className="pt-3 border-t border-slate-200 flex gap-2">
+          <div className="pt-4 border-t border-slate-200 flex gap-2">
             <input
               type="text"
               value={copilotQuery}
               onChange={(e) => setCopilotQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendCopilotQuery()}
               placeholder="Digite sua pergunta gerencial sobre receitas, despesas, repasses ou eventos..."
-              className="flex-1 px-4 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600"
+              className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600"
             />
             <button
               onClick={() => handleSendCopilotQuery()}
               disabled={isCopilotThinking || !copilotQuery.trim()}
-              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-2 disabled:opacity-50"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-4 h-4" />
               <span>Enviar</span>
             </button>
           </div>
@@ -1382,54 +1379,63 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     );
   };
 
-  // ==========================================
-  // VIEW: PERFORMANCE DE EVENTOS & OCUPAÇÃO
-  // ==========================================
+  // =========================================================================
+  // VIEW: PERFORMANCE DE EVENTOS & OCUPAÇÃO EM TELA CHEIA
+  // =========================================================================
   const renderEventosPerformance = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="pb-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <Activity className="w-4 h-4 text-indigo-600" />
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                <Activity className="w-5 h-5 text-indigo-600" />
                 Performance de Eventos & Curva de Demanda
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-1">
                 Taxa de ocupação de setores, ingressos vendidos e receita própria de taxas gerada para a Disk
               </p>
             </div>
 
-            <button
-              onClick={() => showNotification('Relatório de performance de eventos exportado em PDF!')}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5 self-start"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Exportar PDF</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => showNotification('Relatório de performance exportado em PDF!')}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-bold text-xs flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span>Exportar PDF</span>
+              </button>
+              <button
+                onClick={() => handleSelectSection('intel-exec-dashboard')}
+                className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Voltar ao Dashboard</span>
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto pt-4">
             <table className="w-full text-xs text-left">
               <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-2.5 px-3">Evento & Espaço</th>
-                  <th className="py-2.5 px-3">Ocupação</th>
-                  <th className="py-2.5 px-3 text-right">Ingressos Vendidos</th>
-                  <th className="py-2.5 px-3 text-right">Receita Taxas Disk</th>
-                  <th className="py-2.5 px-3 text-center">Status</th>
+                  <th className="py-3 px-4">Evento & Espaço</th>
+                  <th className="py-3 px-4">Taxa de Ocupação</th>
+                  <th className="py-3 px-4 text-right">Ingressos Vendidos</th>
+                  <th className="py-3 px-4 text-right">Receita Taxas Disk</th>
+                  <th className="py-3 px-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {eventPerformances.map((evt) => (
                   <tr key={evt.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">{evt.nome}</div>
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-slate-900 text-xs">{evt.nome}</div>
                       <div className="text-[11px] text-slate-500">{evt.local}</div>
                     </td>
-                    <td className="py-3 px-3 w-48">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <td className="py-3.5 px-4 w-60">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-slate-200 h-2.5 rounded-full overflow-hidden">
                           <div
                             style={{ width: `${evt.ocupacao}%` }}
                             className={`h-full rounded-full ${
@@ -1437,19 +1443,19 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                             }`}
                           />
                         </div>
-                        <span className="font-bold text-[11px] text-slate-800 w-10 text-right">
+                        <span className="font-black text-xs text-slate-800 w-12 text-right">
                           {evt.ocupacao}%
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-medium">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-xs">
                       {evt.ingressosVendidos.toLocaleString('pt-BR')} un
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-indigo-700">
+                    <td className="py-3.5 px-4 text-right font-mono font-black text-xs text-indigo-700">
                       {formatCurrency(evt.receitaTaxasDisk)}
                     </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800">
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800">
                         {evt.status}
                       </span>
                     </td>
@@ -1463,78 +1469,88 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     );
   };
 
-  // ==========================================
-  // VIEW: GERENCIAL WATERFALL P&L
-  // ==========================================
+  // =========================================================================
+  // VIEW: GERENCIAL WATERFALL P&L EM TELA CHEIA
+  // =========================================================================
   const renderGerencialWaterfall = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="pb-4 border-b border-slate-100">
-            <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-indigo-600" />
-              DRE Gerencial Analítica — Conciliação Waterfall
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Demonstração passo a passo da segregação do GMV da bilheteria até a apuração do lucro operacional da Disk
-            </p>
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+                <BarChart3 className="w-5 h-5 text-indigo-600" />
+                DRE Gerencial Analítica — Conciliação Waterfall
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Demonstração passo a passo da segregação do GMV da bilheteria até a apuração do lucro operacional da Disk
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleSelectSection('intel-exec-dashboard')}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar ao Dashboard</span>
+            </button>
           </div>
 
-          <div className="space-y-3 pt-6 max-w-3xl">
-            <div className="p-3.5 rounded-xl bg-slate-100 flex items-center justify-between border border-slate-200">
+          <div className="space-y-3.5 pt-6 max-w-4xl mx-auto">
+            <div className="p-4 rounded-2xl bg-slate-100 flex items-center justify-between border border-slate-200">
               <div>
-                <span className="text-xs font-bold text-slate-800">1. Vendas Totais da Plataforma (GMV de Bilheteria)</span>
-                <span className="text-[11px] text-slate-500 block">Total transacionado nos canais Web, App e PDV</span>
+                <span className="text-sm font-bold text-slate-800">1. Vendas Totais da Plataforma (GMV de Bilheteria)</span>
+                <span className="text-xs text-slate-500 block">Total transacionado nos canais Web, App e PDV</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-slate-900">R$ 2.418.900,00</span>
+              <span className="font-mono text-base font-black text-slate-900">R$ 2.418.900,00</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-rose-50 flex items-center justify-between border border-rose-200 ml-4">
+            <div className="p-4 rounded-2xl bg-rose-50 flex items-center justify-between border border-rose-200 ml-6">
               <div>
-                <span className="text-xs font-bold text-rose-900">(-) Obrigações com Produtores (Custódia Fiduciária)</span>
-                <span className="text-[11px] text-rose-700 block">Valores de ingressos pertencentes aos contratantes (Escrow)</span>
+                <span className="text-sm font-bold text-rose-900">(-) Obrigações com Produtores (Custódia Fiduciária)</span>
+                <span className="text-xs text-rose-700 block">Valores de ingressos pertencentes aos contratantes (Escrow)</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-rose-700">- R$ 1.846.500,00</span>
+              <span className="font-mono text-base font-black text-rose-700">- R$ 1.846.500,00</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-rose-50 flex items-center justify-between border border-rose-200 ml-4">
+            <div className="p-4 rounded-2xl bg-rose-50 flex items-center justify-between border border-rose-200 ml-6">
               <div>
-                <span className="text-xs font-bold text-rose-900">(-) Tarifas de Gateways & MDR Bancário de Repasse</span>
-                <span className="text-[11px] text-rose-700 block">Custo financeiro de processamento de cartão e adquirentes</span>
+                <span className="text-sm font-bold text-rose-900">(-) Tarifas de Gateways & MDR Bancário de Repasse</span>
+                <span className="text-xs text-rose-700 block">Custo financeiro de processamento de cartão e adquirentes</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-rose-700">- R$ 358.080,00</span>
+              <span className="font-mono text-base font-black text-rose-700">- R$ 358.080,00</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-indigo-50 flex items-center justify-between border border-indigo-200">
+            <div className="p-4 rounded-2xl bg-indigo-50 flex items-center justify-between border border-indigo-200">
               <div>
-                <span className="text-xs font-bold text-indigo-900">(=) Receita Operacional Própria DiskIngressos</span>
-                <span className="text-[11px] text-indigo-700 block">Taxas de conveniência, spread de serviços e bilheteria</span>
+                <span className="text-sm font-bold text-indigo-900">(=) Receita Operacional Própria DiskIngressos</span>
+                <span className="text-xs text-indigo-700 block">Taxas de conveniência, spread de serviços e bilheteria</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-indigo-950">R$ 214.320,00</span>
+              <span className="font-mono text-base font-black text-indigo-950">R$ 214.320,00</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-amber-50 flex items-center justify-between border border-amber-200 ml-4">
+            <div className="p-4 rounded-2xl bg-amber-50 flex items-center justify-between border border-amber-200 ml-6">
               <div>
-                <span className="text-xs font-bold text-amber-900">(-) Impostos sobre Serviços (ISS, PIS, COFINS)</span>
-                <span className="text-[11px] text-amber-700 block">Alíquota efetiva apurada de 8.65% sobre a receita própria</span>
+                <span className="text-sm font-bold text-amber-900">(-) Impostos sobre Serviços (ISS, PIS, COFINS)</span>
+                <span className="text-xs text-amber-700 block">Alíquota efetiva apurada de 8.65% sobre a receita própria</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-amber-800">- R$ 18.538,68</span>
+              <span className="font-mono text-base font-black text-amber-800">- R$ 18.538,68</span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-50 flex items-center justify-between border border-slate-200 ml-4">
+            <div className="p-4 rounded-2xl bg-slate-50 flex items-center justify-between border border-slate-200 ml-6">
               <div>
-                <span className="text-xs font-bold text-slate-800">(-) Despesas Corporativas Administrativas & RH</span>
-                <span className="text-[11px] text-slate-500 block">Folha de pagamento corporativa, infraestrutura em nuvem e compras</span>
+                <span className="text-sm font-bold text-slate-800">(-) Despesas Corporativas Administrativas & RH</span>
+                <span className="text-xs text-slate-500 block">Folha corporativa, infraestrutura em nuvem e compras de suprimentos</span>
               </div>
-              <span className="font-mono text-sm font-extrabold text-slate-700">- R$ 127.331,32</span>
+              <span className="font-mono text-base font-black text-slate-700">- R$ 127.331,32</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-emerald-600 text-white flex items-center justify-between shadow-xs">
+            <div className="p-5 rounded-2xl bg-emerald-600 text-white flex items-center justify-between shadow-md">
               <div>
-                <span className="text-sm font-extrabold block">(=) Resultado Líquido Operacional Disk</span>
+                <span className="text-base font-black block">(=) Resultado Líquido Operacional Disk</span>
                 <span className="text-xs text-emerald-100">Margem líquida de 31.94% sobre a receita própria</span>
               </div>
-              <span className="font-mono text-lg font-black">R$ 68.450,00</span>
+              <span className="font-mono text-xl font-black">R$ 68.450,00</span>
             </div>
           </div>
         </div>
@@ -1542,51 +1558,53 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     );
   };
 
-  // ==========================================
-  // VIEW GENÉRICA PARA SUBMENUS ADICIONAIS
-  // ==========================================
+  // =========================================================================
+  // VIEW GENÉRICA PARA SUBMENUS ADICIONAIS COM RETORNO AO HUB
+  // =========================================================================
   const renderGenericSubmenu = () => {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs">
+          <div className="flex items-center justify-between pb-6 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
                 {React.createElement(currentSubmenu.icon, { className: 'w-5 h-5' })}
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight">{currentSubmenu.label}</h2>
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">{currentSubmenu.label}</h2>
                 <p className="text-xs text-slate-500">{currentSubmenu.group} · {currentSubmenu.purpose}</p>
               </div>
             </div>
 
-            {currentSubmenu.badge && (
-              <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${currentSubmenu.badgeColor || 'bg-slate-100 text-slate-700'}`}>
-                {currentSubmenu.badge}
-              </span>
-            )}
+            <button
+              onClick={() => handleSelectSection('intel-exec-dashboard')}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar ao Dashboard</span>
+            </button>
           </div>
 
-          <div className="py-8 text-center max-w-md mx-auto space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
-              <Brain className="w-6 h-6" />
+          <div className="py-12 text-center max-w-lg mx-auto space-y-4">
+            <div className="w-14 h-14 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto shadow-2xs">
+              <Brain className="w-7 h-7" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900">Módulo Analítico Integrado</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <h3 className="text-base font-bold text-slate-900">Módulo Analítico Integrado</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
               Os dados de <strong>{currentSubmenu.label}</strong> estão conectados diretamente aos bancos transacionais do ERP Keeper sob política de leitura auditada e segregação patrimonial.
             </p>
-            <div className="pt-2 flex justify-center gap-2">
+            <div className="pt-3 flex justify-center gap-3">
               <button
                 onClick={() => showNotification(`Relatório de ${currentSubmenu.label} gerado com sucesso!`)}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-colors"
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-colors shadow-2xs"
               >
                 Gerar Relatório Deste Submenu
               </button>
               <button
                 onClick={() => handleSelectSection('intel-exec-dashboard')}
-                className="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-50 transition-colors"
               >
-                Voltar ao Dashboard
+                Voltar ao Dashboard Geral
               </button>
             </div>
           </div>
@@ -1599,97 +1617,88 @@ export const InteligenciaModuleView: React.FC<Props> = ({
     <div className="min-h-screen bg-slate-50/60 pb-16">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs flex items-center gap-2.5 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{notification}</span>
+          <span className="font-semibold">{notification}</span>
         </div>
       )}
 
-      {/* HEADER PRINCIPAL COM LETRAS ESCURAS, ALTO CONTRASTE E BANNER DE SEGREGAÇÃO */}
+      {/* HEADER PRINCIPAL AMPLO, COM TIPOGRAFIA ESCURA E BANNER DE SEGREGAÇÃO */}
       <div className="bg-white border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <span>ERP KEEPER</span>
                 <span>/</span>
-                <span className="text-indigo-600 font-bold">MÓDULO INTELIGÊNCIA</span>
+                <span className="text-indigo-600">INTELIGÊNCIA ESTRATÉGICA</span>
                 <span>/</span>
-                <span className="text-slate-800 font-bold">{currentSubmenu.label}</span>
+                <span className="text-slate-900">{currentSubmenu.label}</span>
               </div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2.5">
-                <Brain className="w-6 h-6 text-indigo-600" />
-                CENTRAL DE INTELIGÊNCIA ESTRATÉGICA & BI
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1.5 flex items-center gap-3">
+                <Brain className="w-8 h-8 text-indigo-600" />
+                CENTRAL DE INTELIGÊNCIA EXECUTIVA & BI
               </h1>
-              <p className="text-xs text-slate-600 mt-0.5">
-                DiskIngressos · Cruzamento Corporativo, Modelagem Preditiva & Inteligência Artificial
+              <p className="text-xs text-slate-600 mt-1 font-medium">
+                DiskIngressos · Consolidação Estratégica, Modelagem Preditiva & Inteligência Artificial
               </p>
             </div>
 
             {/* Ações do Header */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               <button
                 onClick={loadData}
                 disabled={isRefreshing}
-                className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                className="px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
                 title="Atualizar dados analíticos"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>Atualizar</span>
               </button>
 
               <button
                 onClick={() => handleSelectSection('intel-ai-simulador')}
-                className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 font-bold text-xs transition-colors flex items-center gap-2 shadow-2xs"
               >
-                <Sliders className="w-3.5 h-3.5 text-emerald-600" />
+                <Sliders className="w-4 h-4 text-emerald-600" />
                 <span>Simulador What-If</span>
               </button>
 
               <button
                 onClick={() => handleSelectSection('intel-ai-assistente')}
-                className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center gap-2 shadow-xs"
               >
-                <Bot className="w-3.5 h-3.5" />
+                <Bot className="w-4 h-4" />
                 <span>Assistente Copilot</span>
               </button>
             </div>
           </div>
 
           {/* BANNER MANDATÓRIO DE SEGREGAÇÃO PATRIMONIAL */}
-          <div className="mt-4 p-3.5 bg-slate-900 text-slate-100 rounded-xl flex items-start gap-3 text-xs border border-slate-800 shadow-xs">
+          <div className="mt-5 p-4 bg-slate-900 text-slate-100 rounded-2xl flex items-start gap-3.5 text-xs border border-slate-800 shadow-xs">
             <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <strong className="text-amber-400">Regra de Ouro DiskIngressos:</strong> Os indicadores de vendas na plataforma (GMV: <strong>R$ 2,4 mi</strong>) e saldos em custódia fiduciária dos produtores (<strong>R$ 1,8 mi</strong>) são rigorosamente segregados e <strong>NUNCA</strong> incorporados como receita corporativa da Disk. A receita própria da Disk é estritamente composta por taxas de conveniência, PDV e serviços (<strong>R$ 214 mil</strong>).
+              <strong className="text-amber-400">Regra de Ouro DiskIngressos:</strong> Os indicadores de vendas totais na plataforma (GMV: <strong>R$ 2,4 mi</strong>) e os recursos sob custódia dos produtores (<strong>R$ 1,8 mi</strong>) são rigorosamente segregados e <strong>NUNCA</strong> incorporados como receita corporativa da Disk. A receita própria da Disk é estritamente composta por taxas de conveniência, PDV e serviços (<strong>R$ 214 mil</strong>).
             </div>
           </div>
         </div>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL COM LAYOUT FLEXÍVEL & BARRA LATERAL PROPORCIONAL */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Barra Lateral posicionada à Esquerda se selecionada */}
-          {sidebarSide === 'left' && renderSidebar()}
-
-          {/* Área Central de Conteúdo */}
-          <main className="flex-1 w-full min-w-0">
-            {sectionId === 'intel-exec-dashboard' && renderDashboardExecutivo()}
-            {sectionId === 'intel-exec-gerencial' && renderGerencialWaterfall()}
-            {sectionId === 'intel-ai-simulador' && renderSimulador()}
-            {sectionId === 'intel-ai-assistente' && renderCopilot()}
-            {sectionId === 'intel-evt-performance' && renderEventosPerformance()}
-            {sectionId !== 'intel-exec-dashboard' &&
-              sectionId !== 'intel-exec-gerencial' &&
-              sectionId !== 'intel-ai-simulador' &&
-              sectionId !== 'intel-ai-assistente' &&
-              sectionId !== 'intel-evt-performance' &&
-              renderGenericSubmenu()}
-          </main>
-
-          {/* Barra Lateral posicionada à Direita (Padrão) */}
-          {sidebarSide === 'right' && renderSidebar()}
-        </div>
+      {/* ÁREA DE CONTEÚDO AMPLA E EXPANDIDA (SEM BARRA LATERAL QUE APERTE OS CARDS) */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <main className="w-full">
+          {sectionId === 'intel-exec-dashboard' && renderDashboardExecutivo()}
+          {sectionId === 'intel-exec-gerencial' && renderGerencialWaterfall()}
+          {sectionId === 'intel-ai-simulador' && renderSimulador()}
+          {sectionId === 'intel-ai-assistente' && renderCopilot()}
+          {sectionId === 'intel-evt-performance' && renderEventosPerformance()}
+          {sectionId !== 'intel-exec-dashboard' &&
+            sectionId !== 'intel-exec-gerencial' &&
+            sectionId !== 'intel-ai-simulador' &&
+            sectionId !== 'intel-ai-assistente' &&
+            sectionId !== 'intel-evt-performance' &&
+            renderGenericSubmenu()}
+        </main>
       </div>
     </div>
   );
