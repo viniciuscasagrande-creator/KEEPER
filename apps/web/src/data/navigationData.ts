@@ -357,19 +357,73 @@ export const navigationModules: ModuleNav[] = [
     icon: 'Sparkles',
     groups: [
       {
-        groupName: 'BI Executivo',
+        groupName: 'Visão Executiva (4)',
         items: [
-          { id: 'intel-dashboards', label: 'Dashboards Analíticos' },
-          { id: 'intel-kpis', label: 'Cubo de Indicadores Gerenciais' },
-          { id: 'intel-anomalies', label: 'Detecção de Anomalias Financeiras', badge: 'IA Ativa', badgeColor: 'bg-indigo-100 text-indigo-700' },
+          { id: 'intel-exec-dashboard', label: 'Dashboard Executivo', description: 'Visão consolidada de indicadores e KPIs corporativos', badge: 'Principal', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'intel-exec-kpis', label: 'Indicadores de Desempenho (KPIs)', description: 'Métricas de rentabilidade, ticket médio e volume' },
+          { id: 'intel-exec-gerencial', label: 'Análise Gerencial', description: 'DRE gerencial, margens operacionais e waterfall' },
+          { id: 'intel-exec-alertas', label: 'Central de Alertas Inteligentes', description: 'Riscos de liquidez, desvios e tendências detectadas', badge: '4 Alertas', badgeColor: 'bg-amber-100 text-amber-800' },
         ],
       },
       {
-        groupName: 'Previsões & Alertas',
+        groupName: 'Inteligência Financeira (6)',
         items: [
-          { id: 'intel-cash-forecast', label: 'Previsão Preditiva de Fluxo de Caixa' },
-          { id: 'intel-churn', label: 'Predição de Inadimplência' },
-          { id: 'intel-assistant', label: 'Assistente Corporativo ERP Copilot', badge: 'Novo' },
+          { id: 'intel-fin-receitas', label: 'Inteligência de Receitas', description: 'Desdobramento por conveniência, PDV e serviços' },
+          { id: 'intel-fin-rentabilidade', label: 'Rentabilidade e Margens', description: 'Margens de contribuição por canal e produto' },
+          { id: 'intel-fin-fluxo-preditivo', label: 'Fluxo de Caixa Preditivo', description: 'Projeção de saldos em 30, 60 e 90 dias', badge: 'Preditivo', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'intel-fin-custos', label: 'Inteligência de Custos', description: 'Despesas corporativas Disk e eficiência operacional' },
+          { id: 'intel-fin-inadimplencia', label: 'Análise de Inadimplência', description: 'Controle de chargebacks e contestações' },
+          { id: 'intel-fin-repasses', label: 'Análise de Repasses', description: 'Picos de liquidação e custódia fiduciária de produtores' },
+        ],
+      },
+      {
+        groupName: 'Inteligência de Eventos (5)',
+        items: [
+          { id: 'intel-evt-performance', label: 'Performance de Eventos', description: 'Vendas acumuladas, lote e velocidade de conversão' },
+          { id: 'intel-evt-previsao', label: 'Previsão de Vendas', description: 'Modelos de machine learning de esgotamento de lote' },
+          { id: 'intel-evt-ocupacao', label: 'Ocupação e Demanda', description: 'Teatros, arenas, assentos marcados e mapa de calor' },
+          { id: 'intel-evt-cancelamentos', label: 'Análise de Cancelamentos', description: 'Taxa de desistência, devoluções e impacto em taxa' },
+          { id: 'intel-evt-comportamento', label: 'Comportamento de Compras', description: 'Canais preferidos, perfil do fã e antecipação' },
+        ],
+      },
+      {
+        groupName: 'Inteligência Empresarial (5)',
+        items: [
+          { id: 'intel-emp-compras', label: 'Análise de Compras', description: 'Gastos por centro de custo, fornecedor e SLA' },
+          { id: 'intel-emp-rh', label: 'Inteligência de RH', description: 'Turnover, headcount, folha per-capita e absenteísmo' },
+          { id: 'intel-emp-fiscal', label: 'Inteligência Fiscal', description: 'Carga tributária efetiva, retenções e créditos ISS' },
+          { id: 'intel-emp-contabil', label: 'Inteligência Contábil', description: 'Demonstrações auditáveis e conciliação contábil' },
+          { id: 'intel-emp-eficiencia', label: 'Eficiência Operacional', description: 'Índice de produtividade operacional e solvência' },
+        ],
+      },
+      {
+        groupName: 'Inteligência Artificial (6)',
+        items: [
+          { id: 'intel-ai-assistente', label: 'Assistente Inteligente Keeper', description: 'Copilot corporativo para consultas e insights em linguagem natural', badge: 'IA Copilot', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'intel-ai-preditiva', label: 'Análise Preditiva', description: 'Previsões estatísticas baseadas em séries temporais' },
+          { id: 'intel-ai-anomalias', label: 'Detecção de Anomalias', description: 'Identificação proativa de discrepâncias financeiras' },
+          { id: 'intel-ai-recomendacoes', label: 'Recomendações Inteligentes', description: 'Otimizações de precificação, compras e fluxo' },
+          { id: 'intel-ai-simulador', label: 'Simulador de Cenários', description: 'Simulações what-if com sensibilidade de margem', badge: 'Simulador', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'intel-ai-automacoes', label: 'Automações Inteligentes', description: 'Workflows supervisionados e gatilhos de auditoria' },
+        ],
+      },
+      {
+        groupName: 'Dados e Relatórios (5)',
+        items: [
+          { id: 'intel-rep-central', label: 'Central de Relatórios', description: 'Biblioteca executiva de relatórios analíticos' },
+          { id: 'intel-rep-builder', label: 'Construtor de Relatórios', description: 'Montagem personalizada de relatórios drag & drop' },
+          { id: 'intel-rep-custom-dash', label: 'Painéis Personalizados', description: 'Dashboards sob medida por diretoria' },
+          { id: 'intel-rep-export', label: 'Exportações e Agendamentos', description: 'Envio programado de relatórios por email/webhook' },
+          { id: 'intel-rep-qualidade', label: 'Qualidade dos Dados', description: 'Auditoria de integridade, latência de ETL e logs' },
+        ],
+      },
+      {
+        groupName: 'Governança e Controle (4)',
+        items: [
+          { id: 'intel-gov-auditoria', label: 'Auditoria Analítica', description: 'Trilha de acesso e consultas em conformidade LGPD' },
+          { id: 'intel-gov-permissoes', label: 'Permissões de Inteligência', description: 'Matriz RBAC para relatórios restritos e sensíveis' },
+          { id: 'intel-gov-modelos', label: 'Modelos e Indicadores', description: 'Dicionário de métricas e fórmulas homologadas' },
+          { id: 'intel-gov-config', label: 'Configurações de Inteligência', description: 'Parâmetros de ETL, limites de alerta e conexões' },
         ],
       },
     ],

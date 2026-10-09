@@ -16,6 +16,7 @@ import { ContratosModule } from './contratos/contratos.module';
 import { ProjetosModule } from './projetos/projetos.module';
 import { AtivosModule } from './ativos/ativos.module';
 import { IntegracoesModule } from './integracoes/integracoes.module';
+import { InteligenciaModule } from './inteligencia/inteligencia.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { IntegracoesModule } from './integracoes/integracoes.module';
     ProjetosModule,
     AtivosModule,
     IntegracoesModule,
+    InteligenciaModule,
   ],
   providers: [
     {

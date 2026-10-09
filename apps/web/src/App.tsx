@@ -18,6 +18,7 @@ import { GatewaysModuleView } from './components/modules/GatewaysModuleView';
 import { RhDpModuloView } from './components/modules/RhDpModuloView';
 import { FiscalModuleView } from './components/modules/FiscalModuleView';
 import { ComprasModuleView } from './components/modules/ComprasModuleView';
+import { InteligenciaModuleView } from './components/modules/InteligenciaModuleView';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
@@ -111,6 +112,11 @@ export function App() {
           />
         ) : activeModule === 'compras' || activeModule === 'estoque' ? (
           <ComprasModuleView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
+          />
+        ) : activeModule === 'inteligencia' ? (
+          <InteligenciaModuleView
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />
