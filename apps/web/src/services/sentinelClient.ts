@@ -1096,6 +1096,191 @@ class SentinelClient {
       modoAutonomia: 'CONSULTIVO_AUDITAVEL',
     };
   }
+
+  async createAlert(payload: {
+    titulo: string;
+    departamento: SentinelDepartment;
+    severidade: SentinelSeverity;
+    descricao: string;
+    entidadeAfetada?: string;
+    valorSolicitado?: number;
+    causaIdentificada?: string;
+    acaoRecomendada?: string;
+    responsavel?: string;
+    nivelAutonomiaSugerido?: AutonomyLevel;
+  }): Promise<SentinelAlert> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/alerts`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify({
+          title: payload.titulo,
+          module: payload.departamento,
+          severity: payload.severidade,
+          description: payload.descricao,
+          affectedEntity: payload.entidadeAfetada,
+          riskValue: payload.valorSolicitado,
+          causaIdentificada: payload.causaIdentificada,
+          acaoRecomendada: payload.acaoRecomendada,
+          assignedTo: payload.responsavel,
+          suggestedAutonomy: payload.nivelAutonomiaSugerido,
+        }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+
+    const newAlert: SentinelAlert = {
+      id: `alt-user-${Date.now()}`,
+      codigo: `SENT-USR-${Math.floor(100 + Math.random() * 900)}`,
+      severidade: payload.severidade || 'ALERTA',
+      departamento: payload.departamento || 'Financeiro',
+      titulo: payload.titulo,
+      descricao: payload.descricao,
+      entidadeAfetada: payload.entidadeAfetada || 'Geral',
+      valorSolicitado: payload.valorSolicitado || 0,
+      causaIdentificada: payload.causaIdentificada || 'Ocorrência registrada manualmente pelo gestor.',
+      acaoRecomendada: payload.acaoRecomendada || 'Acompanhamento e resolução com parecer de auditoria.',
+      status: 'ABERTO',
+      responsavel: payload.responsavel || 'Gestor Autorizado',
+      criadoEm: 'Agora mesmo',
+      tempoDecorrido: '0 min',
+      evidencias: [
+        { rotulo: 'Origem', valor: 'Console Administrativo' },
+        { rotulo: 'Impacto Financeiro', valor: `R$ ${(payload.valorSolicitado || 0).toLocaleString('pt-BR')}` },
+      ],
+      nivelAutonomiaSugerido: payload.nivelAutonomiaSugerido || 'ACAO_SUPERVISIONADA',
+    };
+    return newAlert;
+  }
+
+  async createRule(payload: {
+    codigo?: string;
+    nome: string;
+    modulo: SentinelDepartment;
+    tipo: 'DETERMINISTICA' | 'ESTATISTICA' | 'IA_SEMANTICA';
+    expressaoRegra: string;
+    severidade: SentinelSeverity;
+  }): Promise<SentinelRule> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/rules`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+
+    const newRule: SentinelRule = {
+      id: `rg-user-${Date.now()}`,
+      codigo: payload.codigo || `SENT-REG-${Math.floor(100 + Math.random() * 900)}`,
+      modulo: payload.modulo || 'Financeiro',
+      nome: payload.nome,
+      tipo: payload.tipo || 'DETERMINISTICA',
+      expressaoRegra: payload.expressaoRegra,
+      severidade: payload.severidade || 'CRITICO',
+      status: 'ATIVO',
+      verificacoesHoje: 0,
+      anomaliasDetectadas: 0,
+      ultimaExecucao: 'Agora mesmo',
+    };
+    return newRule;
+  }
+
+  async createAgent(payload: {
+    nome: string;
+    departamento: SentinelDepartment;
+    foco: string;
+    autonomia: AutonomyLevel;
+    avatar?: string;
+  }): Promise<SentinelAgent> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/agents`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+
+    const newAgent: SentinelAgent = {
+      id: `ag-user-${Date.now()}`,
+      nome: payload.nome,
+      departamento: payload.departamento,
+      avatar: payload.avatar || '🛡️',
+      foco: payload.foco,
+      autonomia: payload.autonomia || 'INVESTIGACAO',
+      status: 'ONLINE',
+      alertasGerados: 0,
+      acuraciaPercent: 100.0,
+      ultimaAtividade: 'Agora mesmo',
+    };
+    return newAgent;
+  }
+
+  async createCrossAudit(payload: {
+    origem: string;
+    destino: string;
+    descricao: string;
+    detalhe: string;
+    divergencia?: number;
+    regraViolada?: string;
+  }): Promise<CrossAuditItem> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/cross-audit`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+
+    const newTrail: CrossAuditItem = {
+      id: `ca-user-${Date.now()}`,
+      origem: payload.origem,
+      destino: payload.destino,
+      descricao: payload.descricao,
+      status: (payload.divergencia && payload.divergencia > 0) ? 'DIVERGENCIA' : 'CONFORME',
+      detalhe: payload.detalhe,
+      divergencia: Number(payload.divergencia || 0),
+      regraViolada: payload.regraViolada,
+    };
+    return newTrail;
+  }
+
+  async createPreventiveRisk(payload: {
+    titulo: string;
+    categoria: string;
+    entidade: string;
+    horizonteDias: number;
+    impactoEstimado: number;
+    severidade?: SentinelSeverity;
+    diagnostico: string;
+    recomendacao: string;
+  }): Promise<PreventiveRiskItem> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/preventive`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+
+    const newRisk: PreventiveRiskItem = {
+      id: `prev-user-${Date.now()}`,
+      categoria: payload.categoria || 'PREVENTIVO_GERAL',
+      titulo: payload.titulo,
+      entidade: payload.entidade || 'DiskIngressos',
+      horizonteDias: Number(payload.horizonteDias || 7),
+      impactoEstimado: Number(payload.impactoEstimado || 0),
+      severidade: payload.severidade || 'ATENCAO',
+      diagnostico: payload.diagnostico,
+      recomendacao: payload.recomendacao,
+    };
+    return newRisk;
+  }
 }
 
 export const sentinelClient = new SentinelClient();

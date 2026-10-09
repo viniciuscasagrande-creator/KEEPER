@@ -69,4 +69,50 @@ export class SentinelController {
   ) {
     return this.sentinel.askAiAssistant(tenantId, body.query);
   }
+
+  @Post('alerts')
+  @RequirePermissions('inteligencia.sentinel.tratar')
+  createAlert(
+    @CurrentTenant() tenantId: string,
+    @CurrentUser('id') userId: string,
+    @Body() body: any
+  ) {
+    return this.sentinel.createAlert(tenantId, body, userId);
+  }
+
+  @Post('rules')
+  @RequirePermissions('inteligencia.sentinel.tratar')
+  createRule(
+    @CurrentTenant() tenantId: string,
+    @Body() body: any
+  ) {
+    return this.sentinel.createRule(tenantId, body);
+  }
+
+  @Post('agents')
+  @RequirePermissions('inteligencia.sentinel.tratar')
+  createAgent(
+    @CurrentTenant() tenantId: string,
+    @Body() body: any
+  ) {
+    return this.sentinel.createAgent(tenantId, body);
+  }
+
+  @Post('cross-audit')
+  @RequirePermissions('inteligencia.sentinel.tratar')
+  createCrossAudit(
+    @CurrentTenant() tenantId: string,
+    @Body() body: any
+  ) {
+    return this.sentinel.createCrossAudit(tenantId, body);
+  }
+
+  @Post('preventive')
+  @RequirePermissions('inteligencia.sentinel.tratar')
+  createPreventiveRisk(
+    @CurrentTenant() tenantId: string,
+    @Body() body: any
+  ) {
+    return this.sentinel.createPreventiveRisk(tenantId, body);
+  }
 }

@@ -67,6 +67,7 @@ import {
   Share2,
   CornerDownRight,
   MessageSquare,
+  Plus,
 } from 'lucide-react';
 import {
   inteligenciaClient,
@@ -85,6 +86,7 @@ import {
   SentinelDepartment,
   SentinelSeverity,
   SentinelOverview,
+  AutonomyLevel,
   RiskDepartmentItem,
   CrossAuditItem,
   CrossAuditReport,
@@ -602,6 +604,62 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   const [aiInputQuery, setAiInputQuery] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  // Estados para Modais de Adicionar / Incluir no Sentinel
+  const [isNewAlertModalOpen, setIsNewAlertModalOpen] = useState(false);
+  const [newAlertForm, setNewAlertForm] = useState({
+    titulo: '',
+    departamento: 'Financeiro' as SentinelDepartment,
+    severidade: 'CRITICO' as SentinelSeverity,
+    descricao: '',
+    entidadeAfetada: '',
+    valorSolicitado: 0,
+    causaIdentificada: '',
+    acaoRecomendada: '',
+    responsavel: 'Comitê de Auditoria',
+    nivelAutonomiaSugerido: 'ACAO_SUPERVISIONADA' as AutonomyLevel,
+  });
+
+  const [isNewRuleModalOpen, setIsNewRuleModalOpen] = useState(false);
+  const [newRuleForm, setNewRuleForm] = useState({
+    codigo: '',
+    nome: '',
+    modulo: 'Financeiro' as SentinelDepartment,
+    tipo: 'DETERMINISTICA' as 'DETERMINISTICA' | 'ESTATISTICA' | 'IA_SEMANTICA',
+    expressaoRegra: '',
+    severidade: 'CRITICO' as SentinelSeverity,
+  });
+
+  const [isNewAgentModalOpen, setIsNewAgentModalOpen] = useState(false);
+  const [newAgentForm, setNewAgentForm] = useState({
+    nome: '',
+    departamento: 'Financeiro' as SentinelDepartment,
+    foco: '',
+    autonomia: 'INVESTIGACAO' as AutonomyLevel,
+    avatar: '🛡️',
+  });
+
+  const [isNewCrossAuditModalOpen, setIsNewCrossAuditModalOpen] = useState(false);
+  const [newCrossAuditForm, setNewCrossAuditForm] = useState({
+    origem: 'Compras',
+    destino: 'Financeiro',
+    descricao: '',
+    detalhe: '',
+    divergencia: 0,
+    regraViolada: '',
+  });
+
+  const [isNewPreventiveModalOpen, setIsNewPreventiveModalOpen] = useState(false);
+  const [newPreventiveForm, setNewPreventiveForm] = useState({
+    titulo: '',
+    categoria: 'LIQUIDEZ_REPASSES',
+    entidade: '',
+    horizonteDias: 7,
+    impactoEstimado: 0,
+    severidade: 'CRITICO' as SentinelSeverity,
+    diagnostico: '',
+    recomendacao: '',
+  });
+
   // Sincronizar com props externas
   useEffect(() => {
     if (activeSection && activeSection !== sectionId) {
@@ -823,6 +881,182 @@ export const InteligenciaModuleView: React.FC<Props> = ({
       ]);
     } finally {
       setIsAiLoading(false);
+    }
+  };
+
+  // Handlers para criação / inclusão nos modais do Sentinel
+  const handleCreateAlert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAlertForm.titulo.trim() || !newAlertForm.descricao.trim()) {
+      showNotification('Preencha o título e a descrição da ocorrência.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    try {
+      const created = await sentinelClient.createAlert(newAlertForm);
+      if (sentinelData) {
+        setSentinelData({
+          ...sentinelData,
+          alertas: [created, ...sentinelData.alertas],
+          kpis: {
+            ...sentinelData.kpis,
+            alertasCriticos: created.severidade === 'CRITICO' ? sentinelData.kpis.alertasCriticos + 1 : sentinelData.kpis.alertasCriticos,
+          },
+        });
+      }
+      setIsNewAlertModalOpen(false);
+      setNewAlertForm({
+        titulo: '',
+        departamento: 'Financeiro',
+        severidade: 'CRITICO',
+        descricao: '',
+        entidadeAfetada: '',
+        valorSolicitado: 0,
+        causaIdentificada: '',
+        acaoRecomendada: '',
+        responsavel: 'Comitê de Auditoria',
+        nivelAutonomiaSugerido: 'ACAO_SUPERVISIONADA',
+      });
+      showNotification('Nova ocorrência registrada com sucesso no Sentinel!');
+    } catch {
+      showNotification('Erro ao registrar ocorrência.');
+    } finally {
+      setIsProcessingSentinel(false);
+    }
+  };
+
+  const handleCreateRule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRuleForm.nome.trim() || !newRuleForm.expressaoRegra.trim()) {
+      showNotification('Informe o nome e a expressão determinística da regra.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    try {
+      const created = await sentinelClient.createRule(newRuleForm);
+      if (sentinelData) {
+        setSentinelData({
+          ...sentinelData,
+          regras: [created, ...sentinelData.regras],
+          kpis: {
+            ...sentinelData.kpis,
+            regrasAtivas: sentinelData.kpis.regrasAtivas + 1,
+          },
+        });
+      }
+      setIsNewRuleModalOpen(false);
+      setNewRuleForm({
+        codigo: '',
+        nome: '',
+        modulo: 'Financeiro',
+        tipo: 'DETERMINISTICA',
+        expressaoRegra: '',
+        severidade: 'CRITICO',
+      });
+      showNotification('Nova regra determinística ativada com sucesso!');
+    } catch {
+      showNotification('Erro ao cadastrar regra determinística.');
+    } finally {
+      setIsProcessingSentinel(false);
+    }
+  };
+
+  const handleCreateAgent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAgentForm.nome.trim() || !newAgentForm.foco.trim()) {
+      showNotification('Informe o nome e o foco analítico do agente.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    try {
+      const created = await sentinelClient.createAgent(newAgentForm);
+      if (sentinelData) {
+        setSentinelData({
+          ...sentinelData,
+          agentes: [...sentinelData.agentes, created],
+        });
+      }
+      setIsNewAgentModalOpen(false);
+      setNewAgentForm({
+        nome: '',
+        departamento: 'Financeiro',
+        foco: '',
+        autonomia: 'INVESTIGACAO',
+        avatar: '🛡️',
+      });
+      showNotification('Novo agente de IA especializado instanciado com sucesso!');
+    } catch {
+      showNotification('Erro ao instanciar agente.');
+    } finally {
+      setIsProcessingSentinel(false);
+    }
+  };
+
+  const handleCreateCrossAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCrossAuditForm.descricao.trim()) {
+      showNotification('Informe a descrição da trilha de auditoria.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    try {
+      const created = await sentinelClient.createCrossAudit(newCrossAuditForm);
+      if (crossAuditData) {
+        setCrossAuditData({
+          ...crossAuditData,
+          trilhas: [created, ...crossAuditData.trilhas],
+          verificacoesRealizadas: crossAuditData.verificacoesRealizadas + 1,
+        });
+      }
+      setIsNewCrossAuditModalOpen(false);
+      setNewCrossAuditForm({
+        origem: 'Compras',
+        destino: 'Financeiro',
+        descricao: '',
+        detalhe: '',
+        divergencia: 0,
+        regraViolada: '',
+      });
+      showNotification('Nova trilha de auditoria cruzada incluída com sucesso!');
+    } catch {
+      showNotification('Erro ao cadastrar auditoria cruzada.');
+    } finally {
+      setIsProcessingSentinel(false);
+    }
+  };
+
+  const handleCreatePreventive = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPreventiveForm.titulo.trim() || !newPreventiveForm.diagnostico.trim()) {
+      showNotification('Informe o título e o diagnóstico preventivo.');
+      return;
+    }
+    setIsProcessingSentinel(true);
+    try {
+      const created = await sentinelClient.createPreventiveRisk(newPreventiveForm);
+      if (preventiveData) {
+        setPreventiveData({
+          ...preventiveData,
+          projecoes: [created, ...preventiveData.projecoes],
+          riscosAntecipados: preventiveData.riscosAntecipados + 1,
+        });
+      }
+      setIsNewPreventiveModalOpen(false);
+      setNewPreventiveForm({
+        titulo: '',
+        categoria: 'LIQUIDEZ_REPASSES',
+        entidade: '',
+        horizonteDias: 7,
+        impactoEstimado: 0,
+        severidade: 'CRITICO',
+        diagnostico: '',
+        recomendacao: '',
+      });
+      showNotification('Novo risco preventivo registrado com sucesso!');
+    } catch {
+      showNotification('Erro ao registrar risco preventivo.');
+    } finally {
+      setIsProcessingSentinel(false);
     }
   };
 
@@ -2289,6 +2523,13 @@ export const InteligenciaModuleView: React.FC<Props> = ({
 
             <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
               <button
+                onClick={() => setIsNewAlertModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Nova Ocorrência</span>
+              </button>
+              <button
                 onClick={loadData}
                 disabled={isRefreshing}
                 className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center gap-2 border border-slate-200"
@@ -2599,6 +2840,13 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     <span className="text-xs font-bold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
                       Exibindo {filteredSentinelAlerts.length} de {sentinelData?.alertas.length || 7} ocorrências
                     </span>
+                    <button
+                      onClick={() => setIsNewAlertModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Registrar Ocorrência</span>
+                    </button>
                   </div>
                 </div>
 
@@ -2730,9 +2978,18 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     <h3 className="font-bold text-base text-slate-900">Agentes Especializados por Departamento</h3>
                     <p className="text-xs text-slate-500">Agentes digitais dedicados a auditar fluxos específicos com permissão granular</p>
                   </div>
-                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                    6 Agentes Online
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsNewAgentModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Novo Agente de IA</span>
+                    </button>
+                    <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                      {sentinelData?.agentes.length || 6} Agentes Online
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2790,9 +3047,18 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     <h3 className="font-bold text-base text-slate-900">Motor de Regras Determinísticas & Invariantes de Negócio</h3>
                     <p className="text-xs text-slate-500">Regras invioláveis executadas diretamente no NestJS e PostgreSQL para proteger os saldos</p>
                   </div>
-                  <span className="text-xs font-bold text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
-                    {sentinelData?.regras.length || 6} Regras Compiladas
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsNewRuleModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Adicionar Regra</span>
+                    </button>
+                    <span className="text-xs font-bold text-purple-800 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+                      {sentinelData?.regras.length || 6} Regras Compiladas
+                    </span>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto border border-slate-200 rounded-2xl">
@@ -3101,6 +3367,13 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => setIsNewCrossAuditModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nova Trilha de Auditoria</span>
+                    </button>
+                    <button
                       onClick={loadData}
                       className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
                     >
@@ -3223,6 +3496,13 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsNewPreventiveModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Registrar Risco Preventivo</span>
+                    </button>
                     <button
                       onClick={() => handleSelectSection('intel-ai-simulador')}
                       className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
@@ -3794,6 +4074,691 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 1: REGISTRAR NOVA OCORRÊNCIA / ALERTA */}
+        {isNewAlertModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 my-8">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Registrar Nova Ocorrência</h3>
+                    <p className="text-xs text-slate-500">Keeper Sentinel · Trilha de Auditoria e Invariantes</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewAlertModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateAlert} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Título da Ocorrência *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newAlertForm.titulo}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, titulo: e.target.value })}
+                      placeholder="ex: Solicitação de repasse excede saldo elegível"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Departamento / Módulo</label>
+                    <select
+                      value={newAlertForm.departamento}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, departamento: e.target.value as SentinelDepartment })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Eventos & Produtores">Eventos & Produtores</option>
+                      <option value="Contabilidade">Contabilidade</option>
+                      <option value="Fiscal">Fiscal</option>
+                      <option value="RH & DP">RH & DP</option>
+                      <option value="Compras">Compras</option>
+                      <option value="Segurança & Operação">Segurança & Operação</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Severidade do Risco</label>
+                    <select
+                      value={newAlertForm.severidade}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, severidade: e.target.value as SentinelSeverity })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      <option value="CRITICO">CRÍTICO (Ação Imediata)</option>
+                      <option value="ATENCAO">ATENÇÃO (Risco Moderado)</option>
+                      <option value="INFO">INFORMATIVO</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Entidade / Produtor / Contexto</label>
+                    <input
+                      type="text"
+                      value={newAlertForm.entidadeAfetada}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, entidadeAfetada: e.target.value })}
+                      placeholder="ex: Show Arena Mix - Lote 03"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Valor em Risco / Divergência (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newAlertForm.valorSolicitado || ''}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, valorSolicitado: parseFloat(e.target.value) || 0 })}
+                      placeholder="0,00"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Descrição do Fato / Evidências *</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={newAlertForm.descricao}
+                    onChange={(e) => setNewAlertForm({ ...newAlertForm, descricao: e.target.value })}
+                    placeholder="Descreva a divergência observada pelo invariante..."
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Diagnóstico / Causa Provável</label>
+                    <input
+                      type="text"
+                      value={newAlertForm.causaIdentificada}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, causaIdentificada: e.target.value })}
+                      placeholder="ex: Inconsistência entre recebíveis adquirente e ledger"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Ação Recomendada pelo Sentinel</label>
+                    <input
+                      type="text"
+                      value={newAlertForm.acaoRecomendada}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, acaoRecomendada: e.target.value })}
+                      placeholder="ex: Suspender liberação e notificar gestor financeiro"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Responsável Inicial</label>
+                    <input
+                      type="text"
+                      value={newAlertForm.responsavel}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, responsavel: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Nível de Autonomia</label>
+                    <select
+                      value={newAlertForm.nivelAutonomiaSugerido}
+                      onChange={(e) => setNewAlertForm({ ...newAlertForm, nivelAutonomiaSugerido: e.target.value as AutonomyLevel })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      <option value="OBSERVACAO">OBSERVAÇÃO (Alerta passivo)</option>
+                      <option value="INVESTIGACAO">INVESTIGAÇÃO (Agrupamento de evidências)</option>
+                      <option value="RECOMENDACAO">RECOMENDAÇÃO (Sugere decisão)</option>
+                      <option value="ACAO_SUPERVISIONADA">AÇÃO SUPERVISIONADA (Requer duplo clique)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewAlertModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessingSentinel}
+                    className="px-5 py-2 text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    <span>Registrar e Notificar Sentinel</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 2: CADASTRAR NOVA REGRA DETERMINÍSTICA */}
+        {isNewRuleModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 my-8">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                    <Scale className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Nova Regra Determinística</h3>
+                    <p className="text-xs text-slate-500">Invariantes invioláveis de validação contábil, fiscal e financeira</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewRuleModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateRule} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Código da Regra *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newRuleForm.codigo}
+                      onChange={(e) => setNewRuleForm({ ...newRuleForm, codigo: e.target.value })}
+                      placeholder="ex: REG-FIN-099"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Módulo / Departamento</label>
+                    <select
+                      value={newRuleForm.modulo}
+                      onChange={(e) => setNewRuleForm({ ...newRuleForm, modulo: e.target.value as SentinelDepartment })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Eventos & Produtores">Eventos & Produtores</option>
+                      <option value="Contabilidade">Contabilidade</option>
+                      <option value="Fiscal">Fiscal</option>
+                      <option value="RH & DP">RH & DP</option>
+                      <option value="Compras">Compras</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Nome Amigável da Regra *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newRuleForm.nome}
+                    onChange={(e) => setNewRuleForm({ ...newRuleForm, nome: e.target.value })}
+                    placeholder="ex: Saldo Líquido de Repasse vs Retenção de Custódia"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Tipo de Invariante</label>
+                    <select
+                      value={newRuleForm.tipo}
+                      onChange={(e) => setNewRuleForm({ ...newRuleForm, tipo: e.target.value as any })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="DETERMINISTICA">DETERMINÍSTICA (Matemática Pura)</option>
+                      <option value="ESTATISTICA">ESTATÍSTICA (Desvio Padrão)</option>
+                      <option value="IA_SEMANTICA">IA SEMÂNTICA (Comportamental)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Severidade ao Violar</label>
+                    <select
+                      value={newRuleForm.severidade}
+                      onChange={(e) => setNewRuleForm({ ...newRuleForm, severidade: e.target.value as SentinelSeverity })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="CRITICO">CRÍTICO (Gera bloqueio preventivo)</option>
+                      <option value="ATENCAO">ATENÇÃO</option>
+                      <option value="INFO">INFORMATIVO</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Expressão Determinística / Invariante *</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={newRuleForm.expressaoRegra}
+                    onChange={(e) => setNewRuleForm({ ...newRuleForm, expressaoRegra: e.target.value })}
+                    placeholder="repasse.solicitado <= saldo.elegivel - reserva.retencao"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  />
+                  <span className="text-[10px] text-slate-400">Exemplos: compras.nfe_emitida == contaspagar.titulo_registrado</span>
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewRuleModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessingSentinel}
+                    className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <Scale className="w-3.5 h-3.5" />
+                    <span>Ativar Regra no Worker</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 3: INSTANCIAR NOVO AGENTE DE IA */}
+        {isNewAgentModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 my-8">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                    <Bot className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Instanciar Novo Agente de IA</h3>
+                    <p className="text-xs text-slate-500">Agente supervisor especializado em auditoria e investigação</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewAgentModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateAgent} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Nome do Agente *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newAgentForm.nome}
+                      onChange={(e) => setNewAgentForm({ ...newAgentForm, nome: e.target.value })}
+                      placeholder="ex: Sentinel Liquidez & Custódia"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Ícone / Avatar</label>
+                    <input
+                      type="text"
+                      value={newAgentForm.avatar}
+                      onChange={(e) => setNewAgentForm({ ...newAgentForm, avatar: e.target.value })}
+                      placeholder="🛡️"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-center text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Departamento de Atuação</label>
+                    <select
+                      value={newAgentForm.departamento}
+                      onChange={(e) => setNewAgentForm({ ...newAgentForm, departamento: e.target.value as SentinelDepartment })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Eventos & Produtores">Eventos & Produtores</option>
+                      <option value="Contabilidade">Contabilidade</option>
+                      <option value="Fiscal">Fiscal</option>
+                      <option value="RH & DP">RH & DP</option>
+                      <option value="Compras">Compras</option>
+                      <option value="Segurança & Operação">Segurança & Operação</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Nível de Autonomia</label>
+                    <select
+                      value={newAgentForm.autonomia}
+                      onChange={(e) => setNewAgentForm({ ...newAgentForm, autonomia: e.target.value as AutonomyLevel })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="OBSERVACAO">OBSERVAÇÃO (Passivo)</option>
+                      <option value="INVESTIGACAO">INVESTIGAÇÃO (Agrupamento sem escrita)</option>
+                      <option value="RECOMENDACAO">RECOMENDAÇÃO (Sugere aprovação)</option>
+                      <option value="ACAO_SUPERVISIONADA">AÇÃO SUPERVISIONADA (Com duplo clique)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Foco Analítico e Escopo *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={newAgentForm.foco}
+                    onChange={(e) => setNewAgentForm({ ...newAgentForm, foco: e.target.value })}
+                    placeholder="Supervisão contínua da solvência fiduciária de repasses, monitorando taxas retidas e solvência para estornos futuros..."
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800 leading-relaxed font-semibold">
+                  🔒 <strong>Regra de Segurança:</strong> Agentes de IA do Keeper Sentinel operam em modo estritamente consultivo e investigativo, sem permissão autônoma de movimentação financeira.
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewAgentModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessingSentinel}
+                    className="px-5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>Instanciar Agente</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 4: INCLUIR TRILHA DE AUDITORIA CRUZADA */}
+        {isNewCrossAuditModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 my-8">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                    <Workflow className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Incluir Trilha de Auditoria Cruzada</h3>
+                    <p className="text-xs text-slate-500">Conferência de integridade transacional entre departamentos</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewCrossAuditModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateCrossAudit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Módulo Origem *</label>
+                    <select
+                      value={newCrossAuditForm.origem}
+                      onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, origem: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="Compras">Compras</option>
+                      <option value="Vendas & Ingressos">Vendas & Ingressos</option>
+                      <option value="Eventos">Eventos</option>
+                      <option value="RH & DP">RH & DP</option>
+                      <option value="Fiscal">Fiscal</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Módulo Destino *</label>
+                    <select
+                      value={newCrossAuditForm.destino}
+                      onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, destino: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Contabilidade">Contabilidade</option>
+                      <option value="Fiscal">Fiscal</option>
+                      <option value="Ledger Imutável">Ledger Imutável</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Descrição da Trilha Auditada *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newCrossAuditForm.descricao}
+                    onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, descricao: e.target.value })}
+                    placeholder="ex: NFe Emitida Compras vs Lançamento Contas a Pagar"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Regra / Invariante</label>
+                    <input
+                      type="text"
+                      value={newCrossAuditForm.regraViolada}
+                      onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, regraViolada: e.target.value })}
+                      placeholder="ex: 3-Way Matching Obrigatório"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Divergência Retida (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newCrossAuditForm.divergencia || ''}
+                      onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, divergencia: parseFloat(e.target.value) || 0 })}
+                      placeholder="0,00"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Evidência / Detalhes Técnicos</label>
+                  <textarea
+                    rows={2}
+                    value={newCrossAuditForm.detalhe}
+                    onChange={(e) => setNewCrossAuditForm({ ...newCrossAuditForm, detalhe: e.target.value })}
+                    placeholder="ex: NF-e 8912 emitida contra DiskIngressos sem registro no contas a pagar..."
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewCrossAuditModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessingSentinel}
+                    className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <Workflow className="w-3.5 h-3.5" />
+                    <span>Cadastrar Trilha</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL 5: REGISTRAR RISCO PREVENTIVO DE LIQUIDEZ */}
+        {isNewPreventiveModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 my-8">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Registrar Risco Preventivo de Liquidez</h3>
+                    <p className="text-xs text-slate-500">Modelagem antecipada de eventos futuros e insuficiências potenciais</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNewPreventiveModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreatePreventive} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Título do Risco Preventivo *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newPreventiveForm.titulo}
+                    onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, titulo: e.target.value })}
+                    placeholder="ex: Insuficiência Projetada para Repasse Festival Verão"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Categoria do Risco</label>
+                    <select
+                      value={newPreventiveForm.categoria}
+                      onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, categoria: e.target.value })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="LIQUIDEZ_REPASSES">Liquidez & Repasses a Produtores</option>
+                      <option value="OBRIGACOES_FISCAIS">Obrigações e Vencimentos Fiscais</option>
+                      <option value="DESPESA_ORCAMENTO">Despesa Acima do Orçamento</option>
+                      <option value="ESTORNOS_CHARGEBACK">Estornos e Chargebacks</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Horizonte Projetado</label>
+                    <select
+                      value={newPreventiveForm.horizonteDias}
+                      onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, horizonteDias: parseInt(e.target.value) })}
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value={7}>D-7 (Próximos 7 dias)</option>
+                      <option value={15}>D-15 (Próximas duas semanas)</option>
+                      <option value={30}>D-30 (Próximo mês)</option>
+                      <option value={60}>D-60 (Dois meses)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Entidade / Evento</label>
+                    <input
+                      type="text"
+                      value={newPreventiveForm.entidade}
+                      onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, entidade: e.target.value })}
+                      placeholder="ex: Festival Verão 2026 - Show Live"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase text-slate-700">Impacto Estimado (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newPreventiveForm.impactoEstimado || ''}
+                      onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, impactoEstimado: parseFloat(e.target.value) || 0 })}
+                      placeholder="0,00"
+                      className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Diagnóstico Preventivo *</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={newPreventiveForm.diagnostico}
+                    onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, diagnostico: e.target.value })}
+                    placeholder="Volume de estornos previstos e retenções fiduciárias excederão o saldo liberável..."
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-slate-700">Recomendação de Prevenção</label>
+                  <textarea
+                    rows={2}
+                    value={newPreventiveForm.recomendacao}
+                    onChange={(e) => setNewPreventiveForm({ ...newPreventiveForm, recomendacao: e.target.value })}
+                    placeholder="Suspender antecipação até recomposição da conta escrow fiduciária..."
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsNewPreventiveModalOpen(false)}
+                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isProcessingSentinel}
+                    className="px-5 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Salvar Risco Preventivo</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

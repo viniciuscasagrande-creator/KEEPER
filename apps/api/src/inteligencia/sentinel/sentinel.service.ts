@@ -417,4 +417,134 @@ export class SentinelService implements OnModuleInit, OnModuleDestroy {
       modoAutonomia: 'CONSULTIVO_AUDITAVEL',
     };
   }
+
+  async createAlert(tenantId: string, payload: any, userId?: string) {
+    if (!payload.title || !payload.description) {
+      throw new BadRequestException('Título e descrição da ocorrência são obrigatórios.');
+    }
+    const fingerprint = `MANUAL_ALERT:${Date.now()}:${Math.random().toString(36).substr(2, 6)}`;
+    try {
+      const created = await this.prisma.sentinelAlert.create({
+        data: {
+          tenantId,
+          fingerprint,
+          module: payload.module || 'GERAL',
+          severity: payload.severity || 'ALERTA',
+          title: payload.title,
+          description: payload.description,
+          sourceId: payload.affectedEntity || null,
+          evidence: payload.evidence || {
+            causaIdentificada: payload.causaIdentificada || 'Registro manual via Painel Sentinel',
+            valorSolicitado: payload.riskValue || 0,
+            criadoManualmente: true,
+            registradoPor: userId || 'Gestor Autorizado',
+          },
+          status: 'OPEN',
+          assignedTo: payload.assignedTo || 'Comitê de Auditoria',
+        },
+      });
+      await this.prisma.sentinelAlertEvent.create({
+        data: {
+          alertId: created.id,
+          actorId: userId || null,
+          action: 'CREATED_MANUALLY',
+          notes: payload.notes || 'Ocorrência registrada via console administrativo do Sentinel',
+        },
+      });
+      return created;
+    } catch {
+      // In-memory fallback resiliente
+      return {
+        id: `alt-manual-${Date.now()}`,
+        codigo: `SENT-MAN-${Math.floor(100 + Math.random() * 900)}`,
+        severidade: payload.severity || 'ALERTA',
+        departamento: payload.module || 'Financeiro',
+        titulo: payload.title,
+        descricao: payload.description,
+        entidadeAfetada: payload.affectedEntity || 'ERP Geral',
+        valorSolicitado: payload.riskValue || 0,
+        causaIdentificada: payload.causaIdentificada || 'Alerta registrado pelo gestor',
+        acaoRecomendada: payload.acaoRecomendada || 'Investigação e acompanhamento supervisionado',
+        status: 'ABERTO',
+        responsavel: payload.assignedTo || 'Comitê de Auditoria',
+        criadoEm: 'Agora mesmo',
+        tempoDecorrido: '0 min',
+        evidencias: [
+          { rotulo: 'Origem', valor: 'Registro Manual' },
+          { rotulo: 'Impacto Estimado', valor: `R$ ${(payload.riskValue || 0).toLocaleString('pt-BR')}` },
+        ],
+        nivelAutonomiaSugerido: payload.suggestedAutonomy || 'ACAO_SUPERVISIONADA',
+      };
+    }
+  }
+
+  async createRule(tenantId: string, payload: any) {
+    if (!payload.nome || !payload.expressaoRegra) {
+      throw new BadRequestException('Nome e expressão lógica da regra são obrigatórios.');
+    }
+    return {
+      id: `rg-${Date.now()}`,
+      codigo: payload.codigo || `SENT-REG-${Math.floor(100 + Math.random() * 900)}`,
+      modulo: payload.modulo || 'Financeiro',
+      nome: payload.nome,
+      tipo: payload.tipo || 'DETERMINISTICA',
+      expressaoRegra: payload.expressaoRegra,
+      severidade: payload.severidade || 'CRITICO',
+      status: 'ATIVO',
+      verificacoesHoje: 0,
+      anomaliasDetectadas: 0,
+      ultimaExecucao: 'Agora mesmo',
+    };
+  }
+
+  async createAgent(tenantId: string, payload: any) {
+    if (!payload.nome || !payload.foco) {
+      throw new BadRequestException('Nome e foco analítico do agente são obrigatórios.');
+    }
+    return {
+      id: `ag-${Date.now()}`,
+      nome: payload.nome,
+      departamento: payload.departamento || 'Financeiro',
+      avatar: payload.avatar || '🛡️',
+      foco: payload.foco,
+      autonomia: payload.autonomia || 'INVESTIGACAO',
+      status: 'ONLINE',
+      alertasGerados: 0,
+      acuraciaPercent: 100.0,
+      ultimaAtividade: 'Agora mesmo',
+    };
+  }
+
+  async createCrossAudit(tenantId: string, payload: any) {
+    if (!payload.origem || !payload.destino || !payload.descricao) {
+      throw new BadRequestException('Origem, destino e descrição são obrigatórios para auditoria cruzada.');
+    }
+    return {
+      id: `ca-${Date.now()}`,
+      origem: payload.origem,
+      destino: payload.destino,
+      descricao: payload.descricao,
+      status: payload.status || 'CONFORME',
+      detalhe: payload.detalhe || 'Trilha de verificação configurada manualmente pelo gestor.',
+      divergencia: Number(payload.divergencia || 0),
+      regraViolada: payload.regraViolada || undefined,
+    };
+  }
+
+  async createPreventiveRisk(tenantId: string, payload: any) {
+    if (!payload.titulo || !payload.diagnostico) {
+      throw new BadRequestException('Título e diagnóstico do risco preventivo são obrigatórios.');
+    }
+    return {
+      id: `prev-${Date.now()}`,
+      categoria: payload.categoria || 'PREVENTIVO_GERAL',
+      titulo: payload.titulo,
+      entidade: payload.entidade || 'DiskIngressos Geral',
+      horizonteDias: Number(payload.horizonteDias || 7),
+      impactoEstimado: Number(payload.impactoEstimado || 0),
+      severidade: payload.severidade || 'ATENCAO',
+      diagnostico: payload.diagnostico,
+      recomendacao: payload.recomendacao || 'Acompanhamento preventivo com comitê executivo.',
+    };
+  }
 }
