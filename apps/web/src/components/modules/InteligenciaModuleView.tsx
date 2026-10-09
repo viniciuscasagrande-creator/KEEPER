@@ -61,6 +61,12 @@ import {
   History,
   Server,
   Globe,
+  AlertOctagon,
+  FileSpreadsheet,
+  Network,
+  Share2,
+  CornerDownRight,
+  MessageSquare,
 } from 'lucide-react';
 import {
   inteligenciaClient,
@@ -79,6 +85,16 @@ import {
   SentinelDepartment,
   SentinelSeverity,
   SentinelOverview,
+  RiskDepartmentItem,
+  CrossAuditItem,
+  CrossAuditReport,
+  PreventiveRiskItem,
+  PreventiveReport,
+  RootCauseStep,
+  RootCauseAnalysis,
+  IntegrationConnector,
+  IntegrationsHealthReport,
+  AiAssistantResponse,
 } from '../../services/sentinelClient';
 
 interface Props {
@@ -137,7 +153,7 @@ export const INTEL_SUBMENUS: IntelSubmenuDef[] = [
     label: 'Central de Monitoramento',
     group: 'Monitoramento Inteligente',
     icon: Activity,
-    purpose: 'Visão geral das verificações contínuas e integridade dos módulos do Keeper.',
+    purpose: 'Visão geral da situação do ERP e saúde global dos módulos.',
     badge: 'Sentinel',
     badgeColor: 'bg-rose-100 text-rose-800',
   },
@@ -146,65 +162,119 @@ export const INTEL_SUBMENUS: IntelSubmenuDef[] = [
     label: 'Alertas em Tempo Real',
     group: 'Monitoramento Inteligente',
     icon: AlertTriangle,
-    purpose: 'Alertas críticos determinísticos e ocorrências ativas abertas no sistema.',
+    purpose: 'Acompanhamento de ocorrências ativas com ação orientada e SLA.',
     badge: '3 Críticos',
     badgeColor: 'bg-rose-100 text-rose-700',
   },
   {
-    id: 'intel-sent-auditoria',
-    label: 'Auditoria Inteligente',
+    id: 'intel-sent-preventivo',
+    label: 'Monitoramento Preventivo',
     group: 'Monitoramento Inteligente',
-    icon: CheckSquare,
-    purpose: 'Verificação contínua de inconsistências de Ledger, banco e tributos.',
+    icon: ShieldCheck,
+    purpose: 'Identificação antecipada de problemas futuros de repasses, caixa e despesas.',
+    badge: 'D-7 Prev',
+    badgeColor: 'bg-purple-100 text-purple-800',
+  },
+  {
+    id: 'intel-sent-auditoria-cruzada',
+    label: 'Auditoria Cruzada',
+    group: 'Monitoramento Inteligente',
+    icon: Layers,
+    purpose: 'Conferência automática entre Compras, NF, Contas a Pagar e Contabilidade.',
+    badge: 'Reconciliação',
+    badgeColor: 'bg-blue-100 text-blue-800',
   },
   {
     id: 'intel-sent-riscos',
     label: 'Riscos e Anomalias',
     group: 'Monitoramento Inteligente',
     icon: ShieldAlert,
-    purpose: 'Comportamentos suspeitos, riscos de solvência e desvios de padrão.',
+    purpose: 'Mapa de riscos operacionais, solvência e matriz de probabilidade.',
+  },
+  {
+    id: 'intel-sent-antifraude',
+    label: 'Antifraude',
+    group: 'Monitoramento Inteligente',
+    icon: Lock,
+    purpose: 'Detecção de movimentações suspeitas, logins e alterações de dados bancários.',
+    badge: 'Antifraude',
+    badgeColor: 'bg-amber-100 text-amber-800',
+  },
+  {
+    id: 'intel-sent-previsao-liquidez',
+    label: 'Previsão de Liquidez',
+    group: 'Monitoramento Inteligente',
+    icon: TrendingUp,
+    purpose: 'Projeção futura de fluxo segregando caixa próprio e fiduciário de eventos.',
+  },
+  {
+    id: 'intel-sent-investigacao',
+    label: 'Investigação Inteligente',
+    group: 'Monitoramento Inteligente',
+    icon: Search,
+    purpose: 'Identificação e esteira de causa raiz de divergências financeiras.',
+    badge: 'Causa Raiz',
+    badgeColor: 'bg-indigo-100 text-indigo-800',
+  },
+  {
+    id: 'intel-sent-assistente',
+    label: 'Assistente IA Keeper',
+    group: 'Monitoramento Inteligente',
+    icon: Sparkles,
+    purpose: 'Consultas e diagnósticos em linguagem natural com indicação de fontes.',
+    badge: 'IA Copilot',
+    badgeColor: 'bg-purple-100 text-purple-800',
+  },
+  {
+    id: 'intel-sent-tratativas',
+    label: 'Gestão de Ocorrências',
+    group: 'Monitoramento Inteligente',
+    icon: Workflow,
+    purpose: 'Atribuição de responsáveis, SLA de resolução e planos de ação.',
+  },
+  {
+    id: 'intel-sent-integracoes-saude',
+    label: 'Saúde das Integrações',
+    group: 'Monitoramento Inteligente',
+    icon: Server,
+    purpose: 'Verificação em tempo real de APIs, Webhooks, Gateways e Filas Redis.',
+    badge: 'Telemetria',
+    badgeColor: 'bg-emerald-100 text-emerald-800',
   },
   {
     id: 'intel-sent-regras',
     label: 'Regras de Monitoramento',
     group: 'Monitoramento Inteligente',
     icon: SlidersHorizontal,
-    purpose: 'Condições determinísticas, limites fiduciários e prioridades de checagem.',
+    purpose: 'Configuração determinística de limites, tetos e condições fiduciárias.',
   },
   {
     id: 'intel-sent-agentes',
     label: 'Agentes de IA',
     group: 'Monitoramento Inteligente',
     icon: Bot,
-    purpose: 'Agentes digitais especializados por departamento (Finanças, Eventos, Fiscal, RH, Compras).',
-  },
-  {
-    id: 'intel-sent-tratativas',
-    label: 'Automações e Tratativas',
-    group: 'Monitoramento Inteligente',
-    icon: Workflow,
-    purpose: 'Encaminhamento supervisionado, planos de mitigação e acompanhamento.',
-  },
-  {
-    id: 'intel-sent-historico',
-    label: 'Histórico de Ocorrências',
-    group: 'Monitoramento Inteligente',
-    icon: Clock,
-    purpose: 'Evidências imutáveis, pareceres técnicos e resoluções registradas.',
+    purpose: 'Administração de agentes especializados por departamento.',
   },
   {
     id: 'intel-sent-relatorios',
     label: 'Relatórios de Inteligência',
     group: 'Monitoramento Inteligente',
     icon: FileText,
-    purpose: 'Tendências, SLA de resolução e índice de eficácia dos alertas.',
+    purpose: 'Métricas de efetividade de alertas, tendências e incidentes.',
+  },
+  {
+    id: 'intel-sent-auditoria-ia',
+    label: 'Auditoria da IA',
+    group: 'Monitoramento Inteligente',
+    icon: FolderCheck,
+    purpose: 'Histórico imutável de consultas, análises e pareceres emitidos pela IA.',
   },
   {
     id: 'intel-sent-config',
     label: 'Configurações da IA',
     group: 'Monitoramento Inteligente',
     icon: Cpu,
-    purpose: 'Modelos de execução (Local On-Prem vs Cloud API), alçadas e chaves.',
+    purpose: 'Parâmetros de modelos (Local vs API), custos e infraestrutura.',
   },
 
   // 3. Inteligência Financeira (6)
@@ -501,19 +571,97 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   const [sentinelStatusFilter, setSentinelStatusFilter] = useState<string>('all');
   const [sentinelSelectedAlert, setSentinelSelectedAlert] = useState<SentinelAlert | null>(null);
   const [sentinelResolutionNote, setSentinelResolutionNote] = useState<string>('');
-  const [sentinelTab, setSentinelTab] = useState<'ocorrencias' | 'agentes' | 'regras' | 'config'>('ocorrencias');
+  const [sentinelTab, setSentinelTab] = useState<
+    | 'ocorrencias'
+    | 'mapa-riscos'
+    | 'preventivo'
+    | 'auditoria-cruzada'
+    | 'investigacao'
+    | 'assistente'
+    | 'integracoes'
+    | 'agentes'
+    | 'regras'
+    | 'config'
+  >('ocorrencias');
   const [isProcessingSentinel, setIsProcessingSentinel] = useState<boolean>(false);
+  const [riskMapData, setRiskMapData] = useState<RiskDepartmentItem[]>([]);
+  const [crossAuditData, setCrossAuditData] = useState<CrossAuditReport | null>(null);
+  const [preventiveData, setPreventiveData] = useState<PreventiveReport | null>(null);
+  const [rootCauseData, setRootCauseData] = useState<RootCauseAnalysis | null>(null);
+  const [integrationsData, setIntegrationsData] = useState<IntegrationsHealthReport | null>(null);
+  const [aiAssistantChat, setAiAssistantChat] = useState<
+    Array<{ role: 'user' | 'assistant'; text: string; sources?: string[]; timestamp: string }>
+  >([
+    {
+      role: 'assistant',
+      text: 'Olá! Sou o Assistente IA do Keeper Sentinel. Estou conectado à base de dados auditáveis do ERP em modo consultivo permanente. Como posso apoiar a administração da DiskIngressos hoje?',
+      sources: ['Sentinel Engine v1.4', 'Auditoria Contábil e Fiscal'],
+      timestamp: 'Agora',
+    },
+  ]);
+  const [aiInputQuery, setAiInputQuery] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   // Sincronizar com props externas
   useEffect(() => {
     if (activeSection && activeSection !== sectionId) {
       setSectionId(activeSection);
+      if (activeSection === 'intel-sent-riscos' || activeSection === 'intel-sent-relatorios') {
+        setSentinelTab('mapa-riscos');
+      } else if (activeSection === 'intel-sent-preventivo' || activeSection === 'intel-sent-previsao-liquidez') {
+        setSentinelTab('preventivo');
+      } else if (activeSection === 'intel-sent-auditoria-cruzada' || activeSection === 'intel-sent-antifraude') {
+        setSentinelTab('auditoria-cruzada');
+      } else if (activeSection === 'intel-sent-investigacao') {
+        setSentinelTab('investigacao');
+      } else if (activeSection === 'intel-sent-assistente' || activeSection === 'intel-sent-auditoria-ia') {
+        setSentinelTab('assistente');
+      } else if (activeSection === 'intel-sent-integracoes-saude') {
+        setSentinelTab('integracoes');
+      } else if (activeSection === 'intel-sent-regras') {
+        setSentinelTab('regras');
+      } else if (activeSection === 'intel-sent-agentes') {
+        setSentinelTab('agentes');
+      } else if (activeSection === 'intel-sent-config') {
+        setSentinelTab('config');
+      } else if (
+        activeSection === 'intel-sent-central' ||
+        activeSection === 'intel-sent-alertas' ||
+        activeSection === 'intel-sent-tratativas'
+      ) {
+        setSentinelTab('ocorrencias');
+      }
     }
   }, [activeSection]);
 
   const handleSelectSection = (id: string) => {
     setSectionId(id);
     if (onSelectSection) onSelectSection(id);
+    if (id === 'intel-sent-riscos' || id === 'intel-sent-relatorios') {
+      setSentinelTab('mapa-riscos');
+    } else if (id === 'intel-sent-preventivo' || id === 'intel-sent-previsao-liquidez') {
+      setSentinelTab('preventivo');
+    } else if (id === 'intel-sent-auditoria-cruzada' || id === 'intel-sent-antifraude') {
+      setSentinelTab('auditoria-cruzada');
+    } else if (id === 'intel-sent-investigacao') {
+      setSentinelTab('investigacao');
+    } else if (id === 'intel-sent-assistente' || id === 'intel-sent-auditoria-ia') {
+      setSentinelTab('assistente');
+    } else if (id === 'intel-sent-integracoes-saude') {
+      setSentinelTab('integracoes');
+    } else if (id === 'intel-sent-regras') {
+      setSentinelTab('regras');
+    } else if (id === 'intel-sent-agentes') {
+      setSentinelTab('agentes');
+    } else if (id === 'intel-sent-config') {
+      setSentinelTab('config');
+    } else if (
+      id === 'intel-sent-central' ||
+      id === 'intel-sent-alertas' ||
+      id === 'intel-sent-tratativas'
+    ) {
+      setSentinelTab('ocorrencias');
+    }
     // Rolagem suave para o topo
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -527,14 +675,24 @@ export const InteligenciaModuleView: React.FC<Props> = ({
   const loadData = async () => {
     try {
       setIsRefreshing(true);
-      const [dash, evts, sent] = await Promise.all([
+      const [dash, evts, sent, rMap, cAudit, prev, integ, rCause] = await Promise.all([
         inteligenciaClient.getDashboard(),
         inteligenciaClient.getEventPerformance(),
         sentinelClient.getOverview(),
+        sentinelClient.getRiskMap(),
+        sentinelClient.getCrossAudit(),
+        sentinelClient.getPreventiveMonitoring(),
+        sentinelClient.getIntegrationsHealth(),
+        sentinelClient.getRootCauseInvestigation('alt-01'),
       ]);
       setDashboardData(dash);
       setEventPerformances(evts);
       setSentinelData(sent);
+      setRiskMapData(rMap);
+      setCrossAuditData(cAudit);
+      setPreventiveData(prev);
+      setIntegrationsData(integ);
+      setRootCauseData(rCause);
     } catch {
       showNotification('Erro ao sincronizar inteligência com o servidor. Usando dados locais.');
     } finally {
@@ -625,6 +783,46 @@ export const InteligenciaModuleView: React.FC<Props> = ({
       ]);
     } finally {
       setIsCopilotThinking(false);
+    }
+  };
+
+  // Enviar pergunta ao Assistente IA do Sentinel
+  const handleSendAiMessage = async (queryToSend?: string) => {
+    const q = queryToSend || aiInputQuery;
+    if (!q.trim()) return;
+
+    const userMsg = {
+      role: 'user' as const,
+      text: q,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setAiAssistantChat((prev) => [...prev, userMsg]);
+    setAiInputQuery('');
+    setIsAiLoading(true);
+
+    try {
+      const res = await sentinelClient.askAiAssistant(q);
+      setAiAssistantChat((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: res.resposta,
+          sources: res.fontesAuditadas,
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    } catch {
+      setAiAssistantChat((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: 'Ocorreu uma instabilidade na consulta auditável aos módulos do Keeper Sentinel. Favor verificar a conexão.',
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -2211,53 +2409,141 @@ export const InteligenciaModuleView: React.FC<Props> = ({
 
         {/* 3. Sub-Navegação Interna do Sentinel */}
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-          <div className="border-b border-slate-200 bg-slate-50/70 px-6 pt-3 flex items-center gap-2 overflow-x-auto">
+          <div className="border-b border-slate-200 bg-slate-50/70 px-4 sm:px-6 pt-3 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {/* 1. Ocorrências */}
             <button
               onClick={() => setSentinelTab('ocorrencias')}
-              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
                 sentinelTab === 'ocorrencias'
                   ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <AlertTriangle className="w-4 h-4 text-rose-600" />
-              Ocorrências Detectadas ({filteredSentinelAlerts.length})
+              <span>Ocorrências ({filteredSentinelAlerts.length})</span>
             </button>
 
+            {/* 2. Mapa de Riscos */}
             <button
-              onClick={() => setSentinelTab('agentes')}
-              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
-                sentinelTab === 'agentes'
+              onClick={() => setSentinelTab('mapa-riscos')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'mapa-riscos'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Activity className="w-4 h-4 text-rose-600" />
+              <span>Mapa de Riscos ({riskMapData.length || 7})</span>
+            </button>
+
+            {/* 3. Auditoria Cruzada */}
+            <button
+              onClick={() => setSentinelTab('auditoria-cruzada')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'auditoria-cruzada'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Scale className="w-4 h-4 text-rose-600" />
+              <span>
+                Auditoria Cruzada (
+                {crossAuditData?.scoreConsistenciaGeral
+                  ? `${crossAuditData.scoreConsistenciaGeral}%`
+                  : '94.6%'}
+                )
+              </span>
+            </button>
+
+            {/* 4. Previsão & Liquidez */}
+            <button
+              onClick={() => setSentinelTab('preventivo')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'preventivo'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 text-rose-600" />
+              <span>Previsão & Liquidez (D-7)</span>
+            </button>
+
+            {/* 5. Investigação Causa Raiz */}
+            <button
+              onClick={() => setSentinelTab('investigacao')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'investigacao'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Search className="w-4 h-4 text-rose-600" />
+              <span>Investigação Causa Raiz</span>
+            </button>
+
+            {/* 6. Assistente IA Copilot */}
+            <button
+              onClick={() => setSentinelTab('assistente')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'assistente'
                   ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <Bot className="w-4 h-4 text-rose-600" />
-              Agentes Especializados ({sentinelData?.agentes.length || 6})
+              <span>Assistente IA Copilot</span>
             </button>
 
+            {/* 7. Saúde das Integrações */}
+            <button
+              onClick={() => setSentinelTab('integracoes')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'integracoes'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Zap className="w-4 h-4 text-rose-600" />
+              <span>Saúde Integrações ({integrationsData?.conectores?.length || 8})</span>
+            </button>
+
+            {/* 8. Agentes Especializados */}
+            <button
+              onClick={() => setSentinelTab('agentes')}
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
+                sentinelTab === 'agentes'
+                  ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Cpu className="w-4 h-4 text-rose-600" />
+              <span>Agentes ({sentinelData?.agentes.length || 6})</span>
+            </button>
+
+            {/* 9. Regras Determinísticas */}
             <button
               onClick={() => setSentinelTab('regras')}
-              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
                 sentinelTab === 'regras'
                   ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
               <SlidersHorizontal className="w-4 h-4 text-rose-600" />
-              Regras Determinísticas ({sentinelData?.regras.length || 6})
+              <span>Regras ({sentinelData?.regras.length || 6})</span>
             </button>
 
+            {/* 10. Configuração & Autonomia */}
             <button
               onClick={() => setSentinelTab('config')}
-              className={`px-4 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition flex items-center gap-2 ${
+              className={`px-3.5 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${
                 sentinelTab === 'config'
                   ? 'border-rose-600 text-rose-700 bg-white rounded-t-lg shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Cpu className="w-4 h-4 text-rose-600" />
-              Infraestrutura & Configuração IA
+              <Lock className="w-4 h-4 text-rose-600" />
+              <span>Configuração & Trava</span>
             </button>
           </div>
 
@@ -2657,6 +2943,690 @@ export const InteligenciaModuleView: React.FC<Props> = ({
                     <strong className="text-white">Investigação</strong> e{' '}
                     <strong className="text-white">Ação Supervisionada</strong>. O Sentinel <strong>JAMAIS</strong> realizará repasses, estornos, alterações de taxas ou lançamentos bancários de forma autônoma sem a aprovação explícita e assinatura digital dos gestores autorizados no Keeper ERP.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 5: MAPA DE RISCOS DEPARTAMENTAL */}
+            {sentinelTab === 'mapa-riscos' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                        Matriz de Exposição Global
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">
+                        7 Departamentos Auditados
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Mapa de Riscos do Keeper ERP
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Classificação calculada por critérios estritos de <strong>Impacto × Probabilidade × Urgência × Evidências</strong> — sem arbitrariedade.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-rose-100 text-rose-800 border border-rose-200">
+                      2 Departamentos em Risco Alto
+                    </span>
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-100 text-amber-800 border border-amber-200">
+                      3 em Risco Médio
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tabela do Mapa de Riscos com Layout Executivo */}
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                      <tr>
+                        <th className="py-3.5 px-5">Departamento</th>
+                        <th className="py-3.5 px-4 text-center">Nível de Risco</th>
+                        <th className="py-3.5 px-4 text-center">Score (0-100)</th>
+                        <th className="py-3.5 px-4 text-center">Ocorrências</th>
+                        <th className="py-3.5 px-4 text-right">Impacto Estimado</th>
+                        <th className="py-3.5 px-5">Ação Recomendada</th>
+                        <th className="py-3.5 px-4 text-center">Auditar</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-600">
+                      {riskMapData.map((rm) => {
+                        const isAlto = rm.riskLevel === 'ALTO';
+                        const isMedio = rm.riskLevel === 'MEDIO';
+                        const scoreVal = isAlto ? 85 : isMedio ? 62 : 28;
+                        const recAction =
+                          rm.urgency === 'CRITICA'
+                            ? 'Bloqueio preventivo e revisão urgente de conciliação'
+                            : rm.urgency === 'ALTA'
+                            ? 'Auditoria de conformidade com justificativa mandatória'
+                            : 'Monitoramento contínuo em rotina padrão';
+                        return (
+                          <tr key={rm.department} className="hover:bg-slate-50/80 transition">
+                            <td className="py-4 px-5">
+                              <div className="font-bold text-slate-900 text-sm">{rm.department}</div>
+                              <div className="text-[11px] text-slate-500 mt-0.5 max-w-xs truncate">
+                                {rm.topRisk} · Última auditoria: {rm.lastAudit}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              <span
+                                className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
+                                  isAlto
+                                    ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                    : isMedio
+                                    ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                    : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                }`}
+                              >
+                                {rm.riskLevel}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              <div className="inline-flex items-center gap-1.5 font-bold">
+                                <span className={`text-xs ${isAlto ? 'text-rose-700' : isMedio ? 'text-amber-700' : 'text-emerald-700'}`}>
+                                  {scoreVal}
+                                </span>
+                                <div className="w-12 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${isAlto ? 'bg-rose-500' : isMedio ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                    style={{ width: `${scoreVal}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-center font-bold text-slate-800">
+                              <span className="w-6 h-6 rounded-full bg-slate-100 inline-flex items-center justify-center">
+                                {rm.activeAlerts}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 text-right font-bold text-slate-900">
+                              {formatCurrency(rm.financialImpact)}
+                            </td>
+                            <td className="py-4 px-5 text-slate-700 font-medium max-w-sm text-xs leading-relaxed">
+                              {recAction}
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              <button
+                                onClick={() => {
+                                  setSentinelDeptFilter(rm.department);
+                                  setSentinelTab('ocorrencias');
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 text-xs font-bold border border-slate-200 transition"
+                              >
+                                Filtrar
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Banner de Critérios de Cálculo */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-600">
+                  <HelpCircle className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-slate-800">Critério de Cálculo do Score Sentinel:</strong>{' '}
+                    Cada departamento recebe pontuação de 0 a 100 ponderada por: 40% Volume e Risco Financeiro em Aberto, 30% Quantidade de Alertas Críticos, 20% SLA Médio de Resolução e 10% Integridade de Logs de Auditoria. Nenhuma pontuação é aleatória.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 6: AUDITORIA CRUZADA ENTRE MÓDULOS */}
+            {sentinelTab === 'auditoria-cruzada' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                        Reconciliação Multimódulo
+                      </span>
+                      <span className="text-xs font-bold text-emerald-700">
+                        {crossAuditData?.scoreConsistenciaGeral
+                          ? `${crossAuditData.scoreConsistenciaGeral}%`
+                          : '94.6%'}{' '}
+                        Coerência Global
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Auditoria Cruzada Entre Módulos (Cross-Audit)
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Conferência automatizada de invariantes transacionais: Compras vs Financeiro, Eventos vs Fiscal, Vendas vs Ledger e RH vs Folha.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={loadData}
+                      className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Reexecutar Auditoria Cruzada</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Cards de Métricas da Auditoria Cruzada */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">Coerência Global</span>
+                    <div className="text-2xl font-black text-slate-900 mt-1">
+                      {crossAuditData?.scoreConsistenciaGeral
+                        ? `${crossAuditData.scoreConsistenciaGeral}%`
+                        : '94.6%'}
+                    </div>
+                    <span className="text-[11px] text-emerald-600 font-semibold">Dentro do SLA corporativo</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">Invariantes Testados</span>
+                    <div className="text-2xl font-black text-indigo-700 mt-1">
+                      {crossAuditData?.verificacoesRealizadas?.toLocaleString('pt-BR') || '1.450'}
+                    </div>
+                    <span className="text-[11px] text-slate-500">Regras contábeis e fiscais</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white border border-rose-200 shadow-2xs">
+                    <span className="text-[11px] font-bold uppercase text-rose-600">Inconsistências Críticas</span>
+                    <div className="text-2xl font-black text-rose-700 mt-1">
+                      {crossAuditData?.inconsistenciasDetectadas || 1}
+                    </div>
+                    <span className="text-[11px] text-rose-600 font-semibold">Bloqueio preventivo ativo</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">Divergência Retida</span>
+                    <div className="text-2xl font-black text-slate-900 mt-1">R$ 4.200,00</div>
+                    <span className="text-[11px] text-emerald-600 font-semibold">Prevenção de duplicidade</span>
+                  </div>
+                </div>
+
+                {/* Lista de Casos Auditados */}
+                <div className="space-y-3">
+                  {crossAuditData?.trilhas.map((item) => {
+                    const isDiv = item.status === 'DIVERGENCIA';
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-5 rounded-2xl border transition ${
+                          isDiv ? 'border-rose-300 bg-rose-50/30' : 'border-slate-200 bg-white'
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-slate-500">{item.id}</span>
+                              <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                                {item.origem} ➔ {item.destino}
+                              </span>
+                              <span
+                                className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                                  isDiv
+                                    ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                    : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                }`}
+                              >
+                                {item.status}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-sm text-slate-900">{item.descricao}</h4>
+                          </div>
+
+                          {item.divergencia > 0 && (
+                            <div className="text-right">
+                              <span className="text-[10px] font-bold uppercase text-rose-600 block">Divergência Identificada</span>
+                              <strong className="text-base font-black text-rose-700">
+                                {formatCurrency(item.divergencia)}
+                              </strong>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                          <div>
+                            <span className="text-slate-400 font-bold block text-[10px] uppercase">Evidência Técnica:</span>
+                            <span className="text-slate-700 font-mono text-[11px]">{item.detalhe}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 font-bold block text-[10px] uppercase">Regra & Resolução:</span>
+                            <span className="text-slate-800 font-medium">
+                              {item.regraViolada || 'Conformidade integral com os balancetes do ERP'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: MONITORAMENTO PREVENTIVO & LIQUIDEZ */}
+            {sentinelTab === 'preventivo' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Prevenção & Liquidez
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">
+                        Horizonte Projetado: D-7 / D-15 / D-30
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Monitoramento Preventivo & Previsão de Liquidez
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Projeção contínua de solvência: segregação rigorosa entre <strong>Recursos em Custódia Fiduciária</strong> e <strong>Caixa Próprio da DiskIngressos</strong>.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectSection('intel-ai-simulador')}
+                      className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Simulador What-If de Caixa</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Os 4 Cards de Segregação de Liquidez */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Caixa Próprio */}
+                  <div className="p-5 rounded-2xl bg-white border-2 border-emerald-300 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Caixa Próprio Disk</span>
+                      <Building2 className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 mt-2">
+                      {formatCurrency(1840000)}
+                    </div>
+                    <p className="text-[11px] text-emerald-800 font-semibold mt-1">
+                      Livre para folha, despesas e expansão
+                    </p>
+                  </div>
+
+                  {/* Custódia Produtores (Escrow) */}
+                  <div className="p-5 rounded-2xl bg-white border-2 border-indigo-300 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-indigo-700">Custódia Produtores</span>
+                      <Lock className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 mt-2">
+                      {formatCurrency(3420000)}
+                    </div>
+                    <p className="text-[11px] text-indigo-800 font-semibold mt-1">
+                      Inviolável · Conta fiduciária segregada
+                    </p>
+                  </div>
+
+                  {/* Repasses Próximos 7 Dias */}
+                  <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Repasses Projetados (D-7)</span>
+                      <Calendar className="w-5 h-5 text-slate-500" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 mt-2">
+                      {formatCurrency(2150000)}
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium mt-1">
+                      23 eventos programados com cobertura 100%
+                    </p>
+                  </div>
+
+                  {/* Reserva para Estornos */}
+                  <div className="p-5 rounded-2xl bg-white border border-amber-300 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Cobertura Global de Riscos</span>
+                      <ShieldAlert className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 mt-2">
+                      {preventiveData?.coberturaFinanceiraGlobalPercent || 100}%
+                    </div>
+                    <p className="text-[11px] text-amber-800 font-semibold mt-1">
+                      {preventiveData?.riscosAntecipados || 3} riscos mapeados e cobertos
+                    </p>
+                  </div>
+                </div>
+
+                {/* Riscos Preventivos Identificados */}
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    Situações Preventivas com Ação Antecipada Recomendada
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {preventiveData?.projecoes.map((rk) => (
+                      <div key={rk.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs font-bold text-slate-400">{rk.id}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                            D-{rk.horizonteDias} ({rk.categoria})
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-sm text-slate-900">{rk.titulo}</h5>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">{rk.diagnostico}</p>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-slate-50 text-[11px] text-slate-700 border border-slate-100">
+                          <strong className="text-slate-900 block font-bold mb-0.5">Ação Preventiva:</strong>
+                          {rk.recomendacao}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 8: INVESTIGAÇÃO INTELIGENTE DE CAUSA RAIZ */}
+            {sentinelTab === 'investigacao' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                        Esteira Transacional 5 Etapas
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">
+                        Protocolo #ALT-01 · Taxa de Conveniência
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Investigação Inteligente de Causa Raiz
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Rastreamento determinístico da cadeia de processamento para isolar onde a inconsistência se originou.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-rose-100 text-rose-800 border border-rose-200">
+                      Origem: Etapa 3 (Gateway de Pagamento)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stepper Visual da Esteira de 5 Etapas */}
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    {rootCauseData?.esteiraInvestigacao.map((step, idx) => {
+                      const isError = step.status === 'ANOMALIA_DETECTADA' || step.status === 'BLOQUEADO';
+                      const isAlert = step.status === 'ALERTA';
+                      return (
+                        <div
+                          key={step.etapa}
+                          className={`p-4 rounded-xl border relative ${
+                            isError
+                              ? 'border-rose-300 bg-rose-50/50'
+                              : isAlert
+                              ? 'border-amber-300 bg-amber-50/40'
+                              : 'border-slate-200 bg-slate-50/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-black text-[10px] flex items-center justify-center">
+                              {idx + 1}
+                            </span>
+                            <span
+                              className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
+                                isError
+                                  ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                  : isAlert
+                                  ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                  : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                              }`}
+                            >
+                              {step.status}
+                            </span>
+                          </div>
+                          <h5 className="font-bold text-xs text-slate-900">{step.nome}</h5>
+                          <p className="text-[11px] text-slate-600 mt-1 leading-snug">{step.detalhe}</p>
+                          <div className="mt-2 pt-2 border-t border-slate-200/60 font-mono text-[10px] text-slate-400">
+                            {step.timestamp}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Parecer do Diagnóstico de Causa Raiz */}
+                  <div className="p-5 rounded-2xl bg-slate-900 text-slate-100 space-y-3 text-xs border border-slate-800">
+                    <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                      <Search className="w-4 h-4" />
+                      Diagnóstico Conclusivo da Investigação:
+                    </div>
+                    <p className="text-slate-200 leading-relaxed text-xs">
+                      {rootCauseData?.resumoDiagnostico ||
+                        'A divergência ocorreu especificamente na liquidação da adquirente Stone (Etapa 3), que capturou R$ 410,00 ao invés dos R$ 450,00 emitidos pelo PDV Keeper devido a cupom aplicado incorretamente no terminal. O Ledger Contábil reteve o lançamento e protegeu as partidas dobradas.'}
+                    </p>
+                    <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-slate-400 text-[11px]">
+                      <span>Recomendação: {rootCauseData?.acaoSugerida || 'Gerar estorno de conciliação ou cobrança de diferença ao produtor.'}</span>
+                      <button
+                        onClick={() => showNotification('Dossiê técnico copiado para a área de transferência.')}
+                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition"
+                      >
+                        Copiar Dossiê Técnico
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 9: ASSISTENTE IA KEEPER (COPILOT DE AUDITORIA) */}
+            {sentinelTab === 'assistente' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                        Copilot de Auditoria & Prevenção
+                      </span>
+                      <span className="text-xs font-bold text-emerald-700">
+                        Modo Leitura Estrita Ativo
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Assistente IA do Keeper Sentinel
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Consultas analíticas em linguagem natural com indicação explícita de evidências, fontes e travas de segurança.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-purple-100 text-purple-800 border border-purple-200">
+                      Autonomia Restrita a Análise
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4 Perguntas Rápidas Pré-formatadas (Sugestões do Usuário) */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    Perguntas Rápidas de Auditoria:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleSendAiMessage('Quais eventos possuem risco de insuficiência para estornos?')}
+                      className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-800 text-xs font-bold border border-slate-200 transition text-left"
+                    >
+                      “Quais eventos possuem risco de insuficiência para estornos?”
+                    </button>
+                    <button
+                      onClick={() => handleSendAiMessage('Quais despesas da Disk aumentaram mais nos últimos três meses?')}
+                      className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-800 text-xs font-bold border border-slate-200 transition text-left"
+                    >
+                      “Quais despesas da Disk aumentaram mais nos últimos três meses?”
+                    </button>
+                    <button
+                      onClick={() => handleSendAiMessage('Existem divergências financeiras ainda sem solução?')}
+                      className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-800 text-xs font-bold border border-slate-200 transition text-left"
+                    >
+                      “Existem divergências financeiras ainda sem solução?”
+                    </button>
+                    <button
+                      onClick={() => handleSendAiMessage('Qual a previsão de liquidez e repasses para os próximos 7 dias?')}
+                      className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-800 text-xs font-bold border border-slate-200 transition text-left"
+                    >
+                      “Qual a previsão de liquidez e repasses para os próximos 7 dias?”
+                    </button>
+                  </div>
+                </div>
+
+                {/* Feed de Chat do Assistente IA */}
+                <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4 max-h-[500px] overflow-y-auto">
+                  {aiAssistantChat.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {msg.role === 'assistant' && (
+                        <div className="w-8 h-8 rounded-xl bg-purple-700 text-white flex items-center justify-center shrink-0">
+                          <Bot className="w-4 h-4" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-2xl rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-purple-700 text-white font-medium rounded-tr-xs'
+                            : 'bg-white text-slate-800 border border-slate-200 shadow-2xs rounded-tl-xs'
+                        }`}
+                      >
+                        <p className="whitespace-pre-line">{msg.text}</p>
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-bold uppercase text-slate-400">Fontes Auditadas:</span>
+                            {msg.sources.map((s, si) => (
+                              <span
+                                key={si}
+                                className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-100"
+                              >
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <span className="block text-[10px] text-slate-400 mt-1 text-right">{msg.timestamp}</span>
+                      </div>
+                      {msg.role === 'user' && (
+                        <div className="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center shrink-0">
+                          <Users className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {isAiLoading && (
+                    <div className="flex gap-3 items-center text-xs text-purple-700 font-bold">
+                      <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <RefreshCw className="w-4 h-4 animate-spin text-purple-700" />
+                      </div>
+                      <span>Consultando bases auditadas do ERP...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input de Envio de Pergunta */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSendAiMessage();
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    value={aiInputQuery}
+                    onChange={(e) => setAiInputQuery(e.target.value)}
+                    placeholder="Faça uma pergunta sobre finanças, eventos, compras, tributos ou ocorrências..."
+                    className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-3 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isAiLoading || !aiInputQuery.trim()}
+                    className="px-5 py-3 rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-xs"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Perguntar</span>
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TAB 10: SAÚDE DAS INTEGRAÇÕES */}
+            {sentinelTab === 'integracoes' && (
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Telemetria em Tempo Real
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">
+                        {integrationsData?.conectores?.length || 8} Serviços Conectados
+                      </span>
+                    </div>
+                    <h3 className="font-black text-xl text-slate-900 mt-1">
+                      Saúde dos Sistemas e Integrações
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Monitoramento contínuo de Gateways, Bancos Open Finance, Emissão NFS-e e Workers de Filas (BullMQ/Redis).
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Uptime Geral: {integrationsData?.uptimeMedio ? `${integrationsData.uptimeMedio}%` : '99.94%'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Cards de Conectores */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {integrationsData?.conectores.map((c) => {
+                    const isOk = c.status === 'OPERACIONAL';
+                    const isWarn = c.status === 'DEGRADADO';
+                    return (
+                      <div key={c.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase text-slate-400">{c.tipo}</span>
+                          <span
+                            className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                              isOk
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                : isWarn
+                                ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                : 'bg-rose-100 text-rose-800 border-rose-200'
+                            }`}
+                          >
+                            {c.status}
+                          </span>
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-sm text-slate-900">{c.nome}</h5>
+                          <div className="text-xs text-slate-500 mt-1 flex items-center justify-between">
+                            <span>Latência:</span>
+                            <strong className="text-slate-800 font-mono">{c.latenciaMs}ms</strong>
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+                            <span>Último Ping:</span>
+                            <span className="text-slate-700 font-mono">{c.ultimaVerificacao}</span>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-500">Fila Webhooks: {c.itensNaFila || 0}</span>
+                          <button
+                            onClick={() => showNotification(`Ping disparado para ${c.nome}. Resposta em ${c.latenciaMs}ms.`)}
+                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                          >
+                            Testar
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

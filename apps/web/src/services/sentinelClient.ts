@@ -98,6 +98,98 @@ export interface SentinelOverview {
   config: SentinelConfig;
 }
 
+export interface RiskDepartmentItem {
+  department: string;
+  riskLevel: 'ALTO' | 'MEDIO' | 'BAIXO';
+  activeAlerts: number;
+  financialImpact: number;
+  probability: 'ALTA' | 'MEDIA' | 'BAIXA';
+  urgency: 'CRITICA' | 'ALTA' | 'MODERADA' | 'BAIXA';
+  topRisk: string;
+  lastAudit: string;
+}
+
+export interface CrossAuditItem {
+  id: string;
+  origem: string;
+  destino: string;
+  descricao: string;
+  status: 'CONFORME' | 'DIVERGENCIA' | 'ATENCAO';
+  detalhe: string;
+  divergencia: number;
+  regraViolada?: string;
+}
+
+export interface CrossAuditReport {
+  scoreConsistenciaGeral: number;
+  inconsistenciasDetectadas: number;
+  verificacoesRealizadas: number;
+  trilhas: CrossAuditItem[];
+}
+
+export interface PreventiveRiskItem {
+  id: string;
+  categoria: string;
+  titulo: string;
+  entidade: string;
+  horizonteDias: number;
+  impactoEstimado: number;
+  severidade: SentinelSeverity;
+  diagnostico: string;
+  recomendacao: string;
+}
+
+export interface PreventiveReport {
+  riscosAntecipados: number;
+  coberturaFinanceiraGlobalPercent: number;
+  projecoes: PreventiveRiskItem[];
+}
+
+export interface RootCauseStep {
+  etapa: number;
+  nome: string;
+  modulo: string;
+  status: 'OK' | 'ALERTA' | 'ANOMALIA_DETECTADA' | 'BLOQUEADO';
+  timestamp: string;
+  detalhe: string;
+  impactoDivergencia?: number;
+}
+
+export interface RootCauseAnalysis {
+  alertId: string;
+  origemDivergencia: string;
+  grauConfiancaIA: number;
+  resumoDiagnostico: string;
+  esteiraInvestigacao: RootCauseStep[];
+  acaoSugerida: string;
+}
+
+export interface IntegrationConnector {
+  id: string;
+  nome: string;
+  tipo: string;
+  status: 'OPERACIONAL' | 'DEGRADADO' | 'OFFLINE';
+  latenciaMs: number;
+  taxaSucessoPercent: number;
+  ultimaVerificacao: string;
+  observacao?: string;
+  itensNaFila?: number;
+}
+
+export interface IntegrationsHealthReport {
+  statusGlobal: string;
+  uptimeMedio: number;
+  conectores: IntegrationConnector[];
+}
+
+export interface AiAssistantResponse {
+  pergunta: string;
+  resposta: string;
+  fontesAuditadas: string[];
+  timestamp: string;
+  modoAutonomia: string;
+}
+
 // -------------------------------------------------------------
 // DADOS REALISTAS MOCKADOS (DiskIngressos Produção)
 // -------------------------------------------------------------
@@ -599,6 +691,410 @@ class SentinelClient {
       return true;
     }
     return false;
+  }
+
+  async getRiskMap(): Promise<RiskDepartmentItem[]> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/risk-map`, {
+        headers: this.getAuthHeader(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return [
+      {
+        department: 'Financeiro',
+        riskLevel: 'ALTO',
+        activeAlerts: 3,
+        financialImpact: 99850.0,
+        probability: 'ALTA',
+        urgency: 'CRITICA',
+        topRisk: 'Repasse acima do limite elegível fiduciário & divergência bancária',
+        lastAudit: 'Hoje às 09:28',
+      },
+      {
+        department: 'Eventos & Produtores',
+        riskLevel: 'ALTO',
+        activeAlerts: 2,
+        financialImpact: 42300.0,
+        probability: 'ALTA',
+        urgency: 'ALTA',
+        topRisk: 'Cobertura insuficiente para estornos pós-cancelamento em sessão de show',
+        lastAudit: 'Hoje às 08:50',
+      },
+      {
+        department: 'Contabilidade',
+        riskLevel: 'MEDIO',
+        activeAlerts: 4,
+        financialImpact: 18450.0,
+        probability: 'MEDIA',
+        urgency: 'MODERADA',
+        topRisk: 'Partidas dobradas com conciliação transitória pendente de baixa',
+        lastAudit: 'Hoje às 07:15',
+      },
+      {
+        department: 'Fiscal',
+        riskLevel: 'MEDIO',
+        activeAlerts: 3,
+        financialImpact: 14820.5,
+        probability: 'MEDIA',
+        urgency: 'CRITICA',
+        topRisk: 'Transmissão de lote RPS Prefeitura de Curitiba com timeout',
+        lastAudit: 'Hoje às 08:15',
+      },
+      {
+        department: 'RH & DP',
+        riskLevel: 'BAIXO',
+        activeAlerts: 1,
+        financialImpact: 3200.0,
+        probability: 'BAIXA',
+        urgency: 'BAIXA',
+        topRisk: 'Férias em dobro de 2 colaboradores com prazo limite em 45 dias',
+        lastAudit: 'Hoje às 06:00',
+      },
+      {
+        department: 'Compras & Suprimentos',
+        riskLevel: 'BAIXO',
+        activeAlerts: 1,
+        financialImpact: 5800.0,
+        probability: 'BAIXA',
+        urgency: 'MODERADA',
+        topRisk: 'Ordem de compra de bobinas térmicas sem espelho de NF anexado',
+        lastAudit: 'Hoje às 08:40',
+      },
+      {
+        department: 'Infraestrutura & Hardwares',
+        riskLevel: 'MEDIO',
+        activeAlerts: 2,
+        financialImpact: 12500.0,
+        probability: 'MEDIA',
+        urgency: 'MODERADA',
+        topRisk: 'Alerta de latência de link 4G de contingência em venue externo',
+        lastAudit: 'Hoje às 09:10',
+      },
+    ];
+  }
+
+  async getCrossAudit(): Promise<CrossAuditReport> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/cross-audit`, {
+        headers: this.getAuthHeader(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      scoreConsistenciaGeral: 98.6,
+      inconsistenciasDetectadas: 2,
+      verificacoesRealizadas: 14890,
+      trilhas: [
+        {
+          id: 'ca-01',
+          origem: 'Compras',
+          destino: 'Contas a Pagar',
+          descricao: 'Ordem de Compra #OC-2026-89 x Título a Pagar',
+          status: 'CONFORME',
+          detalhe: 'Pedido de R$ 14.500,00 possui recebimento físico, NF e título faturado com vencimento exato.',
+          divergencia: 0,
+        },
+        {
+          id: 'ca-02',
+          origem: 'Vendas Ingressos',
+          destino: 'Ledger Fiduciário',
+          descricao: 'Total Vendas Gateway x Crédito em Custódia',
+          status: 'CONFORME',
+          detalhe: 'R$ 489.200,00 transacionados nas últimas 24h conciliados 1:1 com os registros de MDR e taxa.',
+          divergencia: 0,
+        },
+        {
+          id: 'ca-03',
+          origem: 'Contas a Pagar',
+          destino: 'Extrato Bancário',
+          descricao: 'Lote de Pagamento PIX x Baixa Bancária',
+          status: 'DIVERGENCIA',
+          detalhe: 'TED de R$ 4.850,00 no Banco do Brasil identificada sem chave de conciliação vinculada no ERP.',
+          divergencia: 4850.0,
+          regraViolada: 'CONC-1-TO-1-STRICT',
+        },
+        {
+          id: 'ca-04',
+          origem: 'RH (Folha)',
+          destino: 'Contabilidade',
+          descricao: 'Provisão de Folha Mensal x Lançamento Contábil',
+          status: 'CONFORME',
+          detalhe: 'Provisões de salário, férias e 13º espelhadas nas contas 2.1.01 e 3.1.01 sem desbalanceamento.',
+          divergencia: 0,
+        },
+        {
+          id: 'ca-05',
+          origem: 'Fiscal (NFS-e)',
+          destino: 'Contas a Receber',
+          descricao: 'Faturamento de Taxa de Conveniência x Retenção de ISS',
+          status: 'ATENCAO',
+          detalhe: 'Lote de 89 notas fiscais aguarda confirmação de protocolo da Prefeitura de Curitiba.',
+          divergencia: 14820.5,
+          regraViolada: 'FISCAL-RPS-BATCH-TIMEOUT',
+        },
+      ],
+    };
+  }
+
+  async getPreventiveMonitoring(): Promise<PreventiveReport> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/preventive`, {
+        headers: this.getAuthHeader(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      riscosAntecipados: 4,
+      coberturaFinanceiraGlobalPercent: 96.8,
+      projecoes: [
+        {
+          id: 'prev-01',
+          categoria: 'LIQUIDEZ_REPASSES',
+          titulo: 'Risco de Insuficiência de Repasse em D+5',
+          entidade: 'Show Teatro Positivo — Turnê MPB Acústico',
+          horizonteDias: 5,
+          impactoEstimado: 15000.0,
+          severidade: 'CRITICO',
+          diagnostico: 'A soma de retenções de teatro e estornos solicitados superará o saldo da carteira caso o repasse seja antecipado.',
+          recomendacao: 'Limitar autorização de antecipação ao teto fiduciário de R$ 65.000,00.',
+        },
+        {
+          id: 'prev-02',
+          categoria: 'OBRIGACAO_FISCAL',
+          titulo: 'Vencimento ISS Curitiba em D-3',
+          entidade: 'Prefeitura Municipal de Curitiba (ISS 5%)',
+          horizonteDias: 3,
+          impactoEstimado: 48200.0,
+          severidade: 'ATENCAO',
+          diagnostico: 'Apuração mensal de ISS fecha no dia 10; guia DAS/DAM pendente de emissão.',
+          recomendacao: 'Fechar livro de saídas e gerar guia de recolhimento antes das 18h do dia anterior.',
+        },
+        {
+          id: 'prev-03',
+          categoria: 'ORCAMENTO_COMPRAS',
+          titulo: 'Consumo de 88% do Orçamento de TI & Infraestrutura',
+          entidade: 'Centro de Custo TI — Curitiba',
+          horizonteDias: 12,
+          impactoEstimado: 22000.0,
+          severidade: 'ATENCAO',
+          diagnostico: 'Aquisições de roteadores e no-breaks atingiram 88% do orçamento mensal antes do dia 20.',
+          recomendacao: 'Exigir aprovação de alçada de Diretoria para novas requisições neste centro de custo.',
+        },
+        {
+          id: 'prev-04',
+          categoria: 'ESTORNOS_CANCELAMENTO',
+          titulo: 'Curva Anormal de Pedidos de Devolução pós-adiamento',
+          entidade: 'Festival Gastronômico & Musical de Curitiba',
+          horizonteDias: 2,
+          impactoEstimado: 31100.0,
+          severidade: 'CRITICO',
+          diagnostico: '214 solicitações de reembolso criadas após adiamento de data de sessão.',
+          recomendacao: 'Congelar liquidação de novos lotes e executar compensação cruzada entre eventos do mesmo produtor.',
+        },
+      ],
+    };
+  }
+
+  async getRootCauseInvestigation(alertId: string): Promise<RootCauseAnalysis> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/root-cause/${alertId}`, {
+        headers: this.getAuthHeader(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      alertId,
+      origemDivergencia: 'GATEWAY_FEES',
+      grauConfiancaIA: 98.4,
+      resumoDiagnostico: 'Divergência iniciada na aplicação da taxa MDR do adquirente Cielo no parcelamento em 6x, gerando retenção a menor na liquidação fiduciária.',
+      esteiraInvestigacao: [
+        {
+          etapa: 1,
+          nome: 'Transação / Venda',
+          modulo: 'Vendas Online',
+          status: 'OK',
+          timestamp: '08/10/2026 21:14:02',
+          detalhe: 'Pedido #789012 aprovado no valor de R$ 800,00 (4 ingressos Pista Premium).',
+        },
+        {
+          etapa: 2,
+          nome: 'Regra de Taxa Comercial',
+          modulo: 'Financeiro (MDR & Split)',
+          status: 'ANOMALIA_DETECTADA',
+          timestamp: '08/10/2026 21:14:03',
+          detalhe: 'Taxa aplicada de 2.1% ao invés da tabela contratual vigente de 3.2% para parcelamento em 6x.',
+          impactoDivergencia: 8.8,
+        },
+        {
+          etapa: 3,
+          nome: 'Autorização Gateway',
+          modulo: 'Integrações (Adquirente)',
+          status: 'OK',
+          timestamp: '08/10/2026 21:14:05',
+          detalhe: 'NSU Cielo 98234120 capturado com sucesso.',
+        },
+        {
+          etapa: 4,
+          nome: 'Liquidação Bancária',
+          modulo: 'Tesouraria',
+          status: 'ALERTA',
+          timestamp: '09/10/2026 06:00:10',
+          detalhe: 'Valor líquido depositado pelo adquirente divergiu em R$ 8,80 da projeção do Ledger.',
+        },
+        {
+          etapa: 5,
+          nome: 'Ledger Fiduciário da Carteira',
+          modulo: 'Carteira do Evento',
+          status: 'BLOQUEADO',
+          timestamp: '09/10/2026 09:28:00',
+          detalhe: 'Invariante de consistência impediu repasse automático até regularização da diferença.',
+        },
+      ],
+      acaoSugerida: 'Reaplicar recálculo da matriz de MDR do adquirente Cielo para o lote #4928 e conciliar o crédito no Ledger.',
+    };
+  }
+
+  async getIntegrationsHealth(): Promise<IntegrationsHealthReport> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/integrations-health`, {
+        headers: this.getAuthHeader(),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      statusGlobal: 'OPERACIONAL',
+      uptimeMedio: 99.94,
+      conectores: [
+        {
+          id: 'conn-cielo',
+          nome: 'Adquirente Cielo (Crédito & Débito)',
+          tipo: 'GATEWAY_PAGAMENTO',
+          status: 'OPERACIONAL',
+          latenciaMs: 142,
+          taxaSucessoPercent: 99.82,
+          ultimaVerificacao: 'há 10 seg',
+        },
+        {
+          id: 'conn-stone',
+          nome: 'Adquirente Stone (PDV Físico & Catracas)',
+          tipo: 'GATEWAY_PAGAMENTO',
+          status: 'OPERACIONAL',
+          latenciaMs: 118,
+          taxaSucessoPercent: 99.95,
+          ultimaVerificacao: 'há 15 seg',
+        },
+        {
+          id: 'conn-bb',
+          nome: 'Banco do Brasil (Open Finance & Extratos)',
+          tipo: 'OPEN_FINANCE',
+          status: 'OPERACIONAL',
+          latenciaMs: 240,
+          taxaSucessoPercent: 98.9,
+          ultimaVerificacao: 'há 1 min',
+        },
+        {
+          id: 'conn-nfse',
+          nome: 'Webservice NFS-e Prefeitura de Curitiba',
+          tipo: 'FISCAL_GOV',
+          status: 'DEGRADADO',
+          latenciaMs: 820,
+          taxaSucessoPercent: 94.1,
+          ultimaVerificacao: 'há 2 min',
+          observacao: 'Instabilidade temporária na recepção de RPS em lote pela prefeitura.',
+        },
+        {
+          id: 'conn-bullmq',
+          nome: 'Workers BullMQ & Filas Redis (Async Jobs)',
+          tipo: 'INFRAESTRUTURA',
+          status: 'OPERACIONAL',
+          latenciaMs: 4,
+          taxaSucessoPercent: 100.0,
+          ultimaVerificacao: 'há 5 seg',
+          itensNaFila: 12,
+        },
+        {
+          id: 'conn-webhooks',
+          nome: 'Webhooks de Venda & Eventos Transacionais',
+          tipo: 'INTEGRACOES',
+          status: 'OPERACIONAL',
+          latenciaMs: 65,
+          taxaSucessoPercent: 99.98,
+          ultimaVerificacao: 'há 10 seg',
+        },
+      ],
+    };
+  }
+
+  async askAiAssistant(query: string): Promise<AiAssistantResponse> {
+    try {
+      const res = await fetch(`${this.baseUrl}/inteligencia/sentinel/ai-assistant`, {
+        method: 'POST',
+        headers: this.getAuthHeader(),
+        body: JSON.stringify({ query }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // fallback
+    }
+
+    const qLower = (query || '').toLowerCase();
+    let resposta = '';
+    const fontes: string[] = [];
+
+    if (qLower.includes('estorno') || qLower.includes('insuficiên') || qLower.includes('insuficien')) {
+      resposta =
+        'Identifiquei 1 evento com risco crítico de insuficiência para estornos: Festival Gastronômico & Musical de Curitiba (Pedreira). Foram solicitados R$ 42.300,00 em devoluções pós-adiamento de sessão, enquanto o saldo em carteira atual é de apenas R$ 11.200,00 (déficit projetado de R$ 31.100,00). Recomenda-se acionar a Cláusula 12.3 de retenção cruzada em outros eventos do mesmo produtor.';
+      fontes.push('sentinel_alerts (Código SENT-EVT-042)');
+      fontes.push('financeiro.event_wallets (Carteira ID: pedreira-gastronomico)');
+      fontes.push('contratos.producer_agreements (Cláusula 12.3)');
+    } else if (qLower.includes('despesa') || qLower.includes('aument') || qLower.includes('gasto')) {
+      resposta =
+        'Nos últimos 3 meses, as despesas corporativas que apresentaram maior crescimento percentual foram: 1º Telecom & Starlink para Arenas (+34%), 2º Aquisição de Bobinas Térmicas com Tarja Holográfica (+18%) e 3º Manutenção Preventiva de PDAs Android (+12%). Os gastos gerais da matriz permanecem dentro da margem orçada de R$ 380.000,00/mês.';
+      fontes.push('financeiro.payables (Consolidação trimestral Q3/Q4)');
+      fontes.push('compras.purchase_orders (Centro de custo Operações e TI)');
+    } else if (qLower.includes('divergência') || qLower.includes('divergencia') || qLower.includes('solução') || qLower.includes('solucao')) {
+      resposta =
+        'Constam atualmente 2 divergências financeiras ativas no ERP: 1) TED de R$ 4.850,00 no Banco do Brasil sem contrapartida no Ledger (em tratamento pela Diretoria Financeira); 2) Lote RPS #202610-09 de 89 NFS-e aguardando retorno de protocolo da Prefeitura de Curitiba devido a timeout do webservice municipal.';
+      fontes.push('sentinel_alerts (Códigos SENT-TES-064 e SENT-FIS-019)');
+      fontes.push('integracoes.bank_statements (Banco do Brasil Ag 0092-2)');
+      fontes.push('fiscal.invoices (Lote RPS #202610-09)');
+    } else {
+      resposta =
+        'Com base na auditoria contínua dos módulos do ERP Keeper, todos os parâmetros operacionais estão sob monitoramento. O índice global de conformidade é de 98.6%, com 3 alertas críticos e 12 pontos de atenção em acompanhamento pelos respectivos gestores. A IA opera em modo estritamente consultivo e auditável.';
+      fontes.push('sentinel_rules (28 regras determinísticas ativas)');
+      fontes.push('sentinel_alerts (Visão consolidada multi-tenant)');
+    }
+
+    return {
+      pergunta: query,
+      resposta,
+      fontesAuditadas: fontes,
+      timestamp: new Date().toISOString(),
+      modoAutonomia: 'CONSULTIVO_AUDITAVEL',
+    };
   }
 }
 
