@@ -434,15 +434,57 @@ export const navigationModules: ModuleNav[] = [
     icon: 'Settings',
     groups: [
       {
-        groupName: 'Administração Core',
+        groupName: 'Visão Geral & Parâmetros (3)',
         items: [
-          { id: 'conf-companies', label: 'Empresas & Filiais (Multiempresa)' },
-          { id: 'conf-users', label: 'Usuários & Colaboradores' },
-          { id: 'conf-roles', label: 'Perfis de Acesso & RBAC' },
-          { id: 'conf-audit', label: 'Trilha de Auditoria (CDC)' },
-          { id: 'conf-workflows', label: 'Motor de Workflow & Alçadas' },
-          { id: 'conf-rules', label: 'Motor de Regras (Rule Engine)' },
-          { id: 'conf-integrations', label: 'Integration Hub & Webhooks' },
+          { id: 'conf-dashboard', label: 'Dashboard de Configurações', description: 'Métricas de saúde, latência, uptime e infraestrutura core', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'conf-gerais', label: 'Parâmetros Gerais do ERP', description: 'Fuso horário, moeda padrão, dados institucionais e logos' },
+          { id: 'conf-seguranca', label: 'Políticas de Segurança', description: 'Tempo de expiração de sessão, complexidade de senha e MFA', badge: 'MFA Ativo', badgeColor: 'bg-emerald-100 text-emerald-800' },
+        ],
+      },
+      {
+        groupName: 'Estrutura Corporativa & Multiempresa (4)',
+        items: [
+          { id: 'conf-empresas', label: 'Empresas & Unidades', description: 'Cadastro de matriz, holdings e consolidação fiscal', badge: 'Matriz', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'conf-filiais', label: 'Filiais & PDVs Físicos', description: 'Shoppings Mueller, Palladium, Teatros e quiosques' },
+          { id: 'conf-centros-custo', label: 'Centros de Custo & Departamentos', description: 'Mapeamento contábil e orçamentário corporativo' },
+          { id: 'conf-regimes', label: 'Inscrições & Regimes Tributários', description: 'Inscrições estaduais, municipais e enquadramento' },
+        ],
+      },
+      {
+        groupName: 'Gestão de Identidade & Acesso (4)',
+        items: [
+          { id: 'conf-usuarios', label: 'Usuários & Colaboradores', description: 'Gestão de contas, credenciais, emails e status ativo', badge: '48 Ativos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'conf-roles', label: 'Perfis de Acesso & RBAC', description: 'Definição de papéis administrativos, operacionais e fiscais' },
+          { id: 'conf-permissoes', label: 'Matriz Granular de Permissões', description: 'Controle ponta a ponta de ações por módulo e tela' },
+          { id: 'conf-sessoes', label: 'Sessões Ativas & Dispositivos', description: 'Auditoria de logins simultâneos, IPs e revogação remota' },
+        ],
+      },
+      {
+        groupName: 'Automação, Workflows & Regras (4)',
+        items: [
+          { id: 'conf-workflows', label: 'Motor de Workflow & Alçadas', description: 'Hierarquia de aprovações por valor e centro de custo', badge: '6 Regras', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'conf-regras', label: 'Motor de Regras (Rule Engine)', description: 'Condicionais e validações automáticas de negócio' },
+          { id: 'conf-templates', label: 'Modelos de Documentos & E-mails', description: 'Templates para borderôs, e-mails e notificações' },
+          { id: 'conf-notificacoes', label: 'Canais de Notificação', description: 'Integração de alertas por Slack, WhatsApp, SMS e E-mail' },
+        ],
+      },
+      {
+        groupName: 'Integrações & Conectores (5)',
+        items: [
+          { id: 'conf-hub', label: 'Hub Central de Integrações', description: 'Conectores com adquirentes, bancos e plataformas de terceiros', badge: '8 Conectores', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'conf-webhooks', label: 'Webhooks & Eventos de Venda', description: 'Assinatura e logs de disparos de eventos transacionais' },
+          { id: 'conf-api-keys', label: 'Chaves de API & Tokens', description: 'Gerenciamento de API Keys, escopos e expiração' },
+          { id: 'conf-fiscais', label: 'Conectores Fiscais & Prefeituras', description: 'Webservice NFS-e Curitiba, certificados A1 e RPS' },
+          { id: 'conf-open-finance', label: 'Conexão Bancária & Open Finance', description: 'Extratos automáticos, conciliação e gateways de pagamento' },
+        ],
+      },
+      {
+        groupName: 'Governança, Trilha & Auditoria (4)',
+        items: [
+          { id: 'conf-auditoria', label: 'Trilha de Auditoria (CDC)', description: 'Rastreabilidade imutável de alterações de dados com diff', badge: 'Imutável', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'conf-backup', label: 'Backups & Disaster Recovery', description: 'Rotinas de snapshots, dumps PostgreSQL e redundância' },
+          { id: 'conf-lgpd', label: 'Privacidade & LGPD', description: 'Gestão de consentimentos, anonimização e exportação de dados' },
+          { id: 'conf-logs', label: 'Logs de Sistema & Monitoramento', description: 'Stack traces, logs de microsserviços e diagnósticos' },
         ],
       },
     ],
