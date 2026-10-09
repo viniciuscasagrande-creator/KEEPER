@@ -43,6 +43,9 @@ import {
   Star,
   ExternalLink,
   Laptop,
+  Package,
+  ArrowRightLeft,
+  Boxes,
 } from 'lucide-react';
 import {
   comprasClient,
@@ -50,6 +53,9 @@ import {
   PurchaseRequest,
   PurchaseOrder,
   Supplier,
+  StockItem,
+  Warehouse,
+  KardexMovement,
 } from '../../services/comprasClient';
 
 export interface ComprasSubmenuDef {
@@ -57,9 +63,10 @@ export interface ComprasSubmenuDef {
   label: string;
   group:
     | 'Visão Geral'
+    | 'Armazenagem & Almoxarifado'
     | 'Fornecedores e Cotações'
     | 'Pedidos e Contratações'
-    | 'Recebimento e Controle'
+    | 'Recebimento e Almoxarifado'
     | 'Gestão Financeira'
     | 'Patrimônio e Tecnologia'
     | 'Controle e Governança';
@@ -97,7 +104,57 @@ export const COMPRAS_SUBMENUS: ComprasSubmenuDef[] = [
     purpose: 'Previsão de demanda de suprimentos corporativos, TI e compras sazonais da Disk.',
   },
 
-  // 2. Fornecedores e Cotações (5)
+  // 2. Armazenagem & Almoxarifado (6)
+  {
+    id: 'est-products',
+    label: 'Catálogo de Produtos & SKUs',
+    group: 'Armazenagem & Almoxarifado',
+    icon: Package,
+    purpose: 'Cadastro técnico de materiais, insumos de bilheteria e especificações de SKUs.',
+    badge: '4.280 un',
+    badgeColor: 'bg-emerald-100 text-emerald-800',
+  },
+  {
+    id: 'est-warehouses',
+    label: 'Almoxarifados & Localizações',
+    group: 'Armazenagem & Almoxarifado',
+    icon: Building2,
+    purpose: 'Gestão dos centros de distribuição física: Sede Curitiba, teatros e quiosques.',
+  },
+  {
+    id: 'est-kardex',
+    label: 'Movimentações Kardex',
+    group: 'Armazenagem & Almoxarifado',
+    icon: ArrowRightLeft,
+    purpose: 'Extrato detalhado de entradas por compras, saídas para eventos e saldos.',
+    badge: 'Kardex',
+    badgeColor: 'bg-blue-100 text-blue-800',
+  },
+  {
+    id: 'est-inventory',
+    label: 'Inventário Físico & Ajustes',
+    group: 'Armazenagem & Almoxarifado',
+    icon: ClipboardCheck,
+    purpose: 'Contagens cíclicas, balanços de estoque e lançamentos de quebras/ajustes.',
+  },
+  {
+    id: 'est-requisicoes',
+    label: 'Requisições de Consumo',
+    group: 'Armazenagem & Almoxarifado',
+    icon: FileText,
+    purpose: 'Solicitações internas de materiais pelas equipes de evento e escritórios.',
+  },
+  {
+    id: 'est-ponto-pedido',
+    label: 'Ponto de Pedido & Reposição',
+    group: 'Armazenagem & Almoxarifado',
+    icon: AlertTriangle,
+    purpose: 'Níveis críticos de estoque mínimo com disparo automático de compras.',
+    badge: '1 Alerta',
+    badgeColor: 'bg-rose-100 text-rose-800',
+  },
+
+  // 3. Fornecedores e Cotações (5)
   {
     id: 'comp-fornecedores',
     label: 'Cadastro de Fornecedores',
@@ -179,32 +236,32 @@ export const COMPRAS_SUBMENUS: ComprasSubmenuDef[] = [
     badgeColor: 'bg-purple-100 text-purple-800',
   },
 
-  // 4. Recebimento e Controle (4)
+  // 5. Recebimento e Almoxarifado (4)
   {
     id: 'comp-recebimento',
     label: 'Recebimento de Materiais',
-    group: 'Recebimento e Controle',
+    group: 'Recebimento e Almoxarifado',
     icon: Truck,
     purpose: 'Conferência física no almoxarifado corporativo e conferência cega de mercadorias.',
   },
   {
     id: 'comp-aceite-servicos',
     label: 'Aceite de Serviços',
-    group: 'Recebimento e Controle',
+    group: 'Recebimento e Almoxarifado',
     icon: ClipboardCheck,
     purpose: 'Medição e aprovação formal de entregáveis antes da liberação do pagamento.',
   },
   {
     id: 'comp-devolucoes',
     label: 'Devoluções e Trocas',
-    group: 'Recebimento e Controle',
+    group: 'Recebimento e Almoxarifado',
     icon: RotateCcw,
     purpose: 'Gestão de RMA, envio de itens com defeito e emissão de notas de estorno.',
   },
   {
     id: 'comp-documentos',
     label: 'Documentos de Compra',
-    group: 'Recebimento e Controle',
+    group: 'Recebimento e Almoxarifado',
     icon: Receipt,
     purpose: 'Arquivo eletrônico de minutas, catálogos, propostas técnicas e recibos.',
   },
@@ -319,11 +376,19 @@ export function ComprasModuleView({
   const [requests, setRequests] = useState<PurchaseRequest[]>([]);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [stockItems, setStockItems] = useState<StockItem[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [kardex, setKardex] = useState<KardexMovement[]>([]);
 
   // Filtros de Solicitações
   const [requestSearch, setRequestSearch] = useState('');
   const [requestUrgencyFilter, setRequestUrgencyFilter] = useState('all');
   const [requestStatusFilter, setRequestStatusFilter] = useState('all');
+
+  // Filtros de Estoque
+  const [stockSearch, setStockSearch] = useState('');
+  const [stockCategoryFilter, setStockCategoryFilter] = useState('all');
+  const [stockWarehouseFilter, setStockWarehouseFilter] = useState('all');
 
   // Modais Interativos
   const [isNewRequestModalOpen, setIsNewRequestModalOpen] = useState(false);
@@ -366,22 +431,43 @@ export function ComprasModuleView({
     setTimeout(() => setNotification(null), 4500);
   };
 
+  // Disparo automático de compra para reposição de estoque
+  const handleTriggerReorder = (item: StockItem) => {
+    const qtyToOrder = Math.max(item.minQuantity * 2, 5);
+    setNewItemName(`Reposição: ${item.name} (${qtyToOrder} ${item.unit})`);
+    setNewDepartment('Operações & Suprimentos');
+    setNewRequester('Almoxarifado Central (Alerta de Estoque Mínimo)');
+    setNewCostCenter('CC-201 - Operações PDV');
+    setNewEstimatedValue(Number((item.unitCost * qtyToOrder).toFixed(2)));
+    setNewUrgency('ALTA');
+    setNewJustification(
+      `Item ${item.sku} atingiu nível crítico: saldo atual de ${item.currentQuantity} ${item.unit}, abaixo do mínimo de ${item.minQuantity} ${item.unit}.`
+    );
+    setIsNewRequestModalOpen(true);
+  };
+
   // Carregar dados da API
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [dash, reqs, ords, sups] = await Promise.all([
+      const [dash, reqs, ords, sups, stks, whs, kdx] = await Promise.all([
         comprasClient.getDashboard(),
         comprasClient.getRequests(),
         comprasClient.getOrders(),
         comprasClient.getSuppliers(),
+        comprasClient.getStockItems(),
+        comprasClient.getWarehouses(),
+        comprasClient.getKardexMovements(),
       ]);
       setDashboardData(dash);
       setRequests(reqs);
       setOrders(ords);
       setSuppliers(sups);
+      setStockItems(stks);
+      setWarehouses(whs);
+      setKardex(kdx);
     } catch {
-      showNotification('Erro ao carregar dados de compras do servidor.');
+      showNotification('Erro ao carregar dados de compras e estoque do servidor.');
     } finally {
       setIsLoading(false);
     }
@@ -717,18 +803,18 @@ export function ComprasModuleView({
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                  Módulo Compras Corporativas — Suprimentos & Aquisições
+                  Módulo Compras & Estoque — Suprimentos, Aquisições & Almoxarifado
                 </h1>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
-                  Disk Empresa · 28 Submenus
+                  Disk Empresa · Compras + Estoque Unificados
                 </span>
                 <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
                   DiskIngressos S.A.
                 </span>
               </div>
               <p className="text-xs text-slate-600 font-normal mt-0.5 leading-relaxed">
-                Central de requisições internas, concorrências comerciais (RFQ), contratos com fornecedores e controle orçamentário empresarial.
+                Central unificada de requisições internas, cotações (RFQ), pedidos de compra, almoxarifados, movimentações Kardex e níveis de estoque corporativo.
               </p>
             </div>
           </div>
@@ -1541,6 +1627,345 @@ export function ComprasModuleView({
             </div>
           )}
 
+          {/* 6. CATÁLOGO DE PRODUTOS & SKUS (est-products) */}
+          {sectionId === 'est-products' && (
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                    Catálogo de Produtos, Materiais & SKUs em Estoque
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Controle físico e financeiro de insumos de bilheteria, hardware PDV e suprimentos corporativos
+                  </p>
+                </div>
+                <button
+                  onClick={() => alert('Abrir modal de cadastro de novo SKU')}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Novo Produto / SKU
+                </button>
+              </div>
+
+              {/* Filtros de Estoque */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filtrar por SKU ou descrição..."
+                    value={stockSearch}
+                    onChange={(e) => setStockSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <select
+                    value={stockCategoryFilter}
+                    onChange={(e) => setStockCategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 bg-white"
+                  >
+                    <option value="all">Todas as Categorias</option>
+                    <option value="Insumos Bilheteria">Insumos Bilheteria</option>
+                    <option value="Controle de Acesso">Controle de Acesso</option>
+                    <option value="Suprimentos TI">Suprimentos TI</option>
+                    <option value="Identificação & Acesso">Identificação & Acesso</option>
+                    <option value="Hardware PDV">Hardware PDV</option>
+                  </select>
+                </div>
+                <div>
+                  <select
+                    value={stockWarehouseFilter}
+                    onChange={(e) => setStockWarehouseFilter(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 bg-white"
+                  >
+                    <option value="all">Todos os Almoxarifados</option>
+                    {warehouses.map((w) => (
+                      <option key={w.id} value={w.name}>
+                        {w.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Tabela de SKUs */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200/80">
+                    <tr>
+                      <th className="py-2.5 px-3">Código SKU</th>
+                      <th className="py-2.5 px-3">Material / Descrição</th>
+                      <th className="py-2.5 px-3">Categoria</th>
+                      <th className="py-2.5 px-3">Almoxarifado</th>
+                      <th className="py-2.5 px-3 text-right">Saldo Atual</th>
+                      <th className="py-2.5 px-3 text-right">Mínimo</th>
+                      <th className="py-2.5 px-3 text-right">Custo Médio</th>
+                      <th className="py-2.5 px-3 text-right">Valor Total</th>
+                      <th className="py-2.5 px-3 text-center">Status</th>
+                      <th className="py-2.5 px-3 text-right">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {stockItems
+                      .filter((stk) => {
+                        const mSearch =
+                          stk.sku.toLowerCase().includes(stockSearch.toLowerCase()) ||
+                          stk.name.toLowerCase().includes(stockSearch.toLowerCase());
+                        const mCat = stockCategoryFilter === 'all' || stk.category === stockCategoryFilter;
+                        const mWh = stockWarehouseFilter === 'all' || stk.warehouse.includes(stockWarehouseFilter);
+                        return mSearch && mCat && mWh;
+                      })
+                      .map((stk) => (
+                        <tr key={stk.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3 px-3 font-mono font-bold text-slate-900">{stk.sku}</td>
+                          <td className="py-3 px-3">
+                            <span className="font-semibold text-slate-800 block">{stk.name}</span>
+                            <span className="text-[10px] text-slate-400">Unidade: {stk.unit}</span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-600">{stk.category}</td>
+                          <td className="py-3 px-3 text-slate-600 text-[11px]">{stk.warehouse}</td>
+                          <td className="py-3 px-3 text-right font-bold text-slate-900 font-mono">
+                            {stk.currentQuantity.toLocaleString('pt-BR')} {stk.unit}
+                          </td>
+                          <td className="py-3 px-3 text-right text-slate-500 font-mono text-[11px]">
+                            {stk.minQuantity.toLocaleString('pt-BR')} {stk.unit}
+                          </td>
+                          <td className="py-3 px-3 text-right font-medium text-slate-700">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                              stk.unitCost
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-right font-bold text-slate-900">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                              stk.totalValue
+                            )}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                stk.status === 'CRITICO'
+                                  ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                  : stk.status === 'ATENCAO'
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  : 'bg-emerald-100 text-emerald-800'
+                              }`}
+                            >
+                              {stk.status === 'CRITICO' ? 'Reposição Urgente' : stk.status === 'ATENCAO' ? 'Atenção' : 'Regular'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-right">
+                            {stk.status !== 'NORMAL' ? (
+                              <button
+                                onClick={() => handleTriggerReorder(stk)}
+                                className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold transition-colors shadow-2xs whitespace-nowrap cursor-pointer flex items-center gap-1 ml-auto"
+                              >
+                                <span>⚡ Repor via Compra</span>
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-slate-400">Em nível ideal</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* 7. ALMOXARIFADOS & LOCALIZAÇÕES (est-warehouses) */}
+          {sectionId === 'est-warehouses' && (
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                    Almoxarifados & Centros de Distribuição Disk
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Locais físicos de armazenagem de bobinas, bilheteria, totens e equipamentos
+                  </p>
+                </div>
+                <button
+                  onClick={() => alert('Abrir modal de novo almoxarifado')}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Novo Almoxarifado
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {warehouses.map((wh) => (
+                  <div
+                    key={wh.id}
+                    className="p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-blue-300 transition-all space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-blue-100 text-blue-700">
+                          <Building2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-mono font-bold text-blue-600 block">{wh.code}</span>
+                          <h4 className="text-sm font-bold text-slate-900">{wh.name}</h4>
+                          <span className="text-xs text-slate-500">{wh.location}</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Ativo
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Responsável</span>
+                        <strong className="text-slate-800">{wh.manager}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Valor em Custódia</span>
+                        <strong className="text-blue-700">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                            wh.totalValue
+                          )}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 8. MOVIMENTAÇÕES KARDEX (est-kardex) */}
+          {sectionId === 'est-kardex' && (
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                    Livro Kardex de Movimentações de Estoque
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Rastreabilidade em tempo real de entradas de compras, requisições de consumo e transferências
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 font-medium">Competência: Outubro / 2026</span>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-50 text-slate-600 font-semibold border-y border-slate-200/80">
+                    <tr>
+                      <th className="py-2.5 px-3">Data</th>
+                      <th className="py-2.5 px-3">Código SKU</th>
+                      <th className="py-2.5 px-3">Item / Material</th>
+                      <th className="py-2.5 px-3">Tipo de Operação</th>
+                      <th className="py-2.5 px-3 text-right">Qtd</th>
+                      <th className="py-2.5 px-3">Documento de Origem</th>
+                      <th className="py-2.5 px-3">Almoxarifado</th>
+                      <th className="py-2.5 px-3">Responsável</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {kardex.map((k) => (
+                      <tr key={k.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-3 font-mono text-slate-500">{k.date}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-slate-900">{k.sku}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-800">{k.itemName}</td>
+                        <td className="py-3 px-3">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              k.type === 'ENTRADA_COMPRA'
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                : k.type === 'TRANSFERENCIA'
+                                ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                                : 'bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            {k.type.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td
+                          className={`py-3 px-3 text-right font-bold font-mono ${
+                            k.quantity > 0 ? 'text-emerald-700' : 'text-slate-800'
+                          }`}
+                        >
+                          {k.quantity > 0 ? `+${k.quantity}` : k.quantity}
+                        </td>
+                        <td className="py-3 px-3 font-mono text-[11px] text-blue-700 font-semibold">
+                          {k.sourceDoc}
+                        </td>
+                        <td className="py-3 px-3 text-slate-600">{k.warehouse}</td>
+                        <td className="py-3 px-3 text-slate-500">{k.responsible}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* 9. PONTO DE PEDIDO & REPOSIÇÃO (est-ponto-pedido) */}
+          {sectionId === 'est-ponto-pedido' && (
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800 border border-rose-200">
+                      Monitor de Reposição
+                    </span>
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                      Alertas de Estoque Mínimo & Disparo de Compras
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Itens que atingiram o ponto crítico de ressuprimento — integração automática com Solicitações de Compra
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {stockItems
+                  .filter((i) => i.status !== 'NORMAL')
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-xl border border-rose-200 bg-rose-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-900">{item.sku}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">
+                            {item.status === 'CRITICO' ? 'Estoque Crítico' : 'Estoque de Atenção'}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900">{item.name}</h4>
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
+                          <span>Local: <strong>{item.warehouse}</strong></span>
+                          <span>Saldo Atual: <strong className="text-rose-700">{item.currentQuantity} {item.unit}</strong></span>
+                          <span>Estoque Mínimo: <strong>{item.minQuantity} {item.unit}</strong></span>
+                          <span>Custo Unitário: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unitCost)}</strong></span>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-2">
+                        <button
+                          onClick={() => handleTriggerReorder(item)}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Disparar Solicitação de Compra</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           {/* DEMAIS SUBMENUS (FALLBACK COM VISUAL CORPORATIVO DEDICADO) */}
           {![
             'comp-dashboard',
@@ -1551,6 +1976,10 @@ export function ComprasModuleView({
             'comp-rfq',
             'comp-negociacao',
             'comp-pedidos',
+            'est-products',
+            'est-warehouses',
+            'est-kardex',
+            'est-ponto-pedido',
           ].includes(sectionId) && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-5">
               <div className="border-b pb-4 border-slate-100">

@@ -256,7 +256,7 @@ export const navigationModules: ModuleNav[] = [
   },
   {
     id: 'compras',
-    label: 'Compras',
+    label: 'Compras & Estoque',
     icon: 'ShoppingCart',
     groups: [
       {
@@ -265,6 +265,17 @@ export const navigationModules: ModuleNav[] = [
           { id: 'comp-dashboard', label: 'Dashboard de Compras', description: 'KPIs, cotações, pedidos em aberto e orçamento', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
           { id: 'comp-solicitacoes', label: 'Central de Solicitações', description: 'Requisições internas de compras e aprovação', badge: '12 Abertas', badgeColor: 'bg-amber-100 text-amber-800' },
           { id: 'comp-planejamento', label: 'Planejamento de Compras', description: 'Previsão de demanda corporativa e compras sazonais' },
+        ],
+      },
+      {
+        groupName: 'Armazenagem & Almoxarifado',
+        items: [
+          { id: 'est-products', label: 'Catálogo de Produtos & SKUs', description: 'Bobinas, papel-moeda, pulseiras, toners e crachás', badge: '4.280 un', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'est-warehouses', label: 'Almoxarifados & Localizações', description: 'Sede Curitiba, Teatro Positivo, Guaíra e Quiosques' },
+          { id: 'est-kardex', label: 'Movimentações Kardex', description: 'Rastreabilidade de entradas por compra e saídas', badge: 'Kardex', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'est-inventory', label: 'Inventário Físico & Ajustes', description: 'Contagens cíclicas, conciliação e perdas' },
+          { id: 'est-requisicoes', label: 'Requisições de Consumo', description: 'Retiradas de insumos pelas equipes operacionais' },
+          { id: 'est-ponto-pedido', label: 'Ponto de Pedido & Reposição', description: 'Itens em nível crítico para disparo automático de compras', badge: '1 Alerta', badgeColor: 'bg-rose-100 text-rose-800' },
         ],
       },
       {
@@ -288,7 +299,7 @@ export const navigationModules: ModuleNav[] = [
         ],
       },
       {
-        groupName: 'Recebimento e Controle',
+        groupName: 'Recebimento e Almoxarifado',
         items: [
           { id: 'comp-recebimento', label: 'Recebimento de Materiais', description: 'Conferência física, inspeção e aceite de entrega' },
           { id: 'comp-aceite-servicos', label: 'Aceite de Serviços', description: 'Medição de serviços prestados e validação técnica' },
@@ -316,26 +327,10 @@ export const navigationModules: ModuleNav[] = [
       {
         groupName: 'Controle e Governança',
         items: [
-          { id: 'comp-relatorios', label: 'Relatórios de Compras', description: 'Saving acumulado, lead time e gastos por categoria' },
+          { id: 'comp-relatorios', label: 'Relatórios de Compras & Estoque', description: 'Saving acumulado, lead time e giro de estoque' },
           { id: 'comp-avaliacao', label: 'Avaliação de Fornecedores', description: 'Índice de pontualidade, qualidade e SLA (IQF)' },
           { id: 'comp-auditoria', label: 'Auditoria e Histórico', description: 'Rastreabilidade ponta a ponta de solicitações e pedidos' },
-          { id: 'comp-configuracoes', label: 'Configurações de Compras', description: 'Alçadas de valor, parâmetros e fluxos de workflow' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'estoque',
-    label: 'Estoque',
-    icon: 'Package',
-    groups: [
-      {
-        groupName: 'Armazenagem & Kardex',
-        items: [
-          { id: 'est-products', label: 'Catálogo de Produtos & SKUs' },
-          { id: 'est-warehouses', label: 'Almoxarifados & Localizações' },
-          { id: 'est-kardex', label: 'Movimentações de Estoque (Kardex)' },
-          { id: 'est-inventory', label: 'Inventário Físico & Ajustes' },
+          { id: 'comp-configuracoes', label: 'Configurações de Compras & Estoque', description: 'Alçadas de valor, parâmetros e fluxos de workflow' },
         ],
       },
     ],

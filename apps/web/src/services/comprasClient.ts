@@ -467,4 +467,238 @@ export const comprasClient = {
       return [...localSuppliers];
     }
   },
+
+  async getStockItems(): Promise<StockItem[]> {
+    try {
+      const res = await fetch(`${ORIGIN}/compras/estoque/itens`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch {
+      return [...localStockItems];
+    }
+  },
+
+  async getWarehouses(): Promise<Warehouse[]> {
+    try {
+      const res = await fetch(`${ORIGIN}/compras/estoque/almoxarifados`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch {
+      return [...localWarehouses];
+    }
+  },
+
+  async getKardexMovements(): Promise<KardexMovement[]> {
+    try {
+      const res = await fetch(`${ORIGIN}/compras/estoque/kardex`, { credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch {
+      return [...localKardex];
+    }
+  },
 };
+
+// Dados de estoque em memória
+export interface StockItem {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  warehouse: string;
+  unit: string;
+  currentQuantity: number;
+  minQuantity: number;
+  unitCost: number;
+  totalValue: number;
+  status: 'NORMAL' | 'ATENCAO' | 'CRITICO';
+}
+
+export interface Warehouse {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+  manager: string;
+  itemsCount: number;
+  totalValue: number;
+}
+
+export interface KardexMovement {
+  id: string;
+  date: string;
+  sku: string;
+  itemName: string;
+  type: 'ENTRADA_COMPRA' | 'SAIDA_CONSUMO' | 'TRANSFERENCIA' | 'AJUSTE';
+  quantity: number;
+  sourceDoc: string;
+  warehouse: string;
+  responsible: string;
+}
+
+const localStockItems: StockItem[] = [
+  {
+    id: 'stk-01',
+    sku: 'SKU-PDV-001',
+    name: 'Bobinas Térmicas 80mm PDV e Totens',
+    category: 'Insumos Bilheteria',
+    warehouse: 'Almoxarifado Central Sede',
+    unit: 'ROLO',
+    currentQuantity: 1200,
+    minQuantity: 300,
+    unitCost: 4.5,
+    totalValue: 5400.0,
+    status: 'NORMAL',
+  },
+  {
+    id: 'stk-02',
+    sku: 'SKU-ING-002',
+    name: 'Papel Moeda Holográfico Anti-Fraude (Ingressos)',
+    category: 'Insumos Bilheteria',
+    warehouse: 'Almoxarifado Central Sede',
+    unit: 'FOLHA',
+    currentQuantity: 85000,
+    minQuantity: 25000,
+    unitCost: 0.18,
+    totalValue: 15300.0,
+    status: 'NORMAL',
+  },
+  {
+    id: 'stk-03',
+    sku: 'SKU-PLS-003',
+    name: 'Pulseiras Tyvek VIP c/ QR Code e Lacre Inviolável',
+    category: 'Controle de Acesso',
+    warehouse: 'Almoxarifado Central Sede',
+    unit: 'PCT (500un)',
+    currentQuantity: 29,
+    minQuantity: 10,
+    unitCost: 120.0,
+    totalValue: 3480.0,
+    status: 'NORMAL',
+  },
+  {
+    id: 'stk-04',
+    sku: 'SKU-TON-004',
+    name: 'Toner HP Laserjet Enterprise M608 Black',
+    category: 'Suprimentos TI',
+    warehouse: 'Almoxarifado Sede Curitiba',
+    unit: 'UN',
+    currentQuantity: 2,
+    minQuantity: 5,
+    unitCost: 480.0,
+    totalValue: 960.0,
+    status: 'CRITICO', // Estoque abaixo do mínimo!
+  },
+  {
+    id: 'stk-05',
+    sku: 'SKU-CRA-005',
+    name: 'Crachás PVC RFID com Cordão Personalizado Disk',
+    category: 'Identificação & Acesso',
+    warehouse: 'Almoxarifado Central Sede',
+    unit: 'UN',
+    currentQuantity: 120,
+    minQuantity: 250,
+    unitCost: 8.5,
+    totalValue: 1020.0,
+    status: 'ATENCAO',
+  },
+  {
+    id: 'stk-06',
+    sku: 'SKU-LEI-006',
+    name: 'Leitores Ópticos 2D Zebra para Catracas e PDVs',
+    category: 'Hardware PDV',
+    warehouse: 'Almoxarifado Teatro Positivo',
+    unit: 'UN',
+    currentQuantity: 18,
+    minQuantity: 10,
+    unitCost: 650.0,
+    totalValue: 11700.0,
+    status: 'NORMAL',
+  },
+];
+
+const localWarehouses: Warehouse[] = [
+  {
+    id: 'alm-01',
+    name: 'Almoxarifado Central (Sede Curitiba)',
+    code: 'ALM-01',
+    location: 'Sede Administrativa — R. Schiller, 500',
+    manager: 'Carlos Eduardo (Logística)',
+    itemsCount: 1450,
+    totalValue: 98400.0,
+  },
+  {
+    id: 'alm-02',
+    name: 'Almoxarifado Teatro Positivo',
+    code: 'ALM-02',
+    location: 'Bilheteria Central Positivo',
+    manager: 'Fernanda Rocha',
+    itemsCount: 320,
+    totalValue: 24800.0,
+  },
+  {
+    id: 'alm-03',
+    name: 'Almoxarifado Teatro Guaíra',
+    code: 'ALM-03',
+    location: 'Bilheteria Praça Santos Andrade',
+    manager: 'Renato Silveira',
+    itemsCount: 210,
+    totalValue: 18200.0,
+  },
+  {
+    id: 'alm-04',
+    name: 'Almoxarifado Quiosque Mueller',
+    code: 'ALM-04',
+    location: 'Shopping Mueller Piso L1',
+    manager: 'Amanda Lima',
+    itemsCount: 110,
+    totalValue: 7200.0,
+  },
+];
+
+const localKardex: KardexMovement[] = [
+  {
+    id: 'kdx-01',
+    date: '2026-10-06',
+    sku: 'SKU-PDV-001',
+    itemName: 'Bobinas Térmicas 80mm PDV',
+    type: 'ENTRADA_COMPRA',
+    quantity: 500,
+    sourceDoc: 'PED-2026-00431',
+    warehouse: 'Almoxarifado Central',
+    responsible: 'Carlos Eduardo',
+  },
+  {
+    id: 'kdx-02',
+    date: '2026-10-05',
+    sku: 'SKU-PLS-003',
+    itemName: 'Pulseiras Tyvek VIP',
+    type: 'SAIDA_CONSUMO',
+    quantity: -5,
+    sourceDoc: 'REQ-019/26 Festival Curitiba',
+    warehouse: 'Almoxarifado Central',
+    responsible: 'Lucas Santana',
+  },
+  {
+    id: 'kdx-03',
+    date: '2026-10-04',
+    sku: 'SKU-LEI-006',
+    itemName: 'Leitores Ópticos 2D Zebra',
+    type: 'TRANSFERENCIA',
+    quantity: 4,
+    sourceDoc: 'TRF-004 Central -> Positivo',
+    warehouse: 'Almoxarifado Teatro Positivo',
+    responsible: 'Fernanda Rocha',
+  },
+  {
+    id: 'kdx-04',
+    date: '2026-10-02',
+    sku: 'SKU-TON-004',
+    itemName: 'Toner HP Laserjet Enterprise M608',
+    type: 'SAIDA_CONSUMO',
+    quantity: -2,
+    sourceDoc: 'REQ-012/26 Impressão Fiscais',
+    warehouse: 'Almoxarifado Sede Curitiba',
+    responsible: 'Mariana Duarte',
+  },
+];

@@ -109,7 +109,7 @@ export function App() {
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />
-        ) : activeModule === 'compras' ? (
+        ) : activeModule === 'compras' || activeModule === 'estoque' ? (
           <ComprasModuleView
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
