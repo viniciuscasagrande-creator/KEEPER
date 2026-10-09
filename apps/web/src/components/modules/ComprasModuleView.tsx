@@ -698,7 +698,7 @@ export function ComprasModuleView({
   // CONTEÚDO PRINCIPAL DAS TELAS
   // ==========================================
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans text-slate-900">
       {/* Toast Notification */}
       {notification && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-4 duration-200">
@@ -707,52 +707,78 @@ export function ComprasModuleView({
         </div>
       )}
 
-      {/* BANNER MANDATÓRIO: SEGREGAÇÃO CORPORATIVA DISK EMPRESA */}
-      <div className="p-4 rounded-2xl bg-linear-to-r from-blue-900 via-indigo-950 to-slate-900 text-white shadow-md border border-blue-800/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-blue-400" />
-              DISK INGRESSOS · ADMINISTRAÇÃO CORPORATIVA
-            </span>
-            <span className="text-xs text-blue-200 font-medium">Segregação Contábil Rígida</span>
+      {/* HEADER CORPORATIVO DO MÓDULO COMPRAS — LETRAS ESCURAS E ALTO CONTRASTE */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3.5 border-b border-slate-100">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-900 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+              <ShoppingCart className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  Módulo Compras Corporativas — Suprimentos & Aquisições
+                </h1>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+                  Disk Empresa · 28 Submenus
+                </span>
+                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
+                  DiskIngressos S.A.
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 font-normal mt-0.5 leading-relaxed">
+                Central de requisições internas, concorrências comerciais (RFQ), contratos com fornecedores e controle orçamentário empresarial.
+              </p>
+            </div>
           </div>
-          <h2 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
-            Módulo Compras Corporativas
-            <span className="text-xs font-normal text-slate-300">
-              (Insumos, TI, Infraestrutura Cloud, Facilities & Consultorias)
-            </span>
-          </h2>
-          <p className="text-xs text-slate-300 max-w-4xl leading-relaxed">
-            Este módulo destina-se exclusivamente às aquisições e contratações corporativas da própria{' '}
-            <strong>Disk Ingressos Entretenimento S.A.</strong>. Sob hipótese alguma despesas de produtores
-            (artistas, cachês, ECAD, locação de teatros ou estruturas de eventos) devem ser lançadas aqui.
-            Essas despesas permanecem sob a custódia fiduciária de <strong>Financeiro de Eventos</strong>.
-          </p>
+
+          <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto shrink-0">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-2xs">
+              <CalendarClock className="w-3.5 h-3.5 text-slate-500" />
+              <span>Competência: <strong>Outubro / 2026</strong></span>
+            </div>
+
+            <button
+              onClick={() => setIsNewRequestModalOpen(true)}
+              className="h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nova Solicitação</span>
+            </button>
+
+            <button
+              onClick={() => setIsNewOrderModalOpen(true)}
+              className="h-9 px-3.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <PackageCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span>Novo Pedido</span>
+            </button>
+
+            <button
+              onClick={loadData}
+              title="Atualizar dados de compras"
+              className="h-9 w-9 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <button
-            onClick={() => setIsNewRequestModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nova Solicitação
-          </button>
-          <button
-            onClick={() => setIsNewOrderModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-bold rounded-xl shadow-xs transition-colors"
-          >
-            <PackageCheck className="w-3.5 h-3.5 text-blue-400" />
-            Novo Pedido
-          </button>
-          <button
-            onClick={loadData}
-            title="Atualizar dados de compras"
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl transition-colors"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-400' : ''}`} />
-          </button>
+        {/* ALERTA DE SEGREGAÇÃO CORPORATIVA EM CORES ESCURAS SOBRE FUNDO SUAVE */}
+        <div className="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs flex items-start gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+          <div className="space-y-0.5 text-amber-950">
+            <div className="font-bold flex items-center gap-2 text-amber-950">
+              <span>Segregação Patrimonial Obrigatória — Disk Empresa vs. Eventos</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-sm bg-amber-200/70 text-amber-900 border border-amber-300">
+                100% Corporativo
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-900 leading-relaxed font-medium">
+              Este módulo gerencia exclusivamente aquisições da administração corporativa (hardware, cloud, SaaS, facilities e consultorias). Sob hipótese alguma despesas de produtores ou eventos transitam aqui; tais valores pertencem à custódia fiduciária de <strong>Financeiro de Eventos</strong>.
+            </p>
+          </div>
         </div>
       </div>
 
