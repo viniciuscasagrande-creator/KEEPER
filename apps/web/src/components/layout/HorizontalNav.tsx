@@ -14,6 +14,8 @@ import {
   Settings,
   Briefcase,
   Handshake,
+  Scale,
+  FileText,
   ChevronDown,
 } from 'lucide-react';
 
@@ -30,6 +32,8 @@ const iconMap: Record<string, React.ElementType> = {
   Settings,
   Briefcase,
   Handshake,
+  Scale,
+  FileText,
 };
 
 interface HorizontalNavProps {

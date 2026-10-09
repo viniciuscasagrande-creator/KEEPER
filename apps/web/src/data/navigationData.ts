@@ -399,6 +399,67 @@ export const navigationModules: ModuleNav[] = [
     ],
   },
   {
+    id: 'contratos',
+    label: 'Contratos & Jurídico',
+    icon: 'Scale',
+    groups: [
+      {
+        groupName: 'Visão Geral & Gestão Contratual (4)',
+        items: [
+          { id: 'jur-dashboard', label: 'Dashboard Executivo de Contratos', description: 'Status de vigências, assinaturas e GMV sob custódia protegida', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'jur-central-contratos', label: 'Central de Contratos Ativos', description: 'Gestão de instrumentos contratuais vigentes e histórico', badge: '38 Ativos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'jur-vigencia-alertas', label: 'Prazos, Vigências & Renovações', description: 'Alertas preditivos de vencimentos em 30, 60 e 90 dias', badge: '4 a Vencer', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'jur-metricas-juridicas', label: 'Métricas & Indicadores de Conformidade', description: 'Tempo médio de formalização e índice de renovações' },
+        ],
+      },
+      {
+        groupName: 'Contratos de Bilheteria & Produtores (4)',
+        items: [
+          { id: 'jur-contratos-produtores', label: 'Contratos de Prestação de Bilheteria', description: 'Instrumentos jurídicos com produtores de shows e espetáculos' },
+          { id: 'jur-exclusividade', label: 'Cláusulas & Acordos de Exclusividade', description: 'Fidelidade territorial de venda de ingressos e cominações', badge: 'Exclusividade', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'jur-minutas-padrao', label: 'Biblioteca de Minutas & Templates', description: 'Minutas padronizadas aprovadas pelo departamento jurídico' },
+          { id: 'jur-aditivos-alteracoes', label: 'Termos Aditivos & Prorrogações', description: 'Aditamentos de datas, locais, taxas e capacidade de público' },
+        ],
+      },
+      {
+        groupName: 'Assinatura Digital & Formalização (4)',
+        items: [
+          { id: 'jur-fluxo-assinaturas', label: 'Fila de Assinaturas Digitais', description: 'Integração Clicksign, DocuSign e Gov.br com rastreio de signatários', badge: '4 Pendentes', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'jur-signatarios', label: 'Gestão de Signatários & Representantes', description: 'Poderes de representação societária e procurações ativas' },
+          { id: 'jur-certificados-digitais', label: 'Validação ICP-Brasil & Carimbo do Tempo', description: 'Integridade criptográfica de assinaturas digitais avançadas' },
+          { id: 'jur-historico-assinaturas', label: 'Trilha de Evidências de Assinatura', description: 'Logs de IP, geolocalização e hashes SHA-256 de formalização' },
+        ],
+      },
+      {
+        groupName: 'Garantias, Advance & Compliance (4)',
+        items: [
+          { id: 'jur-garantias-advance', label: 'Garantias de Advance & Cauções', description: 'Controle de notas promissórias e caução de bilheteria retida' },
+          { id: 'jur-due-diligence', label: 'Due Diligence & Certidões Negativas', description: 'Consulta automatizada CND Federal, Estadual, Municipal e Trabalhista', badge: '96.8% OK', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'jur-retencoes-ecad', label: 'Bloqueios & Liberações Jurídicas', description: 'Travas preventivas para alvarás de funcionamento e quitação ECAD' },
+          { id: 'jur-analise-risco', label: 'Classificação de Risco Contratual', description: 'Score de risco jurídico e histórico de litígios de produtores' },
+        ],
+      },
+      {
+        groupName: 'Contencioso & Notificações (4)',
+        items: [
+          { id: 'jur-notificacoes', label: 'Notificações Extrajudiciais & Avisos', description: 'Comunicações formais de inadimplemento e rescisões' },
+          { id: 'jur-contencioso', label: 'Gestão de Processos & Contencioso', description: 'Acompanhamento de ações cíveis, trabalhistas e Procon' },
+          { id: 'jur-acordos-judiciais', label: 'Termos de Acordo & Transações', description: 'Formalização de conciliações e parcelamentos judiciais' },
+          { id: 'jur-assessoria-externa', label: 'Escritórios Parceiros & Procurações', description: 'Controle de advogados credenciados e substabelecimentos' },
+        ],
+      },
+      {
+        groupName: 'Governança Jurídica & Arquivos (4)',
+        items: [
+          { id: 'jur-repositorio-documental', label: 'Repositório Digital de Contratos', description: 'Armazenamento em PDF/A de longo prazo com OCR pesquisável' },
+          { id: 'jur-auditoria-juridica', label: 'Trilha de Auditoria e Logs de Alteração', description: 'Registro imutável de consultas, downloads e alterações', badge: 'Imutável', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'jur-alcadas-juridicas', label: 'Alçadas de Assinatura & Pareceres', description: 'Matriz de competência para assinatura de contratos e aditivos' },
+          { id: 'jur-config', label: 'Configurações do Módulo Jurídico', description: 'Parâmetros de notificações, prazos de tolerância e modelos' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'inteligencia',
     label: 'Inteligência',
     icon: 'Sparkles',

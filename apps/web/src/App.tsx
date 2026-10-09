@@ -21,6 +21,7 @@ import { ComprasModuleView } from './components/modules/ComprasModuleView';
 import { InteligenciaModuleView } from './components/modules/InteligenciaModuleView';
 import { ConfiguracoesModuleView } from './components/modules/ConfiguracoesModuleView';
 import { CrmModuleView } from './components/modules/CrmModuleView';
+import { ContratosModuleView } from './components/modules/ContratosModuleView';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
@@ -129,6 +130,11 @@ export function App() {
           />
         ) : activeModule === 'crm' || activeModule === 'vendas' ? (
           <CrmModuleView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
+          />
+        ) : activeModule === 'contratos' || activeModule === 'juridico' ? (
+          <ContratosModuleView
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />
