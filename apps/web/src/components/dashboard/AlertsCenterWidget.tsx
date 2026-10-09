@@ -1,7 +1,11 @@
 import React from 'react';
 import { AlertTriangle, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export function AlertsCenterWidget() {
+interface AlertsCenterWidgetProps {
+  onSelectSubModule?: (subModuleId: string) => void;
+}
+
+export function AlertsCenterWidget({ onSelectSubModule }: AlertsCenterWidgetProps) {
   const alerts = [
     {
       level: 'CRITICAL',
@@ -10,6 +14,7 @@ export function AlertsCenterWidget() {
       actionLabel: 'Pagar Agora',
       color: 'bg-rose-50 border-rose-200 text-rose-800',
       dotColor: 'bg-rose-500',
+      target: 'fin-payables',
     },
     {
       level: 'WARNING',
@@ -18,6 +23,7 @@ export function AlertsCenterWidget() {
       actionLabel: 'Auditar',
       color: 'bg-amber-50 border-amber-200 text-amber-800',
       dotColor: 'bg-amber-500',
+      target: 'acc-periods',
     },
     {
       level: 'WARNING',
@@ -26,6 +32,7 @@ export function AlertsCenterWidget() {
       actionLabel: 'Ver Guia',
       color: 'bg-amber-50 border-amber-200 text-amber-800',
       dotColor: 'bg-amber-500',
+      target: 'fisc-obrigacoes-acessorias',
     },
     {
       level: 'SUCCESS',
@@ -34,6 +41,7 @@ export function AlertsCenterWidget() {
       actionLabel: 'Ver Extrato',
       color: 'bg-emerald-50 border-emerald-200 text-emerald-800',
       dotColor: 'bg-emerald-500',
+      target: 'fin-conciliacao',
     },
   ];
 
@@ -62,7 +70,10 @@ export function AlertsCenterWidget() {
                 </div>
               </div>
             </div>
-            <button className="text-[11px] font-bold text-blue-600 hover:text-blue-800 shrink-0 flex items-center mt-0.5">
+            <button
+              onClick={() => onSelectSubModule?.(alert.target)}
+              className="text-[11px] font-bold text-blue-600 hover:text-blue-800 shrink-0 flex items-center mt-0.5 cursor-pointer hover:underline"
+            >
               <span>{alert.actionLabel}</span>
               <ArrowRight className="w-3 h-3 ml-0.5" />
             </button>

@@ -12,9 +12,10 @@ import { api } from '../../services/api';
 
 interface KpiGridProps {
   refreshTrigger?: number;
+  onSelectSubModule?: (subModuleId: string) => void;
 }
 
-export function KpiGrid({ refreshTrigger }: KpiGridProps) {
+export function KpiGrid({ refreshTrigger, onSelectSubModule }: KpiGridProps) {
   const [cashBalance, setCashBalance] = useState<number>(3240180);
   const [payablesOpen, setPayablesOpen] = useState<number>(1150350);
   const [receivablesOpen, setReceivablesOpen] = useState<number>(1745200);
@@ -54,6 +55,7 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
       isPositive: true,
       sub: 'Títulos em aberto e faturados',
       color: 'border-l-blue-600',
+      target: 'fin-receivables',
     },
     {
       label: 'Despesas Operacionais',
@@ -63,6 +65,7 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
       isPositive: false,
       sub: 'Dentro do teto orçamentário',
       color: 'border-l-amber-500',
+      target: 'acc-dre',
     },
     {
       label: 'Contas a Pagar (Aberto)',
@@ -72,6 +75,7 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
       isPositive: true,
       sub: 'Obrigações provisionadas',
       color: 'border-l-rose-500',
+      target: 'fin-payables',
     },
     {
       label: 'Saldo Bancário Consolidado',
@@ -81,6 +85,7 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
       isPositive: true,
       sub: 'Disponibilidade líquida em tesouraria',
       color: 'border-l-emerald-500',
+      target: 'fin-treasury',
     },
   ];
 
@@ -89,7 +94,8 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
       {kpis.map((kpi) => (
         <div
           key={kpi.label}
-          className={`bg-white rounded-xl border border-slate-200 border-l-4 p-4 shadow-sm hover:shadow transition-shadow flex flex-col justify-between ${kpi.color}`}
+          onClick={() => onSelectSubModule?.(kpi.target)}
+          className={`bg-white rounded-xl border border-slate-200 border-l-4 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between cursor-pointer ${kpi.color}`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500">{kpi.label}</span>
@@ -118,8 +124,8 @@ export function KpiGrid({ refreshTrigger }: KpiGridProps) {
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
             <span>{kpi.period}</span>
-            <span className="font-semibold text-blue-600 hover:underline cursor-pointer">
-              Drill-down
+            <span className="font-semibold text-blue-600 hover:underline">
+              Abrir Módulo ➔
             </span>
           </div>
         </div>

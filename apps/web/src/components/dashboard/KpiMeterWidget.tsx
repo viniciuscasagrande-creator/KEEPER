@@ -4,9 +4,10 @@ import { api } from '../../services/api';
 
 interface KpiMeterWidgetProps {
   refreshTrigger?: number;
+  onSelectSubModule?: (subModuleId: string) => void;
 }
 
-export function KpiMeterWidget({ refreshTrigger }: KpiMeterWidgetProps) {
+export function KpiMeterWidget({ refreshTrigger, onSelectSubModule }: KpiMeterWidgetProps) {
   const [cashBalance, setCashBalance] = useState<number>(3240180);
 
   useEffect(() => {
@@ -27,7 +28,13 @@ export function KpiMeterWidget({ refreshTrigger }: KpiMeterWidgetProps) {
   const percentage = Math.min(100, Math.max(10, Math.round((cashBalance / target) * 100)));
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm h-full flex flex-col justify-between">
+    <div
+      onClick={() => onSelectSubModule && onSelectSubModule('fin-treasury')}
+      className={`bg-white rounded-xl border border-slate-200 p-4 shadow-sm h-full flex flex-col justify-between transition-all ${
+        onSelectSubModule ? 'cursor-pointer hover:border-emerald-300 hover:shadow-md' : ''
+      }`}
+      title="Clique para abrir Tesouraria e Contas Bancárias"
+    >
       <div className="flex items-center justify-between mb-2 border-b border-slate-100 pb-2">
         <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
           <Gauge className="w-3.5 h-3.5 text-emerald-600" />

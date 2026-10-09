@@ -212,29 +212,40 @@ export function App() {
             {/* Top Quick Widgets: Reminders, Tiles, KPI Meter */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
               <div className="md:col-span-4">
-                <RemindersWidget onOpenApprovals={() => setIsApprovalsOpen(true)} />
+                <RemindersWidget
+                  onOpenApprovals={() => setIsApprovalsOpen(true)}
+                  onSelectSubModule={handleSelectSubModule}
+                />
               </div>
               <div className="md:col-span-5">
                 <QuickTilesWidget
                   onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
                   onOpenApprovals={() => setIsApprovalsOpen(true)}
+                  onSelectSubModule={handleSelectSubModule}
+                  onOpenCommandCenter={() => setIsCommandCenterOpen(true)}
                 />
               </div>
               <div className="md:col-span-3">
-                <KpiMeterWidget refreshTrigger={refreshCounter} />
+                <KpiMeterWidget
+                  refreshTrigger={refreshCounter}
+                  onSelectSubModule={handleSelectSubModule}
+                />
               </div>
             </div>
 
             {/* Main KPI Numbers Grid */}
-            <KpiGrid refreshTrigger={refreshCounter} />
+            <KpiGrid
+              refreshTrigger={refreshCounter}
+              onSelectSubModule={handleSelectSubModule}
+            />
 
             {/* Charts & Alerts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8">
-                <FinancialChartWidget />
+                <FinancialChartWidget onSelectSubModule={handleSelectSubModule} />
               </div>
               <div className="lg:col-span-4">
-                <AlertsCenterWidget />
+                <AlertsCenterWidget onSelectSubModule={handleSelectSubModule} />
               </div>
             </div>
 
@@ -253,6 +264,7 @@ export function App() {
         onClose={() => setIsCommandCenterOpen(false)}
         onOpenQuickEntry={() => setIsQuickEntryOpen(true)}
         onOpenApprovals={() => setIsApprovalsOpen(true)}
+        onSelectSubModule={handleSelectSubModule}
       />
 
       <QuickEntryDrawer

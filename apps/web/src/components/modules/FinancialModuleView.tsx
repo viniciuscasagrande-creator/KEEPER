@@ -125,13 +125,13 @@ export function FinancialModuleView({ onOpenQuickEntry, activeSubTab }: Financia
       else if (activeSubTab.includes('producer') || activeSubTab === 'fin-producers') setActiveTab('producers');
       else if (activeSubTab.includes('refund') || activeSubTab.includes('cancellation')) setActiveTab('refunds');
       else if (activeSubTab.includes('settlement') || activeSubTab.includes('clearing')) setActiveTab('settlement');
-      else if (activeSubTab.includes('payable')) setActiveTab('payables');
-      else if (activeSubTab.includes('receivable') || activeSubTab.includes('billing')) setActiveTab('receivables');
-      else if (activeSubTab.includes('account')) setActiveTab('treasury');
-      else if (activeSubTab.includes('reconciliation')) setActiveTab('reconciliation');
-      else if (activeSubTab.includes('cashflow')) setActiveTab('cashflow');
-      else if (activeSubTab.includes('budget')) setActiveTab('budget');
-      else if (activeSubTab.includes('credit')) setActiveTab('credit');
+      else if (activeSubTab.includes('payable') || activeSubTab.includes('pagar')) setActiveTab('payables');
+      else if (activeSubTab.includes('receivable') || activeSubTab.includes('billing') || activeSubTab.includes('receber')) setActiveTab('receivables');
+      else if (activeSubTab.includes('account') || activeSubTab.includes('treasury') || activeSubTab.includes('tesouraria')) setActiveTab('treasury');
+      else if (activeSubTab.includes('reconciliation') || activeSubTab.includes('conciliacao')) setActiveTab('reconciliation');
+      else if (activeSubTab.includes('cashflow') || activeSubTab.includes('fluxo')) setActiveTab('cashflow');
+      else if (activeSubTab.includes('budget') || activeSubTab.includes('orcamento')) setActiveTab('budget');
+      else if (activeSubTab.includes('credit') || activeSubTab.includes('credito')) setActiveTab('credit');
       else if (activeSubTab === 'dash-fin') setActiveTab('dashboard');
     }
   }, [activeSubTab]);

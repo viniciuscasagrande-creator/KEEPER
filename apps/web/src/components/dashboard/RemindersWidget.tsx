@@ -3,15 +3,16 @@ import { AlertCircle, Clock, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 interface RemindersWidgetProps {
   onOpenApprovals: () => void;
+  onSelectSubModule?: (subModuleId: string) => void;
 }
 
-export function RemindersWidget({ onOpenApprovals }: RemindersWidgetProps) {
+export function RemindersWidget({ onOpenApprovals, onSelectSubModule }: RemindersWidgetProps) {
   const reminders = [
     {
       title: 'Aprovações Pendentes',
       count: 3,
       desc: 'Pagamentos acima de R$ 50.000 aguardando alçada',
-      color: 'bg-rose-50 text-rose-700 border-rose-200',
+      color: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 cursor-pointer',
       badgeColor: 'bg-rose-600 text-white',
       icon: ShieldAlert,
       onClick: onOpenApprovals,
@@ -20,19 +21,19 @@ export function RemindersWidget({ onOpenApprovals }: RemindersWidgetProps) {
       title: 'Pagamentos Hoje',
       count: 8,
       desc: 'R$ 142.800,00 previstos para liquidação bancária',
-      color: 'bg-amber-50 text-amber-700 border-amber-200',
+      color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 cursor-pointer',
       badgeColor: 'bg-amber-600 text-white',
       icon: Clock,
-      onClick: () => {},
+      onClick: () => onSelectSubModule?.('fin-payables'),
     },
     {
       title: 'Obrigações Fiscais',
       count: 2,
       desc: 'Transmissão de DCTFWeb e EFD Contribuições',
-      color: 'bg-blue-50 text-blue-700 border-blue-200',
+      color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 cursor-pointer',
       badgeColor: 'bg-blue-600 text-white',
       icon: AlertCircle,
-      onClick: () => {},
+      onClick: () => onSelectSubModule?.('fisc-obrigacoes-acessorias'),
     },
   ];
 

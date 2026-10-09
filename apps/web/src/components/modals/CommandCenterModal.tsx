@@ -19,6 +19,7 @@ interface CommandCenterModalProps {
   onClose: () => void;
   onOpenQuickEntry?: () => void;
   onOpenApprovals?: () => void;
+  onSelectSubModule?: (subModuleId: string) => void;
 }
 
 interface CommandItem {
@@ -36,6 +37,7 @@ export function CommandCenterModal({
   onClose,
   onOpenQuickEntry,
   onOpenApprovals,
+  onSelectSubModule,
 }: CommandCenterModalProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -75,14 +77,25 @@ export function CommandCenterModal({
       },
     },
     {
+      id: 'cmd-nav-payroll',
+      category: 'Navegação',
+      title: 'Folha de Pagamento & eSocial',
+      subtitle: 'RH > Motor de cálculo da folha, proventos e líquidos Out/2026',
+      icon: Users,
+      action: () => {
+        onClose();
+        if (onSelectSubModule) onSelectSubModule('rh-folha');
+      },
+    },
+    {
       id: 'cmd-nav-dre',
       category: 'Relatórios',
       title: 'DRE Consolidada (Demonstração do Resultado)',
       subtitle: 'Contabilidade gerencial em tempo real por regime de competência',
       icon: FileText,
       action: () => {
-        alert('Navegando para DRE Consolidada...');
         onClose();
+        if (onSelectSubModule) onSelectSubModule('acc-dre');
       },
     },
     {
@@ -92,19 +105,41 @@ export function CommandCenterModal({
       subtitle: 'Financeiro > Tesouraria > Visão 30/60/90 dias',
       icon: DollarSign,
       action: () => {
-        alert('Navegando para Fluxo de Caixa...');
         onClose();
+        if (onSelectSubModule) onSelectSubModule('fin-cashflow');
       },
     },
     {
-      id: 'cmd-nav-payroll',
+      id: 'cmd-nav-reconciliation',
       category: 'Navegação',
-      title: 'Folha de Pagamento & eSocial',
-      subtitle: 'RH > Competência Outubro/2026',
-      icon: Users,
+      title: 'Conciliação Bancária 1:1 com Ledger',
+      subtitle: 'Financeiro > Conciliação automatizada extrato vs lançamentos',
+      icon: FolderOpen,
       action: () => {
-        alert('Navegando para Folha de Pagamento...');
         onClose();
+        if (onSelectSubModule) onSelectSubModule('fin-conciliacao');
+      },
+    },
+    {
+      id: 'cmd-nav-balance',
+      category: 'Relatórios',
+      title: 'Balanço Patrimonial',
+      subtitle: 'Contabilidade > Ativos, passivos e patrimônio líquido',
+      icon: FolderOpen,
+      action: () => {
+        onClose();
+        if (onSelectSubModule) onSelectSubModule('acc-balanco');
+      },
+    },
+    {
+      id: 'cmd-nav-periods',
+      category: 'Navegação',
+      title: 'Fechamento Contábil & Competências',
+      subtitle: 'Contabilidade > Trava de competência e encerramento mensal',
+      icon: FolderOpen,
+      action: () => {
+        onClose();
+        if (onSelectSubModule) onSelectSubModule('acc-periods');
       },
     },
     {
@@ -114,8 +149,8 @@ export function CommandCenterModal({
       subtitle: 'Base unificada de fornecedores, clientes e prestadores',
       icon: Building2,
       action: () => {
-        alert('Abrindo consulta de parceiros...');
         onClose();
+        if (onSelectSubModule) onSelectSubModule('crm-clientes');
       },
     },
     {
@@ -125,8 +160,8 @@ export function CommandCenterModal({
       subtitle: 'Contabilidade > Estrutura de contas e centros de custo',
       icon: FolderOpen,
       action: () => {
-        alert('Abrindo Plano de Contas...');
         onClose();
+        if (onSelectSubModule) onSelectSubModule('acc-chart');
       },
     },
   ];

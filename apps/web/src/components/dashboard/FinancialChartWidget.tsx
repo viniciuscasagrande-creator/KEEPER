@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { BarChart3, TrendingUp, Calendar } from 'lucide-react';
 
-export function FinancialChartWidget() {
+interface FinancialChartWidgetProps {
+  onSelectSubModule?: (subModuleId: string) => void;
+}
+
+export function FinancialChartWidget({ onSelectSubModule }: FinancialChartWidgetProps) {
   const [period, setPeriod] = useState<'MES' | 'TRIMESTRE'>('MES');
 
   const months = [
@@ -18,8 +22,12 @@ export function FinancialChartWidget() {
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm h-full flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-        <div>
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+        <div
+          onClick={() => onSelectSubModule && onSelectSubModule('fin-cashflow')}
+          className={onSelectSubModule ? 'cursor-pointer group' : ''}
+          title="Clique para abrir Fluxo de Caixa Diário"
+        >
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 group-hover:text-blue-600 transition-colors">
             <BarChart3 className="w-3.5 h-3.5 text-blue-600" />
             Fluxo Financeiro: Receitas x Despesas
           </h3>
