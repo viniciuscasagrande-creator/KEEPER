@@ -20,6 +20,7 @@ import { FiscalModuleView } from './components/modules/FiscalModuleView';
 import { ComprasModuleView } from './components/modules/ComprasModuleView';
 import { InteligenciaModuleView } from './components/modules/InteligenciaModuleView';
 import { ConfiguracoesModuleView } from './components/modules/ConfiguracoesModuleView';
+import { CrmModuleView } from './components/modules/CrmModuleView';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 
@@ -123,6 +124,11 @@ export function App() {
           />
         ) : activeModule === 'configuracoes' ? (
           <ConfiguracoesModuleView
+            activeSection={activeSubModule}
+            onSelectSection={(sec) => setActiveSubModule(sec)}
+          />
+        ) : activeModule === 'crm' || activeModule === 'vendas' ? (
+          <CrmModuleView
             activeSection={activeSubModule}
             onSelectSection={(sec) => setActiveSubModule(sec)}
           />

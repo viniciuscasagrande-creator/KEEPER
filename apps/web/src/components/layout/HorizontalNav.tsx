@@ -12,6 +12,8 @@ import {
   CreditCard,
   Sparkles,
   Settings,
+  Briefcase,
+  Handshake,
   ChevronDown,
 } from 'lucide-react';
 
@@ -26,6 +28,8 @@ const iconMap: Record<string, React.ElementType> = {
   CreditCard,
   Sparkles,
   Settings,
+  Briefcase,
+  Handshake,
 };
 
 interface HorizontalNavProps {

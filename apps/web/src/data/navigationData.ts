@@ -336,17 +336,64 @@ export const navigationModules: ModuleNav[] = [
     ],
   },
   {
-    id: 'vendas',
-    label: 'Vendas',
-    icon: 'ShoppingCart',
+    id: 'crm',
+    label: 'CRM & Produtores',
+    icon: 'Briefcase',
     groups: [
       {
-        groupName: 'Comercial & Faturamento',
+        groupName: 'Visão Geral & Funil Comercial (4)',
         items: [
-          { id: 'vend-orders', label: 'Pedidos de Venda' },
-          { id: 'vend-proposals', label: 'Propostas Comerciais' },
-          { id: 'vend-price-lists', label: 'Tabelas de Preço & Descontos' },
-          { id: 'vend-customers', label: 'Carteira de Clientes' },
+          { id: 'crm-dashboard', label: 'Dashboard Comercial de Produtores', description: 'Indicadores de captação, novos shows e GMV projetado', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'crm-pipeline', label: 'Central de Deals & Pipeline', description: 'Kanban de negociações de espetáculos e turnês', badge: '19 Deals', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'crm-metas', label: 'Metas & Performance Comercial', description: 'Desempenho dos executivos de contas e SDRs' },
+          { id: 'crm-alertas', label: 'Alertas Comerciais & Renovações', description: 'Contratos de exclusividade e prazos de concorrência', badge: '3 Alertas', badgeColor: 'bg-amber-100 text-amber-800' },
+        ],
+      },
+      {
+        groupName: 'Cadastro & Gestão 360º de Produtores (5)',
+        items: [
+          { id: 'crm-produtores', label: 'Carteira Geral de Produtores', description: 'Base consolidada de parceiros, CNPJ e classificação', badge: '42 Produtores', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'crm-homologacao', label: 'Homologação & Compliance', description: 'Qualificação jurídica, certidões negativas e due diligence' },
+          { id: 'crm-contatos', label: 'Contatos & Representantes', description: 'Sócios, diretores artísticos e produtores executivos' },
+          { id: 'crm-segmentacao', label: 'Segmentação & Categorias', description: 'Shows Nacionais, Teatros, Festivais e Stand-Up' },
+          { id: 'crm-historico', label: 'Histórico de Relacionamento', description: 'Registro de reuniões, visitas comerciais e atas' },
+        ],
+      },
+      {
+        groupName: 'Negociação de Eventos & Propostas (5)',
+        items: [
+          { id: 'crm-funil-eventos', label: 'Funil de Vendas de Shows', description: 'Gestão de etapas de captação de novas produções' },
+          { id: 'crm-propostas', label: 'Gerador de Propostas Comerciais', description: 'Simulação de taxas, advance e exclusividade' },
+          { id: 'crm-versoes-propostas', label: 'Histórico de Versões & Propostas', description: 'Controle de revisões e contrapropostas de produtores' },
+          { id: 'crm-pracas-casas', label: 'Praças & Casas Homologadas', description: 'Teatro Positivo, Guaíra, Pedreira e Live Curitiba' },
+          { id: 'crm-leads', label: 'Captação de Novos Produtores (Leads)', description: 'Mapeamento de produtoras concorrentes e novos eventos' },
+        ],
+      },
+      {
+        groupName: 'Condições Comerciais, Taxas & Acordos (4)',
+        items: [
+          { id: 'crm-tabelas-taxas', label: 'Tabelas de Taxa por Produtor', description: 'Taxa de conveniência Disk, MDR e spread acordado', badge: 'Acordos', badgeColor: 'bg-purple-100 text-purple-800' },
+          { id: 'crm-acordos-advance', label: 'Acordos de Antecipação & Advance', description: 'Condições para adiantamento com garantia de bilheteria' },
+          { id: 'crm-exclusividade', label: 'Exclusividade & Bônus de Volume', description: 'Cláusulas de fidelidade e escalonamento de comissões' },
+          { id: 'crm-locacao-equipamentos', label: 'Locação & Comodato de Hardwares', description: 'Catracas eletrônicas, PDVs e leitores PDA para eventos' },
+        ],
+      },
+      {
+        groupName: 'Atendimento & Suporte ao Produtor (4)',
+        items: [
+          { id: 'crm-chamados', label: 'Central de Chamados do Produtor', description: 'Solicitações operacionais, lotes e borderôs', badge: '0 Críticos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'crm-portal-produtor', label: 'Portal do Produtor (Acesso & Permissões)', description: 'Gestão de logins para acompanhamento de vendas em tempo real' },
+          { id: 'crm-csat', label: 'Pesquisas de Satisfação & NPS', description: 'Avaliação pós-evento da experiência de bilheteria e suporte', badge: '4.9 ⭐', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'crm-incidentes', label: 'Gestão de Ocorrências Comerciais', description: 'Tratativa de reclamações e divergências de bilheteria' },
+        ],
+      },
+      {
+        groupName: 'Governança Comercial & Relatórios (4)',
+        items: [
+          { id: 'crm-relatorios-conversao', label: 'Relatórios de Conversão Comercial', description: 'LTV de produtores, CAC e margem média por evento' },
+          { id: 'crm-auditoria-comercial', label: 'Trilha de Auditoria Comercial', description: 'Histórico de concessão de taxas e comissões especiais' },
+          { id: 'crm-alcadas', label: 'Matriz de Alçadas Comerciais', description: 'Limites de desconto na taxa Disk e limites de advance' },
+          { id: 'crm-config', label: 'Configurações do CRM', description: 'Etapas do funil, categorias e canais de prospecção' },
         ],
       },
     ],
