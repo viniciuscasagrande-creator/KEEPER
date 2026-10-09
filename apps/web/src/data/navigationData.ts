@@ -460,6 +460,67 @@ export const navigationModules: ModuleNav[] = [
     ],
   },
   {
+    id: 'projetos',
+    label: 'Projetos & Infraestrutura',
+    icon: 'HardHat',
+    groups: [
+      {
+        groupName: 'Visão Geral & Central de Operações de Eventos (4)',
+        items: [
+          { id: 'proj-dashboard', label: 'Dashboard Executivo de Operações & Shows', description: 'Visão unificada de eventos simultâneos, catracas e staff de campo', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'proj-central-eventos', label: 'Central de Projetos de Eventos', description: 'Gestão operacional de turnês, shows em estádios e teatros', badge: '4 Projetos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'proj-calendario-operacoes', label: 'Calendário Operacional & Cronograma D-N', description: 'Linha do tempo de montagem, passagens de cabos e passagens de som' },
+          { id: 'proj-kpis-operacionais', label: 'Indicadores de Throughput & Vazão', description: 'Validações por minuto por catraca e tempo de fila' },
+        ],
+      },
+      {
+        groupName: 'Infraestrutura Técnica & Conectividade (4)',
+        items: [
+          { id: 'proj-redes-conexoes', label: 'Conectividade, Links & Starlink', description: 'Links de fibra dedicada, redundância satélite e roteamento failover', badge: 'Redundante', badgeColor: 'bg-indigo-100 text-indigo-800' },
+          { id: 'proj-servidores-locais', label: 'Servidores de Contingência (Edge Cache)', description: 'Servidores locais de alta performance para validação offline', badge: 'Offline OK', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'proj-mapas-layout', label: 'Layout de Portarias & Catracas', description: 'Plantas baixas com distribuição de portões, PDVs e catracas' },
+          { id: 'proj-testes-carga', label: 'Testes de Carga & Simulação', description: 'Simulações de pico de leitura de QR Codes e RFID' },
+        ],
+      },
+      {
+        groupName: 'Equipes de Campo & Escalas de Operação (4)',
+        items: [
+          { id: 'proj-escalas-campo', label: 'Escalas de Operadores & Técnicos', description: 'Alocação de bilheteiros, coordenadores e técnicos de suporte', badge: '110 Staff', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'proj-credenciamento-staff', label: 'Credenciamento & Crachás de Produção', description: 'Emissão de crachás térmicos com QR Code para staff e técnicos' },
+          { id: 'proj-checkin-equipe', label: 'Ponto Eletrônico & Check-in de Campo', description: 'Registro geolocalizado de entrada e saída das equipes no local' },
+          { id: 'proj-treinamento-operadores', label: 'Treinamento & Manuais de Contingência', description: 'Procedimentos operacionais de contingência e atendimento ao cliente' },
+        ],
+      },
+      {
+        groupName: 'Vistorias, Alvarás & Licenças Técnicas (4)',
+        items: [
+          { id: 'proj-alvaras-prefeitura', label: 'Alvarás de Funcionamento & Autorizações', description: 'Autorizações municipais de Curitiba e prefeituras parceiras', badge: '100% Regular', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'proj-laudos-bombeiros', label: 'Laudos do Corpo de Bombeiros & Segurança', description: 'Vistoria técnica de rotas de fuga, extintores e brigada' },
+          { id: 'proj-seguranca-policia', label: 'Plano de Segurança & Ofícios PM/Setran', description: 'Comunicação oficial à Polícia Militar, Guarda Municipal e trânsito' },
+          { id: 'proj-checklists-vistoria', label: 'Checklist Geral de Liberação Pré-Abertura', description: 'Auditoria de liberação final antes da abertura dos portões' },
+        ],
+      },
+      {
+        groupName: 'Monitoramento em Tempo Real (D-0) (4)',
+        items: [
+          { id: 'proj-monitor-portarias', label: 'Monitor em Tempo Real de Portões', description: 'Fluxo ao vivo de validações por segundo em cada catraca', badge: 'Ao Vivo', badgeColor: 'bg-red-100 text-red-800' },
+          { id: 'proj-incidentes-campo', label: 'Ocorrências de Campo & Chamados Técnicos', description: 'Chamados imediatos para troca de bobina, PDA ou rede' },
+          { id: 'proj-fluxo-publico', label: 'Curva de Entrada de Público & Picos', description: 'Gráfico em tempo real de entrada versus ingressos vendidos' },
+          { id: 'proj-telemetria-bateria', label: 'Telemetria de PDVs e Bateria de PDAs', description: 'Monitoramento do nível de bateria e sinal Wi-Fi dos aparelhos móveis' },
+        ],
+      },
+      {
+        groupName: 'Desmobilização, Borderô Físico & Relatórios (4)',
+        items: [
+          { id: 'proj-desmobilizacao', label: 'Checklist de Recolhimento & Desmontagem', description: 'Inventário reverso de catracas, cabos, switches e leitores' },
+          { id: 'proj-relatorio-pos-evento', label: 'Relatório Pós-Show & Incidentes', description: 'Consolidação de números de portaria, falhas e melhorias' },
+          { id: 'proj-auditoria-operacional', label: 'Trilha de Auditoria de Liberações', description: 'Registro imutável dos horários de abertura e fechamento de portões' },
+          { id: 'proj-config', label: 'Parâmetros Técnicos & Alçadas', description: 'Tolerâncias de validação, limites de throughput e regras de acesso' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'inteligencia',
     label: 'Inteligência',
     icon: 'Sparkles',

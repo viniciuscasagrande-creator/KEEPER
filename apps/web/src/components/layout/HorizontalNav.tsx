@@ -16,6 +16,7 @@ import {
   Handshake,
   Scale,
   FileText,
+  HardHat,
   ChevronDown,
 } from 'lucide-react';
 
@@ -34,6 +35,7 @@ const iconMap: Record<string, React.ElementType> = {
   Handshake,
   Scale,
   FileText,
+  HardHat,
 };
 
 interface HorizontalNavProps {
