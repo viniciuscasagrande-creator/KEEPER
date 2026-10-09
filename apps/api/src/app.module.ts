@@ -18,6 +18,7 @@ import { AtivosModule } from './ativos/ativos.module';
 import { IntegracoesModule } from './integracoes/integracoes.module';
 import { InteligenciaModule } from './inteligencia/inteligencia.module';
 import { SentinelModule } from './inteligencia/sentinel/sentinel.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SentinelModule } from './inteligencia/sentinel/sentinel.module';
       signOptions: { expiresIn: '1h' },
     }),
     CoreModule,
+    HealthModule,
     FinanceiroModule,
     ContabilModule,
     FiscalModule,

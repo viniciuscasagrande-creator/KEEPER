@@ -30,11 +30,13 @@ import {
   Check,
   Lock,
   ArrowLeft,
+  Truck,
 } from 'lucide-react';
 import {
   ativosClient,
   HardwareAsset,
   MaintenanceOrder,
+  HardwareDispatchBatch,
   AtivosMetrics,
   AssetCategory,
   AssetStatus,
@@ -298,38 +300,60 @@ export const AtivosModuleView: React.FC<Props> = ({
   // Modals
   const [isNewAssetModalOpen, setIsNewAssetModalOpen] = useState(false);
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
+  const [isNewDispatchModalOpen, setIsNewDispatchModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<HardwareAsset | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [dispatches, setDispatches] = useState<HardwareDispatchBatch[]>([]);
 
   // Forms
   const [newAssetForm, setNewAssetForm] = useState({
     model: '',
     serialNumber: '',
-    category: 'CATRACA_ELETRONICA' as AssetCategory,
+    category: 'TERMINAL_POS_ANDROID' as AssetCategory,
     currentLocation: 'Galpão Central Curitiba',
-    acquisitionValue: 14500.0,
-    firmwareVersion: 'v4.2.1-prod',
+    acquisitionValue: 3500.0,
+    firmwareVersion: 'v5.1.0-prod',
+    m2mCarrier: 'Claro M2M Multi-Carrier',
+    m2mIccid: '895502198421049281',
+    networkPorts: 8,
   });
 
   const [newOrderForm, setNewOrderForm] = useState({
     assetId: '',
-    type: 'PREVENTIVA' as const,
-    priority: 'NORMAL' as const,
+    type: 'CORRETIVA' as const,
+    priority: 'ALTA' as const,
     description: '',
     technicianName: 'Rodrigo Medeiros',
+    eventOrigin: 'Festival de Primavera 2026',
+    technicalReport: 'Falha intermitente na leitura óptica e travamento após exposição à umidade.',
+    destinationService: 'Laboratório Técnico Central (Curitiba)',
+  });
+
+  const [newDispatchForm, setNewDispatchForm] = useState({
+    eventName: 'Show Arena das Estrelas 2026',
+    venueName: 'Estádio Couto Pereira',
+    dispatchDate: () => new Date().toISOString().split('T')[0],
+    returnEstimateDate: '2026-11-20',
+    carrierName: 'Logística Disk Express (Frota Própria)',
+    vehiclePlate: 'BEP-4A92 (Furgão Iveco Daily)',
+    responsibleTechnician: 'Rodrigo Medeiros (Coord. TI)',
+    itemsCount: 16,
+    itemsSummary: '8 Catracas QR-Code, 4 Terminais POS Android, 2 Switches Gigabit, 2 Chips M2M',
   });
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [m, a, o] = await Promise.all([
+      const [m, a, o, d] = await Promise.all([
         ativosClient.getMetrics(),
         ativosClient.listAssets(),
         ativosClient.listOrders(),
+        ativosClient.listDispatchBatches(),
       ]);
       setMetrics(m);
       setAssets(a);
       setOrders(o);
+      setDispatches(d);
       if (a.length > 0 && !newOrderForm.assetId) {
         setNewOrderForm((prev) => ({ ...prev, assetId: a[0].id }));
       }
@@ -391,10 +415,13 @@ export const AtivosModuleView: React.FC<Props> = ({
       setNewAssetForm({
         model: '',
         serialNumber: '',
-        category: 'CATRACA_ELETRONICA',
+        category: 'TERMINAL_POS_ANDROID',
         currentLocation: 'Galpão Central Curitiba',
-        acquisitionValue: 14500.0,
-        firmwareVersion: 'v4.2.1-prod',
+        acquisitionValue: 3500.0,
+        firmwareVersion: 'v5.1.0-prod',
+        m2mCarrier: 'Claro M2M Multi-Carrier',
+        m2mIccid: '895502198421049281',
+        networkPorts: 8,
       });
     } catch (err) {
       console.error('Erro ao cadastrar ativo:', err);
@@ -413,13 +440,30 @@ export const AtivosModuleView: React.FC<Props> = ({
       setIsNewOrderModalOpen(false);
       setNewOrderForm({
         assetId: assets[0]?.id || '',
-        type: 'PREVENTIVA',
-        priority: 'NORMAL',
+        type: 'CORRETIVA',
+        priority: 'ALTA',
         description: '',
         technicianName: 'Rodrigo Medeiros',
+        eventOrigin: 'Festival de Primavera 2026',
+        technicalReport: '',
+        destinationService: 'Laboratório Técnico Central (Curitiba)',
       });
     } catch (err) {
       console.error('Erro ao abrir OS:', err);
+    }
+  };
+
+  const handleCreateDispatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const created = await ativosClient.createDispatchBatch({
+        ...newDispatchForm,
+        dispatchDate: typeof newDispatchForm.dispatchDate === 'function' ? (newDispatchForm.dispatchDate as any)() : newDispatchForm.dispatchDate,
+      });
+      setDispatches((prev) => [created, ...prev]);
+      setIsNewDispatchModalOpen(false);
+    } catch (err) {
+      console.error('Erro ao criar despacho de lote:', err);
     }
   };
 
@@ -711,18 +755,81 @@ export const AtivosModuleView: React.FC<Props> = ({
 
   const renderMovimentacoesTab = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-slate-900">
-            Rastreabilidade, Romaneios & Comodatos em Praças
+            Rastreabilidade, Romaneios & Despacho de Lote para Eventos
           </h3>
           <p className="text-xs text-slate-500">
-            Distribuição de hardwares em arenas e contratos de cessão de uso com casas de espetáculos
+            Movimentação de estoque de hardwares e comodatos de bilheteria para as praças de eventos
           </p>
         </div>
+        <button
+          onClick={() => setIsNewDispatchModalOpen(true)}
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+        >
+          <Truck className="w-4 h-4" />
+          <span>+ Despacho de Lote (Romaneio)</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Dispatches Table */}
+      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+        <table className="w-full text-left text-xs">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold">
+              <th className="py-2.5 px-3">Romaneio / Evento</th>
+              <th className="py-2.5 px-3">Praça / Venue</th>
+              <th className="py-2.5 px-3">Data Saída / Retorno</th>
+              <th className="py-2.5 px-3">Transportadora & Placa</th>
+              <th className="py-2.5 px-3">Responsável Técnico</th>
+              <th className="py-2.5 px-3 text-center">Itens</th>
+              <th className="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {dispatches.map((d) => (
+              <tr key={d.id} className="hover:bg-slate-50/80">
+                <td className="py-2.5 px-3">
+                  <div className="font-bold text-indigo-700 font-mono">{d.romaneioNumber}</div>
+                  <div className="text-slate-900 font-semibold">{d.eventName}</div>
+                </td>
+                <td className="py-2.5 px-3 text-slate-700 font-medium">{d.venueName}</td>
+                <td className="py-2.5 px-3 text-slate-600 font-mono text-[11px]">
+                  <div>Saída: {d.dispatchDate}</div>
+                  <div>Retorno: {d.returnEstimateDate}</div>
+                </td>
+                <td className="py-2.5 px-3 text-slate-700">
+                  <div className="font-medium">{d.carrierName}</div>
+                  <div className="text-[10px] text-slate-400 font-mono">{d.vehiclePlate}</div>
+                </td>
+                <td className="py-2.5 px-3 text-slate-700 font-medium">{d.responsibleTechnician}</td>
+                <td className="py-2.5 px-3 text-center">
+                  <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                    {d.itemsCount} un.
+                  </span>
+                  <div className="text-[10px] text-slate-500 truncate max-w-xs">{d.itemsSummary}</div>
+                </td>
+                <td className="py-2.5 px-3 text-center">
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                      d.status === 'EM_TRANSITO'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : d.status === 'CONFERIDO'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                    }`}
+                  >
+                    ● {d.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-900">Pedreira Paulo Leminski</span>
@@ -1499,22 +1606,79 @@ export const AtivosModuleView: React.FC<Props> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Categoria</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Categoria do Equipamento</label>
                   <select
                     value={newAssetForm.category}
                     onChange={(e) =>
                       setNewAssetForm({ ...newAssetForm, category: e.target.value as AssetCategory })
                     }
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
                   >
-                    <option value="CATRACA_ELETRONICA">Catraca Eletrônica</option>
-                    <option value="PDA_COLETOR_MOVEL">PDA Coletor Móvel</option>
-                    <option value="PDV_IMPRESSORA">PDV / Impressora Térmica</option>
-                    <option value="SERVIDOR_EDGE">Servidor Edge</option>
-                    <option value="INFRA_REDE_NOBREAK">Infra de Rede / Nobreak</option>
+                    <option value="TERMINAL_POS_ANDROID">Terminal POS Android (Impressora & NFC)</option>
+                    <option value="CATRACA_ELETRONICA">Catraca Eletrônica Pedestal c/ Leitor QR-Code</option>
+                    <option value="CHIP_M2M_TELEMETRIA">Chip M2M Multi-operadora / Telemetria</option>
+                    <option value="IMPRESSORA_TERMICA">Impressora Térmica de Bilheteria (Daruma/Elgin)</option>
+                    <option value="SWITCH_REDE_GIGABIT">Switch de Rede Gigabit PoE / Roteador</option>
+                    <option value="PDA_COLETOR_MOVEL">PDA Coletor Móvel Android (Zebra/Honeywell)</option>
+                    <option value="SERVIDOR_EDGE">Servidor Edge Contingência Offline</option>
+                    <option value="INFRA_REDE_NOBREAK">Nobreak Senoidal Online</option>
                   </select>
                 </div>
               </div>
+
+              {newAssetForm.category === 'CHIP_M2M_TELEMETRIA' && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200">
+                  <div>
+                    <label className="block text-xs font-bold text-purple-900 mb-1">Operadora M2M</label>
+                    <select
+                      value={newAssetForm.m2mCarrier}
+                      onChange={(e) => setNewAssetForm({ ...newAssetForm, m2mCarrier: e.target.value })}
+                      className="w-full text-xs p-2 bg-white border border-purple-300 rounded-lg"
+                    >
+                      <option value="Claro M2M Multi-Carrier">Claro M2M Multi-Carrier</option>
+                      <option value="Vivo IoT Global">Vivo IoT Global</option>
+                      <option value="TIM Telemetria M2M">TIM Telemetria M2M</option>
+                      <option value="Algar Telecom">Algar Telecom</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-purple-900 mb-1">ICCID do Chip (20 dígitos)</label>
+                    <input
+                      type="text"
+                      value={newAssetForm.m2mIccid}
+                      onChange={(e) => setNewAssetForm({ ...newAssetForm, m2mIccid: e.target.value })}
+                      placeholder="895502..."
+                      className="w-full text-xs p-2 bg-white border border-purple-300 rounded-lg font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {newAssetForm.category === 'SWITCH_REDE_GIGABIT' && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                  <div>
+                    <label className="block text-xs font-bold text-blue-900 mb-1">Portas Gigabit PoE</label>
+                    <select
+                      value={newAssetForm.networkPorts}
+                      onChange={(e) => setNewAssetForm({ ...newAssetForm, networkPorts: parseInt(e.target.value) || 8 })}
+                      className="w-full text-xs p-2 bg-white border border-blue-300 rounded-lg"
+                    >
+                      <option value="8">8 Portas PoE+ (120W)</option>
+                      <option value="16">16 Portas PoE+ (250W)</option>
+                      <option value="24">24 Portas PoE+ (370W)</option>
+                      <option value="48">48 Portas PoE+ (740W)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-blue-900 mb-1">VLAN de Gerência</label>
+                    <input
+                      type="text"
+                      defaultValue="VLAN 100 - Catracas / PDVs"
+                      className="w-full text-xs p-2 bg-white border border-blue-300 rounded-lg font-medium"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1534,7 +1698,7 @@ export const AtivosModuleView: React.FC<Props> = ({
                     onChange={(e) =>
                       setNewAssetForm({ ...newAssetForm, acquisitionValue: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
                   />
                 </div>
               </div>
@@ -1549,7 +1713,7 @@ export const AtivosModuleView: React.FC<Props> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-xs"
+                  className="px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-xs"
                 >
                   Gravar Tombamento
                 </button>
@@ -1559,14 +1723,14 @@ export const AtivosModuleView: React.FC<Props> = ({
         </div>
       )}
 
-      {/* MODAL 2: NOVA ORDEM DE SERVIÇO */}
+      {/* MODAL 2: NOVA ORDEM DE SERVIÇO / AVARIA PÓS-EVENTO */}
       {isNewOrderModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
               <div>
-                <h2 className="text-base font-bold text-slate-900">Abertura de Ordem de Serviço (O.S.)</h2>
-                <p className="text-xs text-slate-500">Direcionamento para laboratório ou manutenção em campo</p>
+                <h2 className="text-base font-bold text-slate-900">Ordem de Manutenção / Avaria Pós-Evento</h2>
+                <p className="text-xs text-slate-500">Registro de defeito com laudo técnico e envio para assistência</p>
               </div>
               <button
                 onClick={() => setIsNewOrderModalOpen(false)}
@@ -1576,20 +1740,45 @@ export const AtivosModuleView: React.FC<Props> = ({
               </button>
             </div>
 
-            <form onSubmit={handleCreateOrder} className="space-y-4">
+            <form onSubmit={handleCreateOrder} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Equipamento Alvo</label>
                 <select
                   value={newOrderForm.assetId}
                   onChange={(e) => setNewOrderForm({ ...newOrderForm, assetId: e.target.value })}
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
                 >
                   {assets.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.tagNumber} — {a.model}
+                      {a.tagNumber} — {a.model} ({a.currentLocation})
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Evento de Origem da Avaria</label>
+                  <input
+                    type="text"
+                    value={newOrderForm.eventOrigin}
+                    onChange={(e) => setNewOrderForm({ ...newOrderForm, eventOrigin: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                    placeholder="Ex: Festival de Primavera 2026"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Destino de Reparo</label>
+                  <select
+                    value={newOrderForm.destinationService}
+                    onChange={(e) => setNewOrderForm({ ...newOrderForm, destinationService: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  >
+                    <option value="Laboratório Técnico Central (Curitiba)">Laboratório Interno Disk (Curitiba)</option>
+                    <option value="Assistência Técnica Autorizada Externa">Assistência Autorizada Externa</option>
+                    <option value="RMA Garantia Fabricante">Garantia Fabricante (RMA)</option>
+                  </select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1602,8 +1791,8 @@ export const AtivosModuleView: React.FC<Props> = ({
                     }
                     className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
                   >
+                    <option value="CORRETIVA">Corretiva (Dano pós-evento / avaria)</option>
                     <option value="PREVENTIVA">Preventiva (Revisão periódica)</option>
-                    <option value="CORRETIVA">Corretiva (Falha ou dano)</option>
                     <option value="CALIBRACAO">Calibração Óptica / Bateria</option>
                   </select>
                 </div>
@@ -1614,9 +1803,9 @@ export const AtivosModuleView: React.FC<Props> = ({
                     onChange={(e) =>
                       setNewOrderForm({ ...newOrderForm, priority: e.target.value as any })
                     }
-                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
                   >
-                    <option value="ALTA">Alta (Urgência para show)</option>
+                    <option value="ALTA">Alta (Urgência para próximo show)</option>
                     <option value="NORMAL">Normal</option>
                     <option value="BAIXA">Baixa</option>
                   </select>
@@ -1624,13 +1813,13 @@ export const AtivosModuleView: React.FC<Props> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Descrição do Problema / Serviço</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Laudo Técnico Preliminar & Sintomas</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   required
-                  value={newOrderForm.description}
-                  onChange={(e) => setNewOrderForm({ ...newOrderForm, description: e.target.value })}
-                  placeholder="Descreva o sintoma ou a revisão necessária..."
+                  value={newOrderForm.technicalReport}
+                  onChange={(e) => setNewOrderForm({ ...newOrderForm, technicalReport: e.target.value })}
+                  placeholder="Ex: Queda de pedestal na desmontagem, display trincado e leitor de QR Code sem foco."
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
                 />
               </div>
@@ -1645,9 +1834,9 @@ export const AtivosModuleView: React.FC<Props> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-amber-700 hover:bg-amber-800 rounded-lg shadow-xs"
+                  className="px-4 py-2 text-xs font-bold text-white bg-amber-700 hover:bg-amber-800 rounded-lg shadow-xs"
                 >
-                  Abrir Ordem de Serviço
+                  Registrar Avaria & Abrir O.S.
                 </button>
               </div>
             </form>
@@ -1704,6 +1893,127 @@ export const AtivosModuleView: React.FC<Props> = ({
                 Fechar Ficha
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: CHECK-OUT / DESPACHO DE LOTE PARA EVENTO (ROMANEIO) */}
+      {isNewDispatchModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Despacho de Lote para Evento</h2>
+                  <p className="text-xs text-slate-500">Emissão de Romaneio e Saída de Hardwares de Bilheteria</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsNewDispatchModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDispatch} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Evento de Destino</label>
+                <input
+                  type="text"
+                  required
+                  value={newDispatchForm.eventName}
+                  onChange={(e) => setNewDispatchForm({ ...newDispatchForm, eventName: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Praça / Arena / Teatro</label>
+                  <input
+                    type="text"
+                    required
+                    value={newDispatchForm.venueName}
+                    onChange={(e) => setNewDispatchForm({ ...newDispatchForm, venueName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Previsão Retorno</label>
+                  <input
+                    type="date"
+                    required
+                    value={newDispatchForm.returnEstimateDate}
+                    onChange={(e) => setNewDispatchForm({ ...newDispatchForm, returnEstimateDate: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Transportadora / Frota</label>
+                  <input
+                    type="text"
+                    value={newDispatchForm.carrierName}
+                    onChange={(e) => setNewDispatchForm({ ...newDispatchForm, carrierName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Veículo & Placa</label>
+                  <input
+                    type="text"
+                    value={newDispatchForm.vehiclePlate}
+                    onChange={(e) => setNewDispatchForm({ ...newDispatchForm, vehiclePlate: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Responsável Técnico pela Retirada</label>
+                <input
+                  type="text"
+                  required
+                  value={newDispatchForm.responsibleTechnician}
+                  onChange={(e) => setNewDispatchForm({ ...newDispatchForm, responsibleTechnician: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Resumo dos Equipamentos do Lote</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={newDispatchForm.itemsSummary}
+                  onChange={(e) => setNewDispatchForm({ ...newDispatchForm, itemsSummary: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsNewDispatchModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Emitir Romaneio & Despachar Carga</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

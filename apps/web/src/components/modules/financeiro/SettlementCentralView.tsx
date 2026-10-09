@@ -28,6 +28,9 @@ import { FeeDefinitionModal } from '../../modals/FeeDefinitionModal';
 import { SaleSplitSimulatorModal } from '../../modals/SaleSplitSimulatorModal';
 import { RepaymentScheduleModal } from '../../modals/RepaymentScheduleModal';
 import { EventExpenseModal } from '../../modals/EventExpenseModal';
+import { ProducerAdvanceModal } from '../../modals/ProducerAdvanceModal';
+import { EventObligationModal } from '../../modals/EventObligationModal';
+import { EventCancellationModal } from '../../modals/EventCancellationModal';
 
 export function SettlementCentralView() {
   const [clearingOverview, setClearingOverview] = useState<any | null>(null);
@@ -39,6 +42,9 @@ export function SettlementCentralView() {
   const [selectedWalletForStatement, setSelectedWalletForStatement] = useState<any | null>(null);
   const [selectedWalletForRepayment, setSelectedWalletForRepayment] = useState<any | null>(null);
   const [selectedWalletForExpense, setSelectedWalletForExpense] = useState<any | null>(null);
+  const [selectedWalletForAdvance, setSelectedWalletForAdvance] = useState<any | null>(null);
+  const [selectedWalletForObligation, setSelectedWalletForObligation] = useState<any | null>(null);
+  const [selectedWalletForCancellation, setSelectedWalletForCancellation] = useState<any | null>(null);
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
   const [isSimulatorModalOpen, setIsSimulatorModalOpen] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -199,11 +205,34 @@ export function SettlementCentralView() {
             <span>Simulador de Split</span>
           </button>
           <button
-            onClick={() => setIsFeeModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            onClick={() => {
+              if (wallets.length > 0) setSelectedWalletForAdvance(wallets[0]);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            title="Simular Adiantamento com margem de segurança"
           >
-            <Sliders className="w-3.5 h-3.5 text-blue-600" />
-            <span>Parametrizar Taxas</span>
+            <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+            <span>Solicitar Advance</span>
+          </button>
+          <button
+            onClick={() => {
+              if (wallets.length > 0) setSelectedWalletForObligation(wallets[0]);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            title="Registrar Retenção Operacional para Teatro, ECAD, etc."
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+            <span>Registrar Retenção</span>
+          </button>
+          <button
+            onClick={() => {
+              if (wallets.length > 0) setSelectedWalletForCancellation(wallets[0]);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            title="Dossiê de Cancelamento, simulação de déficit e recomposição de caixa"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+            <span>Dossiê Cancelamento</span>
           </button>
           <button
             onClick={() => {
@@ -212,7 +241,7 @@ export function SettlementCentralView() {
             className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors"
           >
             <Send className="w-4 h-4" />
-            <span>Programar Repasse</span>
+            <span>Programar Repasse Oficial</span>
           </button>
         </div>
       </div>
@@ -428,17 +457,35 @@ export function SettlementCentralView() {
                       </button>
 
                       <button
-                        onClick={() => setSelectedWalletForExpense(w)}
-                        title="Lançar Despesa com Desconto do Saldo"
+                        onClick={() => setSelectedWalletForAdvance(w)}
+                        title="Solicitar Adiantamento / Advance sobre saldo futuro"
+                        className="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded font-semibold text-[11px] flex items-center gap-1 transition-colors"
+                      >
+                        <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Advance</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedWalletForObligation(w)}
+                        title="Registrar Retenção Operacional (Teatro, ECAD, etc.)"
+                        className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded font-semibold text-[11px] flex items-center gap-1 transition-colors"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Retenção</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedWalletForCancellation(w)}
+                        title="Dossiê de Cancelamento & Estornos"
                         className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded font-semibold text-[11px] flex items-center gap-1 transition-colors"
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Despesa</span>
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Dossiê</span>
                       </button>
 
                       <button
                         onClick={() => setSelectedWalletForRepayment(w)}
-                        title="Programar Repasse ao Produtor"
+                        title="Programar Repasse Oficial ao Produtor"
                         className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-[11px] flex items-center gap-1 transition-colors shadow-2xs"
                       >
                         <Send className="w-3.5 h-3.5" />
@@ -479,7 +526,7 @@ export function SettlementCentralView() {
         onClose={() => setSelectedWalletForRepayment(null)}
         wallet={selectedWalletForRepayment}
         onRepaymentCreated={(sch) => {
-          setActionNotice(`Repasse ${sch.scheduleNumber} programado com sucesso via ${sch.paymentMethod}!`);
+          setActionNotice(`Repasse oficial ${sch.scheduleNumber} programado com sucesso via ${sch.paymentMethod}! Saldo elegível atualizado.`);
           setTimeout(() => setActionNotice(null), 3000);
         }}
       />
@@ -491,6 +538,54 @@ export function SettlementCentralView() {
         onExpenseAdded={(exp) => {
           setActionNotice(`Despesa de R$ ${exp.amount.toFixed(2)} lançada na carteira do evento!`);
           setTimeout(() => setActionNotice(null), 3000);
+        }}
+      />
+
+      <ProducerAdvanceModal
+        isOpen={!!selectedWalletForAdvance}
+        onClose={() => setSelectedWalletForAdvance(null)}
+        producer={
+          selectedWalletForAdvance
+            ? {
+                id: selectedWalletForAdvance.producerId || 'prod-01',
+                name: selectedWalletForAdvance.producerName || 'Produtor',
+                tradeName: selectedWalletForAdvance.producerName,
+                pixKey: 'financeiro@produtor.com.br',
+              }
+            : null
+        }
+        event={
+          selectedWalletForAdvance
+            ? {
+                id: selectedWalletForAdvance.eventId || selectedWalletForAdvance.id,
+                name: selectedWalletForAdvance.eventName,
+                vendasBrutas: selectedWalletForAdvance.grossSales,
+              }
+            : null
+        }
+        onAdvanceSubmitted={(adv) => {
+          setActionNotice(`Operação de Antecipação ${adv.advanceNumber} gerada com margem fiduciária de segurança e enviada para aprovação!`);
+          setTimeout(() => setActionNotice(null), 3500);
+        }}
+      />
+
+      <EventObligationModal
+        isOpen={!!selectedWalletForObligation}
+        onClose={() => setSelectedWalletForObligation(null)}
+        selectedEventId={selectedWalletForObligation?.eventId || selectedWalletForObligation?.id}
+        onSuccess={(ob) => {
+          setActionNotice(`Retenção fiduciária de R$ ${ob.amountApproved?.toFixed(2) || '0,00'} registrada com sucesso para garantia operacional!`);
+          setTimeout(() => setActionNotice(null), 3500);
+        }}
+      />
+
+      <EventCancellationModal
+        isOpen={!!selectedWalletForCancellation}
+        onClose={() => setSelectedWalletForCancellation(null)}
+        selectedEventId={selectedWalletForCancellation?.eventId || selectedWalletForCancellation?.id}
+        onSuccess={(canc) => {
+          setActionNotice(`Dossiê de cancelamento do evento ${canc.eventName || ''} registrado com cálculo de déficit e plano de recomposição!`);
+          setTimeout(() => setActionNotice(null), 3500);
         }}
       />
     </div>

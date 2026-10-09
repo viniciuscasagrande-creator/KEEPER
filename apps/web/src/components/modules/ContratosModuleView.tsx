@@ -283,8 +283,35 @@ export const ContratosModuleView: React.FC<Props> = ({
 
   // Modals
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isDigitalSignatureModalOpen, setIsDigitalSignatureModalOpen] = useState(false);
+  const [isWarrantyModalOpen, setIsWarrantyModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<LegalContract | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // Digital Signature Form State
+  const [digitalSignatureForm, setDigitalSignatureForm] = useState({
+    contractTitle: 'Termo Aditivo 01 - Turnê Acústica 2026',
+    documentType: 'TERMO_ADITIVO',
+    producerName: 'Opus Entretenimento Curitiba Ltda',
+    signatoryEmail: 'juridico@opusentretenimento.com.br',
+    signatoryName: 'Luciano Ferraz (Diretor Produtora)',
+    platform: 'DOCUSIGN',
+    deadlineDays: 5,
+    advanceWarrantiesIncluded: true,
+  });
+
+  // Warranty Form State
+  const [warrantyForm, setWarrantyForm] = useState({
+    warrantyType: 'DUPLICATA_MERCANTIL',
+    contractCode: 'CTR-2026-0042',
+    producerName: 'Opus Entretenimento Curitiba Ltda',
+    assetValue: 250000.0,
+    institutionName: 'Banco Itaú S.A. / CERC Registradora',
+    policyNumber: 'AP-981240-2026',
+    expiryDate: '2027-10-31',
+    advanceLinkedAmount: 100000.0,
+    travaDomicilioBancario: true,
+  });
 
   // Form State
   const [newContractForm, setNewContractForm] = useState({
@@ -295,6 +322,7 @@ export const ContratosModuleView: React.FC<Props> = ({
     validFrom: '2026-11-01',
     validUntil: '2027-10-31',
     diskFeeRate: 12.0,
+    convenienceFeeRate: 15.0,
     estimatedGmv: 1500000.0,
     advanceGrantedValue: 100000.0,
     warrantyValue: 150000.0,
@@ -384,6 +412,7 @@ export const ContratosModuleView: React.FC<Props> = ({
         validFrom: '2026-11-01',
         validUntil: '2027-10-31',
         diskFeeRate: 12.0,
+        convenienceFeeRate: 15.0,
         estimatedGmv: 1500000.0,
         advanceGrantedValue: 100000.0,
         warrantyValue: 150000.0,
@@ -1713,6 +1742,261 @@ export const ContratosModuleView: React.FC<Props> = ({
                 Concluir
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: FILA DE ASSINATURAS DIGITAIS */}
+      {isDigitalSignatureModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <FileSignature className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Fila de Assinaturas Digitais</h2>
+                  <p className="text-xs text-slate-500">Envio de Termos Aditivos, Garantias de Advance e Notificações</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDigitalSignatureModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                showNotification(`Instrumento enviado para assinatura de ${digitalSignatureForm.signatoryName} via ${digitalSignatureForm.platform}!`);
+                setIsDigitalSignatureModalOpen(false);
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Título do Instrumento</label>
+                <input
+                  type="text"
+                  required
+                  value={digitalSignatureForm.contractTitle}
+                  onChange={(e) => setDigitalSignatureForm({ ...digitalSignatureForm, contractTitle: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tipo de Documento</label>
+                  <select
+                    value={digitalSignatureForm.documentType}
+                    onChange={(e) => setDigitalSignatureForm({ ...digitalSignatureForm, documentType: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                  >
+                    <option value="TERMO_ADITIVO">Termo Aditivo Contratual</option>
+                    <option value="GARANTIA_ADVANCE">Instrumento de Garantia de Advance</option>
+                    <option value="NOTIFICACAO">Notificação Contratual Extrajudicial</option>
+                    <option value="DISTRATO">Termo de Rescisão / Distrato Amigável</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Plataforma de Assinatura</label>
+                  <select
+                    value={digitalSignatureForm.platform}
+                    onChange={(e) => setDigitalSignatureForm({ ...digitalSignatureForm, platform: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  >
+                    <option value="DOCUSIGN">Docusign (Conformidade Global)</option>
+                    <option value="CLICKSIGN">Clicksign (Validade Jurídica BR)</option>
+                    <option value="ICP_BRASIL">Certificado ICP-Brasil (A1/A3)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Signatário Principal</label>
+                  <input
+                    type="text"
+                    required
+                    value={digitalSignatureForm.signatoryName}
+                    onChange={(e) => setDigitalSignatureForm({ ...digitalSignatureForm, signatoryName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">E-mail do Signatário</label>
+                  <input
+                    type="email"
+                    required
+                    value={digitalSignatureForm.signatoryEmail}
+                    onChange={(e) => setDigitalSignatureForm({ ...digitalSignatureForm, signatoryEmail: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
+                <span className="font-bold text-blue-900 block">Auditoria & Rastreabilidade:</span>
+                <p className="text-[11px] text-blue-800 leading-relaxed">
+                  Geração de hash SHA-256 e carimbo de tempo ICP-Brasil garantindo integridade e força executiva extrajudicial conforme CPC art. 784.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsDigitalSignatureModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Disparar para Assinatura</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: CONTROLE DE GARANTIAS & RECEBÍVEIS */}
+      {isWarrantyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Controle de Garantias Fiduciárias</h2>
+                  <p className="text-xs text-slate-500">Duplicatas, Fianças Bancárias e Recebíveis de Adiantamento</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsWarrantyModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                showNotification(`Garantia fiduciária de R$ ${warrantyForm.assetValue.toLocaleString('pt-BR')} registrada com sucesso vinculada ao adiantamento!`);
+                setIsWarrantyModalOpen(false);
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tipo de Garantia</label>
+                  <select
+                    value={warrantyForm.warrantyType}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, warrantyType: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                  >
+                    <option value="DUPLICATA_MERCANTIL">Duplicata Mercantil Registrada</option>
+                    <option value="FIANCA_BANCARIA">Carta de Fiança Bancária</option>
+                    <option value="RECEBIVEIS_ADVANCE">Recebíveis Vinculados a Advance</option>
+                    <option value="SEGURO_GARANTIA">Seguro-Garantia Operacional</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Valor da Garantia (R$)</label>
+                  <input
+                    type="number"
+                    required
+                    value={warrantyForm.assetValue}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, assetValue: parseFloat(e.target.value) || 0 })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Instituição Garantidora / Registradora</label>
+                  <input
+                    type="text"
+                    required
+                    value={warrantyForm.institutionName}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, institutionName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Apólice / Registro CERC</label>
+                  <input
+                    type="text"
+                    required
+                    value={warrantyForm.policyNumber}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, policyNumber: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Valor Vinculado ao Advance (R$)</label>
+                  <input
+                    type="number"
+                    value={warrantyForm.advanceLinkedAmount}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, advanceLinkedAmount: parseFloat(e.target.value) || 0 })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold text-indigo-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Vencimento da Garantia</label>
+                  <input
+                    type="date"
+                    required
+                    value={warrantyForm.expiryDate}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, expiryDate: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-amber-900 block text-xs">Trava Fiduciária de Domicílio Bancário:</span>
+                  <p className="text-[11px] text-amber-800">Garante a prioridade de liquidação da DiskIngressos sobre as vendas</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={warrantyForm.travaDomicilioBancario}
+                  onChange={(e) => setWarrantyForm({ ...warrantyForm, travaDomicilioBancario: e.target.checked })}
+                  className="w-4 h-4 text-amber-600 rounded"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsWarrantyModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Homologar Garantia Fiduciária</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

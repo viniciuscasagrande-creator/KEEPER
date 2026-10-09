@@ -6,7 +6,11 @@ export type AssetCategory =
   | 'PDA_COLETOR_MOVEL'
   | 'PDV_IMPRESSORA'
   | 'SERVIDOR_EDGE'
-  | 'INFRA_REDE_NOBREAK';
+  | 'INFRA_REDE_NOBREAK'
+  | 'TERMINAL_POS_ANDROID'
+  | 'CHIP_M2M_TELEMETRIA'
+  | 'IMPRESSORA_TERMICA'
+  | 'SWITCH_REDE_GIGABIT';
 
 export type AssetStatus =
   | 'DISPONIVEL'
@@ -34,6 +38,9 @@ export interface HardwareAsset {
   firmwareVersion: string;
   lastMaintenanceDate?: string;
   nextCalibrationDate: string;
+  m2mCarrier?: string;
+  m2mIccid?: string;
+  networkPorts?: number;
   createdAt: string;
 }
 
@@ -47,8 +54,26 @@ export interface MaintenanceOrder {
   description: string;
   technicianName: string;
   status: 'ABERTA' | 'EM_EXECUCAO' | 'CONCLUIDA';
+  eventOrigin?: string;
+  technicalReport?: string;
+  destinationService?: string;
   openedAt: string;
   completedAt?: string;
+}
+
+export interface HardwareDispatchBatch {
+  id: string;
+  romaneioNumber: string;
+  eventName: string;
+  venueName: string;
+  dispatchDate: string;
+  returnEstimateDate: string;
+  carrierName: string;
+  vehiclePlate: string;
+  responsibleTechnician: string;
+  itemsCount: number;
+  itemsSummary: string;
+  status: 'EM_TRANSITO' | 'ENTREGUE_NA_PRACA' | 'RETORNADO' | 'CONFERIDO';
 }
 
 export interface AtivosMetrics {
@@ -339,10 +364,67 @@ class AtivosClient {
       description: payload.description || 'Manutenção técnica de rotina',
       technicianName: payload.technicianName || 'Rodrigo Medeiros',
       status: 'ABERTA',
+      eventOrigin: payload.eventOrigin,
+      technicalReport: payload.technicalReport,
+      destinationService: payload.destinationService,
       openedAt: new Date().toLocaleString('pt-BR'),
     };
     this.localOrders.unshift(newOrder);
     return newOrder;
+  }
+
+  private localDispatches: HardwareDispatchBatch[] = [
+    {
+      id: 'disp-01',
+      romaneioNumber: 'ROM-2026-088',
+      eventName: 'Festival de Primavera 2026',
+      venueName: 'Pedreira Paulo Leminski',
+      dispatchDate: '2026-10-08',
+      returnEstimateDate: '2026-10-12',
+      carrierName: 'Logística Disk Express (Frota Própria)',
+      vehiclePlate: 'BEP-4A92 (Furgão Iveco Daily)',
+      responsibleTechnician: 'Rodrigo Medeiros (TI Campo)',
+      itemsCount: 24,
+      itemsSummary: '12 Catracas QR-Code, 8 Terminais POS Android, 2 Switches Gigabit, 2 Chips M2M',
+      status: 'EM_TRANSITO',
+    },
+    {
+      id: 'disp-02',
+      romaneioNumber: 'ROM-2026-087',
+      eventName: 'Standup Comedy Especial de Fim de Ano',
+      venueName: 'Teatro Positivo',
+      dispatchDate: '2026-10-05',
+      returnEstimateDate: '2026-10-07',
+      carrierName: 'Disk Logística Integrada',
+      vehiclePlate: 'BCR-9812 (Van Sprinter)',
+      responsibleTechnician: 'Marcio Silva',
+      itemsCount: 8,
+      itemsSummary: '4 PDAs Coletores, 2 Impressoras Térmicas Daruma, 2 Leitores Barcode',
+      status: 'CONFERIDO',
+    },
+  ];
+
+  async listDispatchBatches(): Promise<HardwareDispatchBatch[]> {
+    return this.localDispatches;
+  }
+
+  async createDispatchBatch(payload: Partial<HardwareDispatchBatch>): Promise<HardwareDispatchBatch> {
+    const newBatch: HardwareDispatchBatch = {
+      id: `disp-${Date.now()}`,
+      romaneioNumber: `ROM-2026-${String(this.localDispatches.length + 89).padStart(3, '0')}`,
+      eventName: payload.eventName || 'Novo Evento Disk',
+      venueName: payload.venueName || 'Praça de Eventos',
+      dispatchDate: payload.dispatchDate || new Date().toISOString().split('T')[0],
+      returnEstimateDate: payload.returnEstimateDate || '2026-11-01',
+      carrierName: payload.carrierName || 'Frota Interna Disk',
+      vehiclePlate: payload.vehiclePlate || 'ABC-1234',
+      responsibleTechnician: payload.responsibleTechnician || 'Técnico de Campo',
+      itemsCount: payload.itemsCount || 10,
+      itemsSummary: payload.itemsSummary || 'Catracas e PDVs',
+      status: 'EM_TRANSITO',
+    };
+    this.localDispatches.unshift(newBatch);
+    return newBatch;
   }
 }
 

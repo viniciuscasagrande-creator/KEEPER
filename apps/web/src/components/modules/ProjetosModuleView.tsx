@@ -280,8 +280,33 @@ export const ProjetosModuleView: React.FC<Props> = ({
 
   // Modals
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [isChecklistD0ModalOpen, setIsChecklistD0ModalOpen] = useState(false);
+  const [isStaffAllocationModalOpen, setIsStaffAllocationModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<EventProject | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // Checklist D-0 Vistoria State
+  const [checklistD0, setChecklistD0] = useState({
+    starlinkActive: true,
+    starlinkBackup: true,
+    nobreakBatteryOk: true,
+    cablingTested: true,
+    turnstilesOnline: true,
+    edgeCacheSynced: true,
+    technicianName: 'Rodrigo Medeiros (TI Infra)',
+    inspectionNotes: 'Links Starlink redundantes operando com 240 Mbps / latência 28ms. Nobreaks 100% carregados.',
+  });
+
+  // Staff Allocation Form State
+  const [staffAllocationForm, setStaffAllocationForm] = useState({
+    role: 'SUPERVISOR_PORTARIA',
+    eventName: 'Festival de Primavera 2026',
+    venueName: 'Pedreira Paulo Leminski',
+    staffCount: 4,
+    shiftTime: 'D-0 das 10:00 às 23:30',
+    leadName: 'Luciano Ferraz',
+    radioChannel: 'Canal 4 - Operações TI & Portarias',
+  });
 
   // Form State
   const [newProjectForm, setNewProjectForm] = useState({
@@ -295,6 +320,8 @@ export const ProjetosModuleView: React.FC<Props> = ({
     pdvsTotal: 4,
     leadCoordinator: 'Marcio Silva (Coord. Geral Operações)',
     staffAssignedCount: 12,
+    infraNotes: 'Link Starlink contingência, gerador 150kVA e edge cache local ativado',
+    timelineStage: 'D-5 a D-0',
   });
 
   const loadData = async () => {
@@ -378,6 +405,8 @@ export const ProjetosModuleView: React.FC<Props> = ({
         pdvsTotal: 4,
         leadCoordinator: 'Marcio Silva (Coord. Geral Operações)',
         staffAssignedCount: 12,
+        infraNotes: 'Link Starlink contingência, gerador 150kVA e edge cache local ativado',
+        timelineStage: 'D-5 a D-0',
       });
     } catch (err) {
       console.error('Erro ao cadastrar projeto:', err);
@@ -620,7 +649,7 @@ export const ProjetosModuleView: React.FC<Props> = ({
 
   const renderRedesTab = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-slate-900">
             Infraestrutura de Redes Redundantes & Starlink
@@ -629,6 +658,13 @@ export const ProjetosModuleView: React.FC<Props> = ({
             Links contratados para arenas, estádios e teatros com tolerância a falhas
           </p>
         </div>
+        <button
+          onClick={() => setIsChecklistD0ModalOpen(true)}
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+        >
+          <FileCheck className="w-4 h-4" />
+          <span>+ Checklist Técnico D-0</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -710,7 +746,7 @@ export const ProjetosModuleView: React.FC<Props> = ({
 
   const renderEscalasTab = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-slate-900">
             Escalas Operacionais de Campo & Credenciamento
@@ -719,6 +755,13 @@ export const ProjetosModuleView: React.FC<Props> = ({
             Distribuição de postos por portão, horário de apresentação e crachás de acesso
           </p>
         </div>
+        <button
+          onClick={() => setIsStaffAllocationModalOpen(true)}
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+        >
+          <Users className="w-4 h-4" />
+          <span>+ Escalar Equipe de Campo</span>
+        </button>
       </div>
 
       <div className="border border-slate-200 rounded-xl overflow-hidden">
@@ -1657,6 +1700,284 @@ export const ProjetosModuleView: React.FC<Props> = ({
                 Fechar Ficha Técnica
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: CHECKLIST TÉCNICO D-0 DE CAMPO */}
+      {isChecklistD0ModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <FileCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Vistoria & Checklist Técnico D-0</h2>
+                  <p className="text-xs text-slate-500">Inspeção Pré-Abertura: Starlink, No-breaks, Cabeamento e Catracas</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsChecklistD0ModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="font-bold text-slate-900 uppercase text-[10px] tracking-wider text-blue-800">
+                  Itens Críticos de Homologação de Infraestrutura
+                </div>
+
+                <label className="flex items-center gap-2.5 cursor-pointer p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400">
+                  <input
+                    type="checkbox"
+                    checked={checklistD0.starlinkActive}
+                    onChange={(e) => setChecklistD0({ ...checklistD0, starlinkActive: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900">Link Primário: Starlink Satélite Ativa</span>
+                    <p className="text-[11px] text-slate-500">240 Mbps down / 28ms latência estável</p>
+                  </div>
+                  <span className="text-emerald-700 font-bold text-[10px]">Aprovado</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400">
+                  <input
+                    type="checkbox"
+                    checked={checklistD0.starlinkBackup}
+                    onChange={(e) => setChecklistD0({ ...checklistD0, starlinkBackup: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900">Link Secundário: Hot Standby 4G/5G Industrial</span>
+                    <p className="text-[11px] text-slate-500">Failover automático testado em switch MikroTik</p>
+                  </div>
+                  <span className="text-emerald-700 font-bold text-[10px]">Aprovado</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400">
+                  <input
+                    type="checkbox"
+                    checked={checklistD0.nobreakBatteryOk}
+                    onChange={(e) => setChecklistD0({ ...checklistD0, nobreakBatteryOk: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900">No-breaks Senoidais 100% Carregados</span>
+                    <p className="text-[11px] text-slate-500">Autonomia mínima de 4 horas para bilheteria e catracas</p>
+                  </div>
+                  <span className="text-emerald-700 font-bold text-[10px]">Aprovado</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400">
+                  <input
+                    type="checkbox"
+                    checked={checklistD0.cablingTested}
+                    onChange={(e) => setChecklistD0({ ...checklistD0, cablingTested: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900">Cabeamento Blindado Cat6 & Conectores PoE</span>
+                    <p className="text-[11px] text-slate-500">Passagem protegida com passa-cabos de alta resistência</p>
+                  </div>
+                  <span className="text-emerald-700 font-bold text-[10px]">Aprovado</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer p-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400">
+                  <input
+                    type="checkbox"
+                    checked={checklistD0.turnstilesOnline}
+                    onChange={(e) => setChecklistD0({ ...checklistD0, turnstilesOnline: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <div className="flex-1">
+                    <span className="font-bold text-slate-900">Catracas Eletrônicas & Leitores QR Code Testados</span>
+                    <p className="text-[11px] text-slate-500">Teste de leitura física e validação de modo offline (Edge)</p>
+                  </div>
+                  <span className="text-emerald-700 font-bold text-[10px]">Aprovado</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Responsável Técnico pela Liberação D-0</label>
+                <input
+                  type="text"
+                  value={checklistD0.technicianName}
+                  onChange={(e) => setChecklistD0({ ...checklistD0, technicianName: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Parecer Técnico da Vistoria</label>
+                <textarea
+                  rows={2}
+                  value={checklistD0.inspectionNotes}
+                  onChange={(e) => setChecklistD0({ ...checklistD0, inspectionNotes: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsChecklistD0ModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    alert(`✅ Checklist Técnico D-0 homologado com sucesso pelo coordenador ${checklistD0.technicianName}! Praça liberada para abertura de portões.`);
+                    setIsChecklistD0ModalOpen(false);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Homologar Vistoria D-0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: ESCALA DE EQUIPE DE CAMPO */}
+      {isStaffAllocationModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Escala de Equipe de Campo</h2>
+                  <p className="text-xs text-slate-500">Alocação de Supervisores, Técnicos e Operadores</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsStaffAllocationModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                alert(`✅ Escala registrada com sucesso! ${staffAllocationForm.staffCount} profissionais alocados para o evento.`);
+                setIsStaffAllocationModalOpen(false);
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Função / Posto de Trabalho</label>
+                <select
+                  value={staffAllocationForm.role}
+                  onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, role: e.target.value })}
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                >
+                  <option value="SUPERVISOR_PORTARIA">Supervisor Geral de Portaria & Acesso</option>
+                  <option value="TECNICO_TI_CATRACAS">Técnico de TI & Suporte a Catracas</option>
+                  <option value="OPERADOR_BILHETERIA">Operador de Bilheteria Física / PDV</option>
+                  <option value="OPERADOR_CREDENCIAMENTO">Operador de Suporte & Credenciamento VIP/Staff</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Evento</label>
+                  <input
+                    type="text"
+                    required
+                    value={staffAllocationForm.eventName}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, eventName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Praça / Local</label>
+                  <input
+                    type="text"
+                    required
+                    value={staffAllocationForm.venueName}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, venueName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Efetivo Escalado (Qtd)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={staffAllocationForm.staffCount}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, staffCount: parseInt(e.target.value) || 1 })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Turno / Horário</label>
+                  <input
+                    type="text"
+                    required
+                    value={staffAllocationForm.shiftTime}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, shiftTime: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Líder / Responsável</label>
+                  <input
+                    type="text"
+                    required
+                    value={staffAllocationForm.leadName}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, leadName: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Canal Rádio HT</label>
+                  <input
+                    type="text"
+                    value={staffAllocationForm.radioChannel}
+                    onChange={(e) => setStaffAllocationForm({ ...staffAllocationForm, radioChannel: e.target.value })}
+                    className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsStaffAllocationModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs flex items-center gap-1.5"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Gravar Escala de Campo</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

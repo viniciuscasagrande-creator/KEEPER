@@ -18,6 +18,7 @@ export function ProducerAdvanceModal({
 }: ProducerAdvanceModalProps) {
   const [requestedAmount, setRequestedAmount] = useState('100000,00');
   const [advanceFeeRate, setAdvanceFeeRate] = useState('2.50');
+  const [safetyMarginPct, setSafetyMarginPct] = useState('25.0');
   const [targetDate, setTargetDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [pixKey, setPixKey] = useState(producer?.pixKey || 'financeiro@abcproducoes.com.br');
   const [bankAccount, setBankAccount] = useState(
@@ -33,8 +34,11 @@ export function ProducerAdvanceModal({
   const eligibleFutureBalance = event ? (event.vendasBrutas ? event.vendasBrutas * 0.5 : 250000.0) : 350000.0;
   const numRequested = parseFloat(requestedAmount.replace(/\./g, '').replace(',', '.')) || 0;
   const rate = parseFloat(advanceFeeRate) || 2.5;
+  const safetyRate = parseFloat(safetyMarginPct) || 25.0;
+
+  const safetyReserve = (numRequested * safetyRate) / 100;
   const feeCost = (numRequested * rate) / 100;
-  const netAmount = numRequested - feeCost;
+  const netAmount = Math.max(0, numRequested - feeCost - safetyReserve);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +127,7 @@ export function ProducerAdvanceModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block font-bold text-slate-700 mb-1">Valor Solicitado (R$) *</label>
               <input
@@ -136,12 +140,24 @@ export function ProducerAdvanceModal({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Taxa de Antecipação (%) *</label>
+              <label className="block font-bold text-slate-700 mb-1">Taxa Antecipação (%) *</label>
               <input
                 type="text"
                 value={advanceFeeRate}
                 onChange={(e) => setAdvanceFeeRate(e.target.value)}
                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-mono font-bold"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Margem Segurança (%) *</label>
+              <input
+                type="text"
+                value={safetyMarginPct}
+                onChange={(e) => setSafetyMarginPct(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-800 font-mono font-bold text-purple-700"
+                title="Margem retida para cobertura de eventuais estornos ou cancelamentos"
                 required
               />
             </div>
@@ -154,11 +170,15 @@ export function ProducerAdvanceModal({
               <span className="text-slate-200">{fmt(numRequested)}</span>
             </div>
             <div className="flex justify-between text-[11px] text-rose-400">
-              <span>(-) Custo da Antecipação ({rate}%):</span>
+              <span>(-) Taxa de Antecipação ({rate}%):</span>
               <span>- {fmt(feeCost)}</span>
             </div>
+            <div className="flex justify-between text-[11px] text-purple-400">
+              <span>(-) Margem Fiduciária de Segurança ({safetyRate}%):</span>
+              <span>- {fmt(safetyReserve)}</span>
+            </div>
             <div className="flex justify-between items-center text-sm font-black pt-2 border-t border-slate-800">
-              <span className="text-amber-400 font-sans">Valor Líquido a Receber:</span>
+              <span className="text-amber-400 font-sans">Valor Líquido a Liberar no PIX:</span>
               <span className="text-emerald-400 text-base">{fmt(netAmount)}</span>
             </div>
           </div>

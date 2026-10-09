@@ -1,0 +1,161 @@
+version: '3.8'
+
+# =============================================================================
+# KEEPER ERP — Production Docker Compose Orchestration
+# Services: PostgreSQL 16, Redis 7, RabbitMQ 3.13, Keeper API & Async Worker
+# =============================================================================
+
+networks:
+  keeper_network:
+    name: keeper_network
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
+    name: keeper_postgres_prod_data
+  redis_prod_data:
+    name: keeper_redis_prod_data
+  rabbitmq_prod_data:
+    name: keeper_rabbitmq_prod_data
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. PostgreSQL 16 Relational Database Engine
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: keeper-postgres-prod
+    restart: unless-stopped
+    networks:
+      - keeper_network
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-erp_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erp_secret_prod_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-erp_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ../infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-erp_admin} -d ${POSTGRES_DB:-erp_db}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # 2. Redis 7 High-Performance In-Memory Cache & Session Store
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: keeper-redis-prod
+    restart: unless-stopped
+    networks:
+      - keeper_network
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-erp_redis_secret_prod}
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-erp_redis_secret_prod}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # 3. RabbitMQ 3.13 Message Broker & Event Bus
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: keeper-rabbitmq-prod
+    restart: unless-stopped
+    networks:
+      - keeper_network
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-erp_mq_admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-erp_mq_secret_prod}
+    ports:
+      - '${RABBITMQ_PORT:-5672}:5672'
+      - '${RABBITMQ_MGMT_PORT:-15672}:15672'
+    volumes:
+      - rabbitmq_prod_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # 4. Keeper REST API Service (@erp/api - NestJS)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: keeper-erp-api-prod
+    restart: unless-stopped
+    networks:
+      - keeper_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      API_PREFIX: api/v1
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp_admin}:${POSTGRES_PASSWORD:-erp_secret_prod_2026}@postgres:5432/${POSTGRES_DB:-erp_db}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-erp_redis_secret_prod}@redis:6379/0
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-erp_mq_admin}:${RABBITMQ_PASS:-erp_mq_secret_prod}@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-replace-in-production-change-this-now!}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://keeper-tng6.vercel.app,http://localhost:5173}
+    ports:
+      - '${API_PORT:-4000}:4000'
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:4000/api/v1/health']
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # 5. Keeper Background Worker Service (@erp/worker - NestJS & RabbitMQ)
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    container_name: keeper-erp-worker-prod
+    restart: unless-stopped
+    networks:
+      - keeper_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-erp_admin}:${POSTGRES_PASSWORD:-erp_secret_prod_2026}@postgres:5432/${POSTGRES_DB:-erp_db}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-erp_redis_secret_prod}@redis:6379/0
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-erp_mq_admin}:${RABBITMQ_PASS:-erp_mq_secret_prod}@rabbitmq:5672
+    ports:
+      - '${WORKER_PORT:-4001}:4001'
