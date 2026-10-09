@@ -33,6 +33,7 @@ import {
   HelpCircle,
   AlertCircle,
   Percent,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   contratosClient,
@@ -261,10 +262,17 @@ export const ContratosModuleView: React.FC<Props> = ({
   const [metrics, setMetrics] = useState<ContratosMetrics | null>(null);
   const [contracts, setContracts] = useState<LegalContract[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [sectionId, setSectionId] = useState<string>(activeSection || 'jur-dashboard');
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3500);
+  };
 
   // Tab State
   const [activeTab, setActiveTab] = useState<
-    'contratos' | 'assinaturas' | 'garantias' | 'compliance' | 'minutas'
+    'contratos' | 'assinaturas' | 'garantias' | 'compliance' | 'minutas' | 'vigencias'
   >('contratos');
 
   // Search & Filter States
@@ -314,15 +322,22 @@ export const ContratosModuleView: React.FC<Props> = ({
     loadData();
   }, []);
 
-  // Sync activeSection with tabs
+  // Sync activeSection with internal sectionId
   useEffect(() => {
-    if (!activeSection) return;
-    if (activeSection === 'jur-dashboard' || activeSection === 'jur-central-contratos' || activeSection === 'jur-vigencia-alertas') setActiveTab('contratos');
-    else if (activeSection === 'jur-fluxo-assinaturas' || activeSection === 'jur-signatarios') setActiveTab('assinaturas');
-    else if (activeSection === 'jur-garantias-advance') setActiveTab('garantias');
-    else if (activeSection === 'jur-due-diligence' || activeSection === 'jur-retencoes-ecad') setActiveTab('compliance');
-    else if (activeSection === 'jur-minutas-padrao' || activeSection === 'jur-aditivos-alteracoes') setActiveTab('minutas');
+    if (activeSection) {
+      setSectionId(activeSection);
+    }
   }, [activeSection]);
+
+  const handleSelectSection = (id: string) => {
+    setSectionId(id);
+    if (onSelectSection) onSelectSection(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const currentSubmenu = useMemo(() => {
+    return JUR_SUBMENUS.find((s) => s.id === sectionId) || JUR_SUBMENUS[0];
+  }, [sectionId]);
 
   const groups = useMemo(() => {
     const list = Array.from(new Set(JUR_SUBMENUS.map((s) => s.group)));
@@ -409,754 +424,1078 @@ export const ContratosModuleView: React.FC<Props> = ({
     }).format(val);
   };
 
-  return (
-    <div className="space-y-6">
-      {/* 1. Header do Módulo */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">
-              <Scale className="w-4 h-4" />
-              <span>Contratos & Jurídico · DiskIngressos</span>
+  const renderVigenciasAlertas = () => {
+    const expiringContracts = [
+      {
+        id: 'c-exp-1',
+        code: 'CTR-2026-081',
+        title: 'Prestação de Serviços de Bilheteria — Turnê Acústica 2026',
+        producerName: 'Opus Entretenimento Curitiba Ltda',
+        producerDocument: '12.345.678/0001-90',
+        validUntil: '2026-11-15',
+        daysRemaining: 37,
+        protectedGmv: 1500000,
+        diskFeeRate: 12.0,
+        hasExclusivity: true,
+        renewalStatus: 'EM_NEGOCIACAO',
+      },
+      {
+        id: 'c-exp-2',
+        code: 'CTR-2026-092',
+        title: 'Acordo de Exclusividade de Bilheteria — Festival Rock Live',
+        producerName: 'Live Nation Brasil Produções S.A.',
+        producerDocument: '98.765.432/0001-11',
+        validUntil: '2026-10-31',
+        daysRemaining: 22,
+        protectedGmv: 3200000,
+        diskFeeRate: 10.5,
+        hasExclusivity: true,
+        renewalStatus: 'MINUTA_ENVIADA',
+      },
+      {
+        id: 'c-exp-3',
+        code: 'CTR-2026-064',
+        title: 'Contrato de Bilheteria & Locação PDVs — Teatro Positivo',
+        producerName: 'CWB Brasil Entretenimento S.A.',
+        producerDocument: '45.123.789/0001-55',
+        validUntil: '2026-12-10',
+        daysRemaining: 62,
+        protectedGmv: 850000,
+        diskFeeRate: 11.0,
+        hasExclusivity: false,
+        renewalStatus: 'RENOVACAO_SOLICITADA',
+      },
+      {
+        id: 'c-exp-4',
+        code: 'CTR-2026-055',
+        title: 'Contrato Geral de Bilheteria — Shows Regionais PR/SC',
+        producerName: 'Prime Eventos Culturais Eireli',
+        producerDocument: '33.444.555/0001-22',
+        validUntil: '2026-12-28',
+        daysRemaining: 80,
+        protectedGmv: 1250000,
+        diskFeeRate: 12.5,
+        hasExclusivity: true,
+        renewalStatus: 'EM_ANALISE',
+      },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de Métricas de Vencimento */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white border border-rose-200 rounded-2xl p-5 shadow-xs">
+            <div className="flex items-center justify-between text-rose-600 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider">Vencendo em 30 Dias</span>
+              <AlertTriangle className="w-4 h-4" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Gestão de Contratos de Bilheteria, Exclusividade & Assinaturas Digitais
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-4xl">
-              Formalização jurídica de espetáculos e turnês, gestão de cláusulas de exclusividade territorial,
-              garantias reais de adiantamento (advance), due diligence de certidões e esteira de assinaturas eletrônicas.
-            </p>
+            <div className="text-2xl font-black text-rose-700">1 Contrato</div>
+            <div className="text-xs text-rose-600 font-semibold mt-1">
+              Risco iminente de encerramento
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={loadData}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-300"
-              title="Atualizar contratos"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : ''}`} />
-              <span>Atualizar</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('minutas')}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors shadow-2xs"
-            >
-              <Layers className="w-3.5 h-3.5 text-blue-700" />
-              <span>Modelos de Minuta</span>
-            </button>
-
-            <button
-              onClick={() => setIsContractModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Novo Contrato</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. 5 KPI Scorecards Executivos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* KPI 1 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Contratos na Carteira</span>
-            <span className="p-2 bg-blue-50 text-blue-700 rounded-xl">
-              <FileCheck2 className="w-4 h-4" />
-            </span>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {metrics ? metrics.activeContracts : '38'} Ativos
+          <div className="bg-white border border-amber-200 rounded-2xl p-5 shadow-xs">
+            <div className="flex items-center justify-between text-amber-600 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider">Vencendo em 60 Dias</span>
+              <Clock className="w-4 h-4" />
             </div>
-            <div className="text-xs text-emerald-700 font-semibold mt-1 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{metrics ? metrics.totalContracts : '42'} instrumentos formalizados</span>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">GMV Sob Proteção</span>
-            <span className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
-              <ShieldCheck className="w-4 h-4" />
-            </span>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {metrics ? formatBRL(metrics.totalProtectedGmv) : 'R$ 16,3 mi'}
-            </div>
-            <div className="text-xs text-slate-600 font-medium mt-1">
-              Coberto por instrumentos jurídicos
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 3 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Garantias de Advance</span>
-            <span className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
-              <DollarSign className="w-4 h-4" />
-            </span>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {metrics ? formatBRL(metrics.totalAdvanceWarranty) : 'R$ 2,45 mi'}
-            </div>
-            <div className="text-xs text-indigo-700 font-semibold mt-1">
-              Cauções e retenções vinculadas
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 4 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Assinaturas Pendentes</span>
-            <span className="p-2 bg-amber-50 text-amber-700 rounded-xl">
-              <FileSignature className="w-4 h-4" />
-            </span>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {metrics ? metrics.pendingSignatures : '4'} Minutas
-            </div>
+            <div className="text-2xl font-black text-amber-700">1 Contrato</div>
             <div className="text-xs text-amber-700 font-semibold mt-1">
-              Clicksign & DocuSign em curso
+              Iniciar tratativa de renovação
+            </div>
+          </div>
+
+          <div className="bg-white border border-blue-200 rounded-2xl p-5 shadow-xs">
+            <div className="flex items-center justify-between text-blue-600 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider">Vencendo em 90 Dias</span>
+              <Calendar className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-black text-blue-700">2 Contratos</div>
+            <div className="text-xs text-blue-700 font-semibold mt-1">
+              Planejamento de aditamento
+            </div>
+          </div>
+
+          <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-xs">
+            <div className="flex items-center justify-between text-emerald-600 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider">GMV em Renovação</span>
+              <DollarSign className="w-4 h-4" />
+            </div>
+            <div className="text-2xl font-black text-slate-900">R$ 6,80 mi</div>
+            <div className="text-xs text-emerald-700 font-semibold mt-1">
+              Volume total sob renegociação
             </div>
           </div>
         </div>
 
-        {/* KPI 5 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Conformidade CND</span>
-            <span className="p-2 bg-purple-50 text-purple-700 rounded-xl">
-              <Shield className="w-4 h-4" />
-            </span>
+        {/* Tabela de Contratos em Vencimento */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="font-black text-base text-slate-900">
+                Prazos, Vigências & Alertas Preditivos de Renovação
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Instrumentos com vencimento programado no próximo trimestre fiscal
+              </p>
+            </div>
+            <button
+              onClick={() => showNotification('Lote de 4 notificações de renovação enviado aos produtores!')}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Notificar Todos em Vencimento</span>
+            </button>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-900 tracking-tight">
-              {metrics ? `${metrics.cndCompliancePercent}%` : '96.8%'}
-            </div>
-            <div className="text-xs text-purple-700 font-semibold mt-1">
-              Produtores 100% regulares
-            </div>
+
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Código / Instrumento</th>
+                  <th className="py-3 px-4">Produtora Parceira</th>
+                  <th className="py-3 px-4">Término da Vigência</th>
+                  <th className="py-3 px-4">GMV Protegido</th>
+                  <th className="py-3 px-4">Exclusividade</th>
+                  <th className="py-3 px-4">Status Renovação</th>
+                  <th className="py-3 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {expiringContracts.map((ctr) => (
+                  <tr key={ctr.id} className="hover:bg-slate-50 transition">
+                    <td className="py-3 px-4 font-mono font-bold text-blue-700">
+                      <div>{ctr.code}</div>
+                      <div className="text-[11px] font-sans font-normal text-slate-700 mt-0.5">{ctr.title}</div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-slate-900">{ctr.producerName}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{ctr.producerDocument}</div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium text-slate-800">{ctr.validUntil}</span>
+                      <span className={`block text-[10px] font-bold ${
+                        ctr.daysRemaining <= 30 ? 'text-rose-600' : ctr.daysRemaining <= 60 ? 'text-amber-600' : 'text-blue-600'
+                      }`}>
+                        Faltam {ctr.daysRemaining} dias
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                      {formatBRL(ctr.protectedGmv)}
+                    </td>
+                    <td className="py-3 px-4">
+                      {ctr.hasExclusivity ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
+                          Exclusiva
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                          Não Exclusiva
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                        {ctr.renewalStatus.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => showNotification(`Notificação enviada com sucesso para ${ctr.producerName}!`)}
+                          className="px-2.5 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+                          title="Enviar lembrete de renovação"
+                        >
+                          Notificar
+                        </button>
+                        <button
+                          onClick={() => setIsContractModalOpen(true)}
+                          className="px-2.5 py-1 text-[11px] font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition"
+                        >
+                          Renovar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+    );
+  };
 
-      {/* 3. Submenu Hub & Quick Navigation (24 Submenus) */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-blue-700" />
-            <span className="text-sm font-bold text-slate-900">
-              Central de Acesso Rápido — 24 Submenus de Contratos & Jurídico
-            </span>
-            <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-full">
-              {filteredSubmenus.length} de 24
-            </span>
+  const renderGenericJurSubmenu = (item: JurSubmenuDef) => {
+    return (
+      <div className="space-y-6">
+        {/* Cards de Métricas Específicas */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Registros em {item.label}</span>
+            <div className="text-2xl font-black text-slate-900 mt-2">12 Formalizados</div>
+            <span className="text-xs text-emerald-600 font-semibold mt-1 block">Conformidade auditada</span>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-              <input
-                type="text"
-                placeholder="Buscar funcionalidade jurídica..."
-                value={submenuSearch}
-                onChange={(e) => setSubmenuSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white w-64 text-slate-800"
-              />
-            </div>
-
-            <select
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
-            >
-              {groups.map((grp) => (
-                <option key={grp} value={grp}>
-                  {grp === 'todos' ? 'Todos os Grupos' : grp}
-                </option>
-              ))}
-            </select>
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">SLA Médio de Formalização</span>
+            <div className="text-2xl font-black text-blue-700 mt-2">4,2 Dias</div>
+            <span className="text-xs text-slate-500 mt-1 block">Dentro da meta corporativa</span>
+          </div>
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Validade Jurídica & CND</span>
+            <div className="text-2xl font-black text-purple-700 mt-2">100% Homologado</div>
+            <span className="text-xs text-purple-700 font-semibold mt-1 block">Assinaturas com validade ICP-Brasil</span>
           </div>
         </div>
 
-        {/* Submenu Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filteredSubmenus.map((item) => {
-            const Icon = item.icon;
-            const isCurrent = activeSection === item.id;
-            return (
+        {/* Painel Operacional Dedicado */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="font-bold text-base text-slate-900">{item.label}</h3>
+              <p className="text-xs text-slate-500">{item.purpose}</p>
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                key={item.id}
-                onClick={() => {
-                  if (onSelectSection) onSelectSection(item.id);
-                  if (item.id === 'jur-dashboard' || item.id === 'jur-central-contratos' || item.id === 'jur-vigencia-alertas') setActiveTab('contratos');
-                  else if (item.id === 'jur-fluxo-assinaturas' || item.id === 'jur-signatarios') setActiveTab('assinaturas');
-                  else if (item.id === 'jur-garantias-advance') setActiveTab('garantias');
-                  else if (item.id === 'jur-due-diligence' || item.id === 'jur-retencoes-ecad') setActiveTab('compliance');
-                  else if (item.id === 'jur-minutas-padrao' || item.id === 'jur-aditivos-alteracoes') setActiveTab('minutas');
-                }}
-                className={`text-left p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between ${
-                  isCurrent
-                    ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-500'
-                    : 'border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-slate-300 hover:shadow-xs'
-                }`}
+                onClick={() => showNotification(`Relatório oficial de ${item.label} gerado com sucesso!`)}
+                className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="p-1 rounded-md bg-white border border-slate-200 text-blue-700">
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 line-clamp-1">{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${item.badgeColor || 'bg-slate-200 text-slate-800'}`}>
-                        {item.badge}
+                Gerar Dossiê Oficial
+              </button>
+              <button
+                onClick={() => setIsContractModalOpen(true)}
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+              >
+                + Novo Instrumento
+              </button>
+            </div>
+          </div>
+
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Instrumento / Protocolo</th>
+                  <th className="py-3 px-4">Parte Interessada</th>
+                  <th className="py-3 px-4">Vigência / Data</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Ação</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {contracts.slice(0, 3).map((ctr) => (
+                  <tr key={ctr.id} className="hover:bg-slate-50 transition">
+                    <td className="py-3 px-4 font-mono font-bold text-blue-700">
+                      {ctr.code} - {ctr.title}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-slate-900">{ctr.producerName}</td>
+                    <td className="py-3 px-4 text-slate-600">{ctr.validFrom} até {ctr.validUntil}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        HOMOLOGADO
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => showNotification(`Download do termo referente a ${ctr.code} iniciado.`)}
+                        className="text-blue-700 hover:underline font-bold"
+                      >
+                        Visualizar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderContratosTab = () => (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder="Buscar por código, título, produtor ou CNPJ..."
+              value={contractSearch}
+              onChange={(e) => setContractSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white text-slate-800"
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
+          >
+            <option value="TODOS">Todos os Status</option>
+            <option value="ACTIVE">Ativo / Vigente</option>
+            <option value="PENDING_SIGNATURE">Pendente de Assinatura</option>
+            <option value="ANALYSIS">Em Análise Jurídica</option>
+            <option value="DRAFT">Minuta / Rascunho</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">
+            Exibindo <strong>{filteredContracts.length}</strong> contratos
+          </span>
+          <button
+            onClick={() => setIsContractModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Novo Instrumento</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tabela de Contratos */}
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th className="py-3 px-4">Código / Instrumento</th>
+              <th className="py-3 px-4">Produtora Parceira</th>
+              <th className="py-3 px-4">Tipo & Exclusividade</th>
+              <th className="py-3 px-4">Vigência</th>
+              <th className="py-3 px-4">Taxa Disk / GMV</th>
+              <th className="py-3 px-4">Status</th>
+              <th className="py-3 px-4 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredContracts.map((c) => (
+              <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-3 px-4">
+                  <div className="font-bold text-slate-900 flex items-center gap-2">
+                    <span>{c.code}</span>
+                    {c.hasExclusivity && (
+                      <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded">
+                        Exclusivo
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                    {item.purpose}
-                  </p>
-                </div>
-                <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                  <span className="font-semibold text-slate-600">{item.group.split('(')[0]}</span>
-                  <ChevronRight className="w-3 h-3 text-slate-400" />
-                </div>
-              </button>
-            );
-          })}
+                  <div className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 max-w-sm">
+                    {c.title}
+                  </div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="font-semibold text-slate-900">{c.producerName}</div>
+                  <div className="text-[11px] text-slate-500">CNPJ: {c.producerDocument}</div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    {c.type.replace('_', ' ')}
+                  </span>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="text-slate-900 font-medium">
+                    {c.validFrom} até {c.validUntil}
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    {c.venuesCovered.join(', ')}
+                  </div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="font-bold text-slate-900">{c.diskFeeRate}%</div>
+                  <div className="text-[11px] text-slate-500">{formatBRL(c.estimatedGmv)}</div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      c.status === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : c.status === 'PENDING_SIGNATURE'
+                        ? 'bg-indigo-100 text-indigo-800'
+                        : c.status === 'ANALYSIS'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    {c.status === 'ACTIVE'
+                      ? 'Ativo'
+                      : c.status === 'PENDING_SIGNATURE'
+                      ? 'Pendente Assinatura'
+                      : c.status === 'ANALYSIS'
+                      ? 'Em Análise'
+                      : 'Rascunho'}
+                  </span>
+                </td>
+
+                <td className="py-3 px-4 text-right">
+                  <button
+                    onClick={() => {
+                      setSelectedContract(c);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    className="p-1.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Ver ficha jurídica do contrato"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderAssinaturasTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Esteira de Assinaturas Eletrônicas (Clicksign / DocuSign / Gov.br)
+          </h3>
+          <p className="text-xs text-slate-500">
+            Acompanhamento em tempo real de signatários, evidências de autenticação e validação ICP-Brasil
+          </p>
         </div>
+        <span className="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded-full">
+          Webhook Clicksign Ativo
+        </span>
       </div>
 
-      {/* 4. Abas Operacionais Principais */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 px-6 pt-3 bg-slate-50/60 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('contratos')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'contratos'
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>1. Central de Contratos Ativos ({contracts.length})</span>
-          </button>
+      <div className="space-y-3">
+        {contracts.map((c) => (
+          <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200 mb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-900">{c.code}</span>
+                  <span className="text-xs text-slate-600 font-medium">— {c.title}</span>
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Produtor: <strong>{c.producerName}</strong> · Praça: {c.venuesCovered.join(', ')}
+                </div>
+              </div>
 
-          <button
-            onClick={() => setActiveTab('assinaturas')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'assinaturas'
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileSignature className="w-4 h-4" />
-            <span>2. Fila de Assinaturas Digitais (Clicksign)</span>
-          </button>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                  c.status === 'ACTIVE'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {c.status === 'ACTIVE' ? '100% Assinado' : 'Aguardando Assinaturas'}
+              </span>
+            </div>
 
-          <button
-            onClick={() => setActiveTab('garantias')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'garantias'
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <DollarSign className="w-4 h-4" />
-            <span>3. Garantias & Advance (Cauções)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('compliance')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'compliance'
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>4. Due Diligence & Certidões (CND)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('minutas')}
-            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
-              activeTab === 'minutas'
-                ? 'border-blue-700 text-blue-700'
-                : 'border-transparent text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>5. Biblioteca de Minutas & Templates</span>
-          </button>
-        </div>
-
-        {/* Content Area */}
-        <div className="p-6">
-          {/* TAB 1: CENTRAL DE CONTRATOS */}
-          {activeTab === 'contratos' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative w-full sm:w-80">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      placeholder="Buscar por código, título, produtor ou CNPJ..."
-                      value={contractSearch}
-                      onChange={(e) => setContractSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white text-slate-800"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {c.signatures.map((sig, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-lg border flex items-center justify-between ${
+                    sig.signed
+                      ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                      : 'bg-white border-slate-200 text-slate-800'
+                  }`}
+                >
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-slate-500">{sig.role}</div>
+                    <div className="text-xs font-bold">{sig.name}</div>
+                    <div className="text-[10px] text-slate-500">{sig.email}</div>
                   </div>
 
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  >
-                    <option value="TODOS">Todos os Status</option>
-                    <option value="ACTIVE">Ativo / Vigente</option>
-                    <option value="PENDING_SIGNATURE">Pendente de Assinatura</option>
-                    <option value="ANALYSIS">Em Análise Jurídica</option>
-                    <option value="DRAFT">Minuta / Rascunho</option>
-                  </select>
+                  <div>
+                    {sig.signed ? (
+                      <div className="text-right">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                          <Check className="w-3 h-3" /> Assinado
+                        </span>
+                        {sig.signedAt && (
+                          <div className="text-[9px] text-emerald-600 mt-0.5">{sig.signedAt}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSignSimulated(c.id, sig.email)}
+                        className="text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded transition-colors"
+                      >
+                        Assinar Agora
+                      </button>
+                    )}
+                  </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">
-                    Exibindo <strong>{filteredContracts.length}</strong> contratos
-                  </span>
-                  <button
-                    onClick={() => setIsContractModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Novo Instrumento</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Tabela de Contratos */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-4">Código / Instrumento</th>
-                      <th className="py-3 px-4">Produtora Parceira</th>
-                      <th className="py-3 px-4">Tipo & Exclusividade</th>
-                      <th className="py-3 px-4">Vigência</th>
-                      <th className="py-3 px-4">Taxa Disk / GMV</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4 text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredContracts.map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900 flex items-center gap-2">
-                            <span>{c.code}</span>
-                            {c.hasExclusivity && (
-                              <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded">
-                                Exclusivo
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 max-w-sm">
-                            {c.title}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="font-semibold text-slate-900">{c.producerName}</div>
-                          <div className="text-[11px] text-slate-500">CNPJ: {c.producerDocument}</div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                            {c.type.replace('_', ' ')}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="text-slate-900 font-medium">
-                            {c.validFrom} até {c.validUntil}
-                          </div>
-                          <div className="text-[10px] text-slate-500">
-                            {c.venuesCovered.join(', ')}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{c.diskFeeRate}%</div>
-                          <div className="text-[11px] text-slate-500">{formatBRL(c.estimatedGmv)}</div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                              c.status === 'ACTIVE'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : c.status === 'PENDING_SIGNATURE'
-                                ? 'bg-indigo-100 text-indigo-800'
-                                : c.status === 'ANALYSIS'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-slate-100 text-slate-700'
-                            }`}
-                          >
-                            {c.status === 'ACTIVE'
-                              ? 'Ativo'
-                              : c.status === 'PENDING_SIGNATURE'
-                              ? 'Pendente Assinatura'
-                              : c.status === 'ANALYSIS'
-                              ? 'Em Análise'
-                              : 'Rascunho'}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedContract(c);
-                              setIsDetailsModalOpen(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Ver ficha jurídica do contrato"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              ))}
             </div>
-          )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-          {/* TAB 2: FILA DE ASSINATURAS DIGITAIS */}
-          {activeTab === 'assinaturas' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Esteira de Assinaturas Eletrônicas (Clicksign / DocuSign / Gov.br)
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Acompanhamento em tempo real de signatários, evidências de autenticação e validação ICP-Brasil
-                  </p>
-                </div>
-                <span className="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded-full">
-                  Webhook Clicksign Ativo
+  const renderGarantiasTab = () => (
+    <div className="space-y-4">
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">
+              Garantias Reais & Caução de Bilheteria para Advance
+            </h3>
+            <p className="text-xs text-slate-500">
+              Instrumentos de garantia com retenção na conta de custódia da DiskIngressos
+            </p>
+          </div>
+          <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+            Segregação Ativa
+          </span>
+        </div>
+
+        <div className="border border-slate-200 bg-white rounded-lg overflow-hidden mt-3">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th className="py-3 px-4">Contrato</th>
+                <th className="py-3 px-4">Produtora</th>
+                <th className="py-3 px-4">Adiantamento Concedido</th>
+                <th className="py-3 px-4">Garantia / Caução</th>
+                <th className="py-3 px-4">Cobertura de Garantia</th>
+                <th className="py-3 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {contracts.map((c) => (
+                <tr key={c.id}>
+                  <td className="py-3 px-4 font-bold text-slate-900">{c.code}</td>
+                  <td className="py-3 px-4 text-slate-700">{c.producerName}</td>
+                  <td className="py-3 px-4 font-semibold text-slate-900">
+                    {formatBRL(c.advanceGrantedValue)}
+                  </td>
+                  <td className="py-3 px-4 font-bold text-indigo-700">
+                    {formatBRL(c.warrantyValue)}
+                  </td>
+                  <td className="py-3 px-4">
+                    {c.advanceGrantedValue > 0 ? (
+                      <span className="text-emerald-700 font-bold">
+                        {((c.warrantyValue / c.advanceGrantedValue) * 100).toFixed(0)}% Coberto
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">Sem Advance</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      Garantia Homologada
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderComplianceTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Due Diligence & Monitoramento de Certidões Negativas (CNDs)
+          </h3>
+          <p className="text-xs text-slate-500">
+            Conferência automática periódica junto à Receita Federal, Caixa (FGTS), TST (CNDT) e Prefeitura de Curitiba
+          </p>
+        </div>
+        <button
+          onClick={() => alert('Executando consulta automatizada de certidões via API da Receita e Caixa...')}
+          className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
+        >
+          Consultar Todas as CNDs
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {contracts.map((c) => (
+          <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="font-bold text-xs text-slate-900">{c.producerName}</div>
+                <div className="text-[11px] text-slate-500">CNPJ: {c.producerDocument}</div>
+              </div>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                  c.cndStatus === 'REGULAR'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {c.cndStatus === 'REGULAR' ? 'CND Regular' : 'Pendente de Atualização'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-200 text-xs">
+              <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                <span className="text-slate-600">CND Federal / RFB:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Válida
                 </span>
               </div>
-
-              <div className="space-y-3">
-                {contracts.map((c) => (
-                  <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200 mb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900">{c.code}</span>
-                          <span className="text-xs text-slate-600 font-medium">— {c.title}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          Produtor: <strong>{c.producerName}</strong> · Praça: {c.venuesCovered.join(', ')}
-                        </div>
-                      </div>
-
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                          c.status === 'ACTIVE'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {c.status === 'ACTIVE' ? '100% Assinado' : 'Aguardando Assinaturas'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {c.signatures.map((sig, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-3 rounded-lg border flex items-center justify-between ${
-                            sig.signed
-                              ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
-                              : 'bg-white border-slate-200 text-slate-800'
-                          }`}
-                        >
-                          <div>
-                            <div className="text-[10px] uppercase font-bold text-slate-500">{sig.role}</div>
-                            <div className="text-xs font-bold">{sig.name}</div>
-                            <div className="text-[10px] text-slate-500">{sig.email}</div>
-                          </div>
-
-                          <div>
-                            {sig.signed ? (
-                              <div className="text-right">
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                                  <Check className="w-3 h-3" /> Assinado
-                                </span>
-                                {sig.signedAt && (
-                                  <div className="text-[9px] text-emerald-600 mt-0.5">{sig.signedAt}</div>
-                                )}
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => handleSignSimulated(c.id, sig.email)}
-                                className="text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded transition-colors"
-                              >
-                                Assinar Agora
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                <span className="text-slate-600">CRF FGTS:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Válida
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                <span className="text-slate-600">CNDT Trabalhista:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Negativa
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
+                <span className="text-slate-600">ISS Curitiba:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Regular
+                </span>
               </div>
             </div>
-          )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
-          {/* TAB 3: GARANTIAS & ADVANCE */}
-          {activeTab === 'garantias' && (
-            <div className="space-y-4">
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">
-                      Garantias Reais & Caução de Bilheteria para Advance
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Instrumentos de garantia com retenção na conta de custódia da DiskIngressos
-                    </p>
-                  </div>
-                  <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                    Segregação Ativa
-                  </span>
-                </div>
-
-                <div className="border border-slate-200 bg-white rounded-lg overflow-hidden mt-3">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                      <tr>
-                        <th className="py-3 px-4">Contrato</th>
-                        <th className="py-3 px-4">Produtora</th>
-                        <th className="py-3 px-4">Adiantamento Concedido</th>
-                        <th className="py-3 px-4">Garantia / Caução</th>
-                        <th className="py-3 px-4">Cobertura de Garantia</th>
-                        <th className="py-3 px-4">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {contracts.map((c) => (
-                        <tr key={c.id}>
-                          <td className="py-3 px-4 font-bold text-slate-900">{c.code}</td>
-                          <td className="py-3 px-4 text-slate-700">{c.producerName}</td>
-                          <td className="py-3 px-4 font-semibold text-slate-900">
-                            {formatBRL(c.advanceGrantedValue)}
-                          </td>
-                          <td className="py-3 px-4 font-bold text-indigo-700">
-                            {formatBRL(c.warrantyValue)}
-                          </td>
-                          <td className="py-3 px-4">
-                            {c.advanceGrantedValue > 0 ? (
-                              <span className="text-emerald-700 font-bold">
-                                {((c.warrantyValue / c.advanceGrantedValue) * 100).toFixed(0)}% Coberto
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">Sem Advance</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                              Garantia Homologada
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: DUE DILIGENCE & CNDs */}
-          {activeTab === 'compliance' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Due Diligence & Monitoramento de Certidões Negativas (CNDs)
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Conferência automática periódica junto à Receita Federal, Caixa (FGTS), TST (CNDT) e Prefeitura de Curitiba
-                  </p>
-                </div>
-                <button
-                  onClick={() => alert('Executando consulta automatizada de certidões via API da Receita e Caixa...')}
-                  className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
-                >
-                  Consultar Todas as CNDs
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {contracts.map((c) => (
-                  <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-xs text-slate-900">{c.producerName}</div>
-                        <div className="text-[11px] text-slate-500">CNPJ: {c.producerDocument}</div>
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                          c.cndStatus === 'REGULAR'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {c.cndStatus === 'REGULAR' ? 'CND Regular' : 'Pendente de Atualização'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-200 text-xs">
-                      <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-                        <span className="text-slate-600">CND Federal / RFB:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Válida
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-                        <span className="text-slate-600">CRF FGTS:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Válida
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-                        <span className="text-slate-600">CNDT Trabalhista:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Negativa
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-                        <span className="text-slate-600">ISS Curitiba:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Regular
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: BIBLIOTECA DE MINUTAS & TEMPLATES */}
-          {activeTab === 'minutas' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Modelos Padrão & Templates Jurídicos Homologados
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Minutas prontas com cláusulas blindadas de exclusividade, controle de assentos e comodato de catracas
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-900">
-                        Contrato de Bilheteria com Exclusividade (V.2026)
-                      </span>
-                      <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">
-                        Padrão
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Instrumento completo para grandes produtoras e festivais com exclusividade de vendas em todos os canais físicos e online.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => alert('Download da minuta DOCX padrão de exclusividade iniciado.')}
-                    className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5 text-blue-700" />
-                    <span>Baixar Minuta DOCX</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-900">
-                        Termo Aditivo de Prorrogação ou Data Extra
-                      </span>
-                      <span className="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded">
-                        Aditivo
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Modelo rápido para acréscimo de sessão de show, mudança de local de evento ou prorrogação de prazo de vendas.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => alert('Download do modelo de Termo Aditivo iniciado.')}
-                    className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5 text-indigo-700" />
-                    <span>Baixar Minuta DOCX</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-slate-900">
-                        Termo de Comodato de Hardwares & Catracas
-                      </span>
-                      <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded">
-                        Hardwares
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Cessão temporária com seguro contra extravio, danos técnicos e garantia de devolução pós-evento.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => alert('Download do modelo de Comodato iniciado.')}
-                    className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
-                  >
-                    <Download className="w-3.5 h-3.5 text-purple-700" />
-                    <span>Baixar Minuta DOCX</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+  const renderMinutasTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Modelos Padrão & Templates Jurídicos Homologados
+          </h3>
+          <p className="text-xs text-slate-500">
+            Minutas prontas com cláusulas blindadas de exclusividade, controle de assentos e comodato de catracas
+          </p>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-900">
+                Contrato de Bilheteria com Exclusividade (V.2026)
+              </span>
+              <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">
+                Padrão
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Instrumento completo para grandes produtoras e festivais com exclusividade de vendas em todos os canais físicos e online.
+            </p>
+          </div>
+          <button
+            onClick={() => alert('Download da minuta DOCX padrão de exclusividade iniciado.')}
+            className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-700" />
+            <span>Baixar Minuta DOCX</span>
+          </button>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-900">
+                Termo Aditivo de Prorrogação ou Data Extra
+              </span>
+              <span className="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded">
+                Aditivo
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Modelo rápido para acréscimo de sessão de show, mudança de local de evento ou prorrogação de prazo de vendas.
+            </p>
+          </div>
+          <button
+            onClick={() => alert('Download do modelo de Termo Aditivo iniciado.')}
+            className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-700" />
+            <span>Baixar Minuta DOCX</span>
+          </button>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-900">
+                Termo de Comodato de Hardwares & Catracas
+              </span>
+              <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded">
+                Hardwares
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Cessão temporária com seguro contra extravio, danos técnicos e garantia de devolução pós-evento.
+            </p>
+          </div>
+          <button
+            onClick={() => alert('Download do modelo de Comodato iniciado.')}
+            className="mt-3 w-full py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5 text-purple-700" />
+            <span>Baixar Minuta DOCX</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const isDashboardHub = sectionId === 'jur-dashboard';
+
+  return (
+    <div className="space-y-6">
+      {/* Notificação Toast */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-xs font-medium">{notification}</span>
+        </div>
+      )}
+
+      {isDashboardHub ? (
+        <>
+          {/* 1. Header do Módulo */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center shadow-xs">
+                  <Scale className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                    <span>Contratos & Jurídico</span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                      Conformidade Legal
+                    </span>
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Gestão integrada de contratos de bilheteria, exclusividade territorial, minutas e assinaturas digitais
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsContractModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-xl shadow-xs transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Novo Contrato</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Métricas Executivas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Contratos Ativos</span>
+                <span className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                  <FileText className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-black text-slate-900 mt-2">{metrics?.activeContracts ?? 38}</div>
+              <span className="text-xs text-slate-500 mt-1 block">Instrumentos vigentes</span>
+            </div>
+
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Assinaturas Pendentes</span>
+                <span className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                  <FileSignature className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-black text-amber-600 mt-2">{metrics?.pendingSignatures ?? 4}</div>
+              <span className="text-xs text-slate-500 mt-1 block">Aguardando Clicksign</span>
+            </div>
+
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">A Vencer em 30d</span>
+                <span className="p-2 rounded-xl bg-rose-50 text-rose-600">
+                  <Clock className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-black text-rose-600 mt-2">{metrics?.expiringIn30Days ?? 3}</div>
+              <span className="text-xs text-rose-600 font-semibold mt-1 block">Requer aditivo / renovação</span>
+            </div>
+
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">GMV Sob Contrato</span>
+                <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                  <DollarSign className="w-4 h-4" />
+                </span>
+              </div>
+              <div className="text-2xl font-black text-emerald-700 mt-2">
+                {metrics ? formatBRL(metrics.totalProtectedGmv) : 'R$ 16,3 mi'}
+              </div>
+              <span className="text-xs text-emerald-600 font-semibold mt-1 block">Custódia assegurada</span>
+            </div>
+          </div>
+
+          {/* 3. Central de Submódulos & Ferramentas Jurídicas (24 cards) */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-blue-700" />
+                  <span>Central de Ferramentas Jurídicas & Contratuais</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                    24 Operações
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Acesso rápido a todos os instrumentos, formalizações e fluxos jurídicos da DiskIngressos
+                </p>
+              </div>
+
+              {/* Busca de submenus */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Filtrar 24 submenus..."
+                  value={submenuSearch}
+                  onChange={(e) => setSubmenuSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600"
+                />
+              </div>
+            </div>
+
+            {/* Grid 24 Submenus */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {filteredSubmenus.map((item) => {
+                const Icon = item.icon;
+                const isCurrent = sectionId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelectSection(item.id)}
+                    className={`text-left p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between ${
+                      isCurrent
+                        ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-500'
+                        : 'border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-slate-300 hover:shadow-xs'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="p-1 rounded-md bg-white border border-slate-200 text-blue-700">
+                            <Icon className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-xs font-bold text-slate-900 line-clamp-1">{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${item.badgeColor || 'bg-slate-200 text-slate-800'}`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                        {item.purpose}
+                      </p>
+                    </div>
+                    <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                      <span className="font-semibold text-slate-600">{item.group.split('(')[0]}</span>
+                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Abas Operacionais Principais */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+            {/* Navigation Tabs */}
+            <div className="flex border-b border-slate-200 px-6 pt-3 bg-slate-50/60 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('contratos')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'contratos'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>1. Central de Contratos Ativos ({contracts.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('assinaturas')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'assinaturas'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileSignature className="w-4 h-4" />
+                <span>2. Fila de Assinaturas Digitais (Clicksign)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('garantias')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'garantias'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <DollarSign className="w-4 h-4" />
+                <span>3. Garantias & Advance (Cauções)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('compliance')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'compliance'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>4. Due Diligence & Certidões (CND)</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('minutas')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'minutas'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>5. Biblioteca de Minutas & Templates</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('vigencias')}
+                className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === 'vigencias'
+                    ? 'border-blue-700 text-blue-700'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span>6. Prazos, Vigências & Renovações</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">4 a Vencer</span>
+              </button>
+            </div>
+
+            {/* Content Area */}
+            <div className="p-6">
+              {activeTab === 'contratos' && renderContratosTab()}
+              {activeTab === 'assinaturas' && renderAssinaturasTab()}
+              {activeTab === 'garantias' && renderGarantiasTab()}
+              {activeTab === 'compliance' && renderComplianceTab()}
+              {activeTab === 'minutas' && renderMinutasTab()}
+              {activeTab === 'vigencias' && renderVigenciasAlertas()}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* DEDICATED SCREEN VIEW FOR SPECIFIC SUBMENU */
+        <div className="space-y-6">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => handleSelectSection('jur-dashboard')}
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition shadow-xs"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar ao Hub de Contratos</span>
+                </button>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Contratos & Jurídico · {currentSubmenu?.group || 'Módulo'}
+                    </span>
+                    {currentSubmenu?.badge && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentSubmenu.badgeColor || 'bg-blue-100 text-blue-800'}`}>
+                        {currentSubmenu.badge}
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
+                    {currentSubmenu?.icon && React.createElement(currentSubmenu.icon, { className: 'w-6 h-6 text-blue-700' })}
+                    <span>{currentSubmenu?.label || 'Visualização Dedicada'}</span>
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {currentSubmenu?.purpose || 'Gerenciamento operacional e formalização jurídica.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsContractModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-xl shadow-xs transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Novo Instrumento</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* DEDICATED SUBMENU CONTENT */}
+          {sectionId === 'jur-vigencia-alertas' && renderVigenciasAlertas()}
+          {sectionId === 'jur-central-contratos' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+              {renderContratosTab()}
+            </div>
+          )}
+          {sectionId === 'jur-fluxo-assinaturas' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+              {renderAssinaturasTab()}
+            </div>
+          )}
+          {sectionId === 'jur-garantias-caucao' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+              {renderGarantiasTab()}
+            </div>
+          )}
+          {sectionId === 'jur-compliance-cnd' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+              {renderComplianceTab()}
+            </div>
+          )}
+          {sectionId === 'jur-minutas-padrao' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+              {renderMinutasTab()}
+            </div>
+          )}
+          {![
+            'jur-vigencia-alertas',
+            'jur-central-contratos',
+            'jur-fluxo-assinaturas',
+            'jur-garantias-caucao',
+            'jur-compliance-cnd',
+            'jur-minutas-padrao',
+          ].includes(sectionId) && renderGenericJurSubmenu(currentSubmenu || JUR_SUBMENUS[0])}
+        </div>
+      )}
 
       {/* MODAL 1: NOVO CONTRATO */}
       {isContractModalOpen && (

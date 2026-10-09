@@ -60,10 +60,30 @@ export function App() {
       setActiveModule('financeiro');
     } else if (subModuleId.startsWith('acc-')) {
       setActiveModule('contabil');
+    } else if (subModuleId.startsWith('crm-')) {
+      setActiveModule('crm');
+    } else if (subModuleId.startsWith('jur-') || subModuleId.startsWith('contratos-')) {
+      setActiveModule('contratos');
+    } else if (subModuleId.startsWith('proj-')) {
+      setActiveModule('projetos');
+    } else if (subModuleId.startsWith('atv-') || subModuleId.startsWith('ativos-') || subModuleId.startsWith('eq-')) {
+      setActiveModule('ativos');
+    } else if (subModuleId.startsWith('comp-') || subModuleId.startsWith('est-')) {
+      setActiveModule('compras');
+    } else if (subModuleId.startsWith('rh-')) {
+      setActiveModule('rh');
+    } else if (subModuleId.startsWith('fisc-')) {
+      setActiveModule('fiscal');
+    } else if (subModuleId.startsWith('intel-')) {
+      setActiveModule('inteligencia');
+    } else if (subModuleId.startsWith('conf-') || subModuleId.startsWith('cfg-')) {
+      setActiveModule('configuracoes');
     } else if (subModuleId === 'quick-entry') {
       setIsQuickEntryOpen(true);
     } else if (subModuleId === 'approvals') {
       setIsApprovalsOpen(true);
+    } else if (subModuleId.startsWith('dash-') || subModuleId === 'notifications' || subModuleId === 'tasks' || subModuleId === 'calendar') {
+      setActiveModule('dashboard');
     } else {
       setActiveModule('dashboard');
     }

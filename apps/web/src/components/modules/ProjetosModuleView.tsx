@@ -31,6 +31,7 @@ import {
   Award,
   X,
   Play,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   projetosClient,
@@ -258,10 +259,17 @@ export const ProjetosModuleView: React.FC<Props> = ({
   const [metrics, setMetrics] = useState<ProjetosMetrics | null>(null);
   const [projects, setProjects] = useState<EventProject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [sectionId, setSectionId] = useState<string>(activeSection || 'proj-dashboard');
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 4000);
+  };
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<
-    'eventos' | 'redes' | 'escalas' | 'monitor' | 'alvaras'
+    'eventos' | 'redes' | 'escalas' | 'monitor' | 'alvaras' | 'calendario' | 'kpis'
   >('eventos');
 
   // Search & Filter
@@ -309,15 +317,22 @@ export const ProjetosModuleView: React.FC<Props> = ({
     loadData();
   }, []);
 
-  // Sync activeSection with tabs
+  // Sync activeSection with internal sectionId
   useEffect(() => {
-    if (!activeSection) return;
-    if (activeSection === 'proj-dashboard' || activeSection === 'proj-central-eventos' || activeSection === 'proj-calendario-operacoes') setActiveTab('eventos');
-    else if (activeSection === 'proj-redes-conexoes' || activeSection === 'proj-servidores-locais' || activeSection === 'proj-mapas-layout') setActiveTab('redes');
-    else if (activeSection === 'proj-escalas-campo' || activeSection === 'proj-credenciamento-staff') setActiveTab('escalas');
-    else if (activeSection === 'proj-monitor-portarias' || activeSection === 'proj-incidentes-campo' || activeSection === 'proj-fluxo-publico') setActiveTab('monitor');
-    else if (activeSection === 'proj-alvaras-prefeitura' || activeSection === 'proj-laudos-bombeiros') setActiveTab('alvaras');
+    if (activeSection) {
+      setSectionId(activeSection);
+    }
   }, [activeSection]);
+
+  const handleSelectSection = (id: string) => {
+    setSectionId(id);
+    if (onSelectSection) onSelectSection(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const currentSubmenu = useMemo(() => {
+    return PROJ_SUBMENUS.find((s) => s.id === sectionId) || PROJ_SUBMENUS[0];
+  }, [sectionId]);
 
   const groups = useMemo(() => {
     const list = Array.from(new Set(PROJ_SUBMENUS.map((s) => s.group)));
@@ -381,9 +396,627 @@ export const ProjetosModuleView: React.FC<Props> = ({
     }
   };
 
+  const renderEventosTab = () => (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder="Buscar por código, evento ou praça..."
+              value={projectSearch}
+              onChange={(e) => setProjectSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white text-slate-800"
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
+          >
+            <option value="TODOS">Todos os Status</option>
+            <option value="EM_OPERACAO">Em Operação (Ao Vivo)</option>
+            <option value="MONTAGEM">Em Montagem Técnica</option>
+            <option value="PLANEJAMENTO">Em Planejamento</option>
+            <option value="CONCLUIDO">Concluído</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500">
+            Exibindo <strong>{filteredProjects.length}</strong> projetos de eventos
+          </span>
+          <button
+            onClick={() => setIsNewProjectModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Novo Projeto</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tabela de Projetos */}
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th className="py-3 px-4">Código / Espetáculo</th>
+              <th className="py-3 px-4">Praça / Venue</th>
+              <th className="py-3 px-4">Data & Horário</th>
+              <th className="py-3 px-4">Capacidade / Catracas</th>
+              <th className="py-3 px-4">Coordenação / Staff</th>
+              <th className="py-3 px-4">Status Operacional</th>
+              <th className="py-3 px-4 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredProjects.map((p) => (
+              <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                <td className="py-3 px-4">
+                  <div className="font-bold text-slate-900">{p.code}</div>
+                  <div className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 max-w-sm">
+                    {p.title}
+                  </div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="font-semibold text-slate-900">{p.venueName}</div>
+                  <span className="text-[10px] text-slate-500">{p.venueType}</span>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="text-slate-900 font-medium">{p.eventDate}</div>
+                  <div className="text-[10px] text-slate-500">Portões: {p.doorsOpenTime}</div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="font-bold text-slate-900">{p.expectedAudience.toLocaleString()} pessoas</div>
+                  <div className="text-[11px] text-slate-500">{p.turnstilesTotal} catracas · {p.pdvsTotal} PDVs</div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <div className="text-slate-900 font-medium">{p.leadCoordinator.split('(')[0]}</div>
+                  <div className="text-[10px] text-blue-700 font-semibold">{p.staffAssignedCount} operadores</div>
+                </td>
+
+                <td className="py-3 px-4">
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      p.status === 'EM_OPERACAO'
+                        ? 'bg-red-100 text-red-800 animate-pulse'
+                        : p.status === 'MONTAGEM'
+                        ? 'bg-amber-100 text-amber-800'
+                        : p.status === 'PLANEJAMENTO'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}
+                  >
+                    {p.status === 'EM_OPERACAO'
+                      ? '● Ao Vivo (Portas Abertas)'
+                      : p.status === 'MONTAGEM'
+                      ? 'Montagem Técnica'
+                      : p.status === 'PLANEJAMENTO'
+                      ? 'Planejamento D-N'
+                      : 'Concluído'}
+                  </span>
+                </td>
+
+                <td className="py-3 px-4 text-right">
+                  <button
+                    onClick={() => {
+                      setSelectedProject(p);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    className="p-1.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Ver ficha técnica da operação"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderMonitorTab = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-red-600 animate-ping shrink-0" />
+          <div>
+            <h3 className="text-sm font-bold text-red-950">
+              Painel de Portaria em Tempo Real — Evento Ativo
+            </h3>
+            <p className="text-xs text-red-800">
+              Teatro Fernanda Montenegro — Noite de Comédia Stand-Up & Gravação
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <div className="text-xs font-bold text-slate-900">
+              488 / 520 Validados
+            </div>
+            <div className="text-[10px] text-emerald-700 font-bold">
+              93.8% de Ocupação
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const live = projects.find((p) => p.status === 'EM_OPERACAO');
+              if (live) {
+                handleSimulateCheckin(live.id);
+                showNotification('Leitura simulada na portaria ativa!');
+              }
+            }}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
+          >
+            + Registrar Leitura
+          </button>
+        </div>
+      </div>
+
+      {/* Grid dos Portões e Catracas do Evento Ativo */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-800">Catraca 01 (Foyer Entrada A)</span>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+              Online
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">182 pessoas</div>
+          <div className="text-xs text-slate-500 mt-1">Velocidade: 0.58s / leitor óptico</div>
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
+            <div className="bg-blue-600 h-full w-[95%]" />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-800">Catraca 02 (Foyer Entrada B)</span>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+              Online
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">194 pessoas</div>
+          <div className="text-xs text-slate-500 mt-1">Velocidade: 0.62s / leitor óptico</div>
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
+            <div className="bg-blue-600 h-full w-[98%]" />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-slate-800">Catraca 03 (Acessibilidade)</span>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+              Online
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">112 pessoas</div>
+          <div className="text-xs text-slate-500 mt-1">Velocidade: 0.70s / leitor óptico</div>
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
+            <div className="bg-blue-600 h-full w-[70%]" />
+          </div>
+        </div>
+      </div>
+
+      {/* Informações Técnicas de Tolerância */}
+      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
+        <div className="text-xs text-slate-700 leading-relaxed">
+          <strong>Contingência de Duplicidade Ativa:</strong> Todos os leitores sincronizam via protocolo UDP local com o mini-servidor Edge Cache da DiskIngressos em menos de 15ms. Qualquer tentativa de ingresso reutilizado é bloqueada instantaneamente na catraca física mesmo se a internet da praça estiver instável.
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderRedesTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Infraestrutura de Redes Redundantes & Starlink
+          </h3>
+          <p className="text-xs text-slate-500">
+            Links contratados para arenas, estádios e teatros com tolerância a falhas
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wifi className="w-4 h-4 text-blue-700" />
+              <span className="text-xs font-bold text-slate-900">
+                Pedreira Paulo Leminski — Links de Alta Densidade
+              </span>
+            </div>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+              Operacional
+            </span>
+          </div>
+
+          <div className="space-y-2 text-xs">
+            <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="font-bold text-slate-800">Claro Fibra Dedicada 1Gbps</div>
+                <div className="text-[10px] text-slate-500">Latência: 6ms · Rota Curitiba Datacenter</div>
+              </div>
+              <span className="text-emerald-700 font-bold text-[10px]">Primário Ativo</span>
+            </div>
+
+            <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="font-bold text-slate-800">Starlink Satélite Gen 3 (250 Mbps)</div>
+                <div className="text-[10px] text-slate-500">Latência: 32ms · Antena Robusta Externa</div>
+              </div>
+              <span className="text-indigo-700 font-bold text-[10px]">Hot Standby</span>
+            </div>
+
+            <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="font-bold text-slate-800">Vivo 5G Industrial Failover (180 Mbps)</div>
+                <div className="text-[10px] text-slate-500">Modem Teltonika com Chip M2M Dedicado</div>
+              </div>
+              <span className="text-slate-600 font-bold text-[10px]">Terciário</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-indigo-700" />
+              <span className="text-xs font-bold text-slate-900">
+                Servidores Locais de Contingência (Edge Cache)
+              </span>
+            </div>
+            <span className="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">
+              Sincronizado
+            </span>
+          </div>
+
+          <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Base Local de QR Codes:</span>
+              <strong className="text-slate-900">22.500 chaves criptográficas SHA-256</strong>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Tempo de Sincronização:</span>
+              <strong className="text-emerald-700">A cada 30 segundos</strong>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Autonomia 100% Offline:</span>
+              <strong className="text-blue-700">72 horas contínuas</strong>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">No-break de Campo:</span>
+              <strong className="text-emerald-700">Nobreak Senoidal 3kVA (4h bateria)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderEscalasTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Escalas Operacionais de Campo & Credenciamento
+          </h3>
+          <p className="text-xs text-slate-500">
+            Distribuição de postos por portão, horário de apresentação e crachás de acesso
+          </p>
+        </div>
+      </div>
+
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th className="py-3 px-4">Função / Posto de Trabalho</th>
+              <th className="py-3 px-4">Evento Vinculado</th>
+              <th className="py-3 px-4">Efetivo Escalado</th>
+              <th className="py-3 px-4">Horário de Apresentação</th>
+              <th className="py-3 px-4">Responsável Técnico</th>
+              <th className="py-3 px-4 text-right">Status do Ponto</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            <tr>
+              <td className="py-3 px-4 font-bold text-slate-900">Operadores de Catracas Eletrônicas</td>
+              <td className="py-3 px-4 text-slate-700">Pedreira Paulo Leminski</td>
+              <td className="py-3 px-4 font-bold text-blue-700">28 operadores</td>
+              <td className="py-3 px-4 text-slate-600">D-0 às 12:00</td>
+              <td className="py-3 px-4 text-slate-700">Luciano Ferraz</td>
+              <td className="py-3 px-4 text-right">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Confirmado
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td className="py-3 px-4 font-bold text-slate-900">Operadores de Caixa de Bilheteria Local</td>
+              <td className="py-3 px-4 text-slate-700">Pedreira Paulo Leminski</td>
+              <td className="py-3 px-4 font-bold text-blue-700">18 caixas</td>
+              <td className="py-3 px-4 text-slate-600">D-0 às 11:30</td>
+              <td className="py-3 px-4 text-slate-700">Mariana Silveira</td>
+              <td className="py-3 px-4 text-right">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Confirmado
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <td className="py-3 px-4 font-bold text-slate-900">Técnicos de Suporte de TI & Redes</td>
+              <td className="py-3 px-4 text-slate-700">Teatro Positivo & Pedreira</td>
+              <td className="py-3 px-4 font-bold text-blue-700">8 engenheiros / técnicos</td>
+              <td className="py-3 px-4 text-slate-600">D-1 às 08:00</td>
+              <td className="py-3 px-4 text-slate-700">Marcio Silva</td>
+              <td className="py-3 px-4 text-right">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Em Campo
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderAlvarasTab = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Vistorias Técnicas, Alvarás Municipais & Corpo de Bombeiros
+          </h3>
+          <p className="text-xs text-slate-500">
+            Auditoria compulsória de documentação para abertura legal dos portões de acesso
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {projects.map((p) => (
+          <div key={p.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-900">{p.title}</div>
+                <div className="text-[11px] text-slate-500">{p.venueName} · {p.eventDate}</div>
+              </div>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+                100% Liberado
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
+                <span className="text-slate-600">Alvará Prefeitura:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Deferido
+                </span>
+              </div>
+
+              <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
+                <span className="text-slate-600">Laudo Bombeiros:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Aprovado
+                </span>
+              </div>
+
+              <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
+                <span className="text-slate-600">Ofício PM / Setran:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Protocolado
+                </span>
+              </div>
+
+              <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
+                <span className="text-slate-600">Contingência Edge:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Testado
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCalendarioTab = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Cronograma de Montagem & Contagem Regressiva (D-5 a D-0)</h3>
+          <p className="text-xs text-slate-500">Fluxo cronológico de preparação técnica para os próximos espetáculos</p>
+        </div>
+        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">
+          Próximo: Pedreira Paulo Leminski
+        </span>
+      </div>
+
+      <div className="space-y-4">
+        {[
+          { day: 'D-5', time: '09:00', title: 'Vistoria Técnica de Campo & Levantamento de Infraestrutura', desc: 'Reunião no local com produção técnica, medição de aterramento e pontos de energia.', status: 'CONCLUIDO' },
+          { day: 'D-3', time: '08:00', title: 'Passagem de Cabeamento Estruturado & Antenas Starlink', desc: 'Lançamento de fibra óptica blindada, fixação das antenas Starlink no alto das portarias.', status: 'CONCLUIDO' },
+          { day: 'D-2', time: '10:00', title: 'Montagem de Catracas Eletrônicas & Mini-Servidor Edge Cache', desc: 'Posicionamento das 47 catracas, configuração dos switches industriais e IP estático.', status: 'CONCLUIDO' },
+          { day: 'D-1', time: '14:00', title: 'Homologação de Alvarás, Teste de Bombeiros & Estresse de Leitura', desc: 'Auditoria compulsória, teste de 1.000 validações/minuto offline no Edge Server local.', status: 'EM_ANDAMENTO' },
+          { day: 'D-0', time: '13:00', title: 'Briefing Operacional de Equipes & Entrega de PDAs', desc: 'Apresentação de 110 colaboradores, distribuição de rádios comunicadores e crachás.', status: 'PENDENTE' },
+          { day: 'D-0', time: '17:00', title: 'Abertura Oficial dos Portões & Monitoramento ao Vivo', desc: 'Acionamento do painel D-0, telemetria de catracas e suporte presencial imediato.', status: 'PENDENTE' },
+          { day: 'D-0', time: '23:30', title: 'Fechamento de Portaria, Borderô Físico & Desmobilização', desc: 'Conferência de cortesias, encerramento de catracas e inventário reverso de equipamentos.', status: 'PENDENTE' },
+        ].map((step, idx) => (
+          <div key={idx} className="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-300 transition">
+            <span className={`px-2.5 py-1 rounded-lg text-xs font-black shrink-0 ${
+              step.status === 'CONCLUIDO' ? 'bg-emerald-100 text-emerald-800' :
+              step.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-800 animate-pulse' : 'bg-slate-100 text-slate-600'
+            }`}>
+              {step.day} · {step.time}
+            </span>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-900">{step.title}</h4>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  step.status === 'CONCLUIDO' ? 'bg-emerald-50 text-emerald-700' :
+                  step.status === 'EM_ANDAMENTO' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {step.status}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">{step.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderKpisOperacionais = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Latência Starlink</span>
+          <div className="text-2xl font-black text-emerald-700 mt-2">28 ms</div>
+          <span className="text-xs text-slate-500 mt-1 block">Sem perda de pacotes</span>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Capacidade de Pico</span>
+          <div className="text-2xl font-black text-blue-700 mt-2">7.200 /h</div>
+          <span className="text-xs text-slate-500 mt-1 block">Validações por hora</span>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Bateria Média PDAs</span>
+          <div className="text-2xl font-black text-purple-700 mt-2">94%</div>
+          <span className="text-xs text-purple-700 font-semibold mt-1 block">38 coletores ativos</span>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Fila Offline Edge</span>
+          <div className="text-2xl font-black text-slate-900 mt-2">0 pendente</div>
+          <span className="text-xs text-emerald-600 font-semibold mt-1 block">100% sincronizado</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderGenericProjSubmenu = (item: ProjSubmenuDef) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Operações em {item.label}</span>
+          <div className="text-2xl font-black text-slate-900 mt-2">100% Homologado</div>
+          <span className="text-xs text-emerald-600 font-semibold mt-1 block">Protocolo operacional DiskIngressos</span>
+        </div>
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Equipamentos Vinculados</span>
+          <div className="text-2xl font-black text-blue-700 mt-2">47 Unidades</div>
+          <span className="text-xs text-slate-500 mt-1 block">Alocadas na praça principal</span>
+        </div>
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Status de Prontidão</span>
+          <div className="text-2xl font-black text-emerald-700 mt-2">Pronto para Show</div>
+          <span className="text-xs text-emerald-600 font-semibold mt-1 block">Auditoria técnica aprovada</span>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h3 className="font-bold text-base text-slate-900">{item.label}</h3>
+            <p className="text-xs text-slate-500">{item.purpose}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => showNotification(`Relatório operacional de ${item.label} gerado com sucesso!`)}
+              className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
+            >
+              Exportar Relatório Técnico
+            </button>
+            <button
+              onClick={() => setIsNewProjectModalOpen(true)}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+            >
+              + Novo Registro
+            </button>
+          </div>
+        </div>
+
+        <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th className="py-3 px-4">Referência Técnica</th>
+                <th className="py-3 px-4">Espetáculo / Local</th>
+                <th className="py-3 px-4">Responsável em Campo</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {projects.slice(0, 4).map((p, idx) => (
+                <tr key={idx} className="hover:bg-slate-50 transition">
+                  <td className="py-3 px-4 font-mono font-bold text-blue-700">
+                    {p.code}
+                  </td>
+                  <td className="py-3 px-4 font-semibold text-slate-900">
+                    <div>{p.title}</div>
+                    <div className="text-[11px] text-slate-500 font-normal">{p.venueName}</div>
+                  </td>
+                  <td className="py-3 px-4 text-slate-700">{p.leadCoordinator.split('(')[0]}</td>
+                  <td className="py-3 px-4">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <button
+                      onClick={() => {
+                        setSelectedProject(p);
+                        setIsDetailsModalOpen(true);
+                      }}
+                      className="text-blue-700 hover:underline font-bold"
+                    >
+                      Ficha Técnica
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const isDashboardHub = sectionId === 'proj-dashboard';
+
   return (
     <div className="space-y-6">
-      {/* 1. Header do Módulo */}
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-bottom-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-xs font-medium">{notification}</span>
+        </div>
+      )}
+
+      {isDashboardHub ? (
+        <>
+          {/* 1. Header do Módulo */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -570,18 +1203,11 @@ export const ProjetosModuleView: React.FC<Props> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {filteredSubmenus.map((item) => {
             const Icon = item.icon;
-            const isCurrent = activeSection === item.id;
+            const isCurrent = sectionId === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  if (onSelectSection) onSelectSection(item.id);
-                  if (item.id === 'proj-dashboard' || item.id === 'proj-central-eventos' || item.id === 'proj-calendario-operacoes') setActiveTab('eventos');
-                  else if (item.id === 'proj-redes-conexoes' || item.id === 'proj-servidores-locais' || item.id === 'proj-mapas-layout') setActiveTab('redes');
-                  else if (item.id === 'proj-escalas-campo' || item.id === 'proj-credenciamento-staff') setActiveTab('escalas');
-                  else if (item.id === 'proj-monitor-portarias' || item.id === 'proj-incidentes-campo' || item.id === 'proj-fluxo-publico') setActiveTab('monitor');
-                  else if (item.id === 'proj-alvaras-prefeitura' || item.id === 'proj-laudos-bombeiros') setActiveTab('alvaras');
-                }}
+                onClick={() => handleSelectSection(item.id)}
                 className={`text-left p-3 rounded-xl border transition-all duration-150 flex flex-col justify-between ${
                   isCurrent
                     ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-500'
@@ -679,456 +1305,148 @@ export const ProjetosModuleView: React.FC<Props> = ({
             <ShieldCheck className="w-4 h-4" />
             <span>5. Vistorias, Alvarás & Bombeiros</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('calendario')}
+            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'calendario'
+                ? 'border-blue-700 text-blue-700'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>6. Cronograma D-N</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('kpis')}
+            className={`flex items-center gap-2 pb-3 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'kpis'
+                ? 'border-blue-700 text-blue-700'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>7. Telemetria & KPIs</span>
+          </button>
         </div>
 
         {/* Content Area */}
         <div className="p-6">
-          {/* TAB 1: CENTRAL DE PROJETOS */}
-          {activeTab === 'eventos' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <div className="relative w-full sm:w-80">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      placeholder="Buscar por código, evento ou praça..."
-                      value={projectSearch}
-                      onChange={(e) => setProjectSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white text-slate-800"
-                    />
-                  </div>
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  >
-                    <option value="TODOS">Todos os Status</option>
-                    <option value="EM_OPERACAO">Em Operação (Ao Vivo)</option>
-                    <option value="MONTAGEM">Em Montagem Técnica</option>
-                    <option value="PLANEJAMENTO">Em Planejamento</option>
-                    <option value="CONCLUIDO">Concluído</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">
-                    Exibindo <strong>{filteredProjects.length}</strong> projetos de eventos
-                  </span>
-                  <button
-                    onClick={() => setIsNewProjectModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Novo Projeto</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Tabela de Projetos */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-4">Código / Espetáculo</th>
-                      <th className="py-3 px-4">Praça / Venue</th>
-                      <th className="py-3 px-4">Data & Horário</th>
-                      <th className="py-3 px-4">Capacidade / Catracas</th>
-                      <th className="py-3 px-4">Coordenação / Staff</th>
-                      <th className="py-3 px-4">Status Operacional</th>
-                      <th className="py-3 px-4 text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {filteredProjects.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{p.code}</div>
-                          <div className="text-[11px] text-slate-600 mt-0.5 line-clamp-1 max-w-sm">
-                            {p.title}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="font-semibold text-slate-900">{p.venueName}</div>
-                          <span className="text-[10px] text-slate-500">{p.venueType}</span>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="text-slate-900 font-medium">{p.eventDate}</div>
-                          <div className="text-[10px] text-slate-500">Portões: {p.doorsOpenTime}</div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{p.expectedAudience.toLocaleString()} pessoas</div>
-                          <div className="text-[11px] text-slate-500">{p.turnstilesTotal} catracas · {p.pdvsTotal} PDVs</div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <div className="text-slate-900 font-medium">{p.leadCoordinator.split('(')[0]}</div>
-                          <div className="text-[10px] text-blue-700 font-semibold">{p.staffAssignedCount} operadores</div>
-                        </td>
-
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                              p.status === 'EM_OPERACAO'
-                                ? 'bg-red-100 text-red-800 animate-pulse'
-                                : p.status === 'MONTAGEM'
-                                ? 'bg-amber-100 text-amber-800'
-                                : p.status === 'PLANEJAMENTO'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-emerald-100 text-emerald-800'
-                            }`}
-                          >
-                            {p.status === 'EM_OPERACAO'
-                              ? '● Ao Vivo (Portas Abertas)'
-                              : p.status === 'MONTAGEM'
-                              ? 'Montagem Técnica'
-                              : p.status === 'PLANEJAMENTO'
-                              ? 'Planejamento D-N'
-                              : 'Concluído'}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedProject(p);
-                              setIsDetailsModalOpen(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Ver ficha técnica da operação"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: MONITOR D-0 EM TEMPO REAL */}
-          {activeTab === 'monitor' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-red-600 animate-ping shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-bold text-red-950">
-                      Painel de Portaria em Tempo Real — Evento Ativo
-                    </h3>
-                    <p className="text-xs text-red-800">
-                      Teatro Fernanda Montenegro — Noite de Comédia Stand-Up & Gravação
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-slate-900">
-                      488 / 520 Validados
-                    </div>
-                    <div className="text-[10px] text-emerald-700 font-bold">
-                      93.8% de Ocupação
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const live = projects.find((p) => p.status === 'EM_OPERACAO');
-                      if (live) handleSimulateCheckin(live.id);
-                    }}
-                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors"
-                  >
-                    + Registrar Leitura
-                  </button>
-                </div>
-              </div>
-
-              {/* Grid dos Portões e Catracas do Evento Ativo */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-800">Catraca 01 (Foyer Entrada A)</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                      Online
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-slate-900">182 pessoas</div>
-                  <div className="text-xs text-slate-500 mt-1">Velocidade: 0.58s / leitor óptico</div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
-                    <div className="bg-blue-600 h-full w-[95%]" />
-                  </div>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-800">Catraca 02 (Foyer Entrada B)</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                      Online
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-slate-900">194 pessoas</div>
-                  <div className="text-xs text-slate-500 mt-1">Velocidade: 0.62s / leitor óptico</div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
-                    <div className="bg-blue-600 h-full w-[98%]" />
-                  </div>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-800">Catraca 03 (Acessibilidade)</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                      Online
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-slate-900">112 pessoas</div>
-                  <div className="text-xs text-slate-500 mt-1">Velocidade: 0.70s / leitor óptico</div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3">
-                    <div className="bg-blue-600 h-full w-[70%]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Informações Técnicas de Tolerância */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-700 leading-relaxed">
-                  <strong>Contingência de Duplicidade Ativa:</strong> Todos os leitores sincronizam via protocolo UDP local com o mini-servidor Edge Cache da DiskIngressos em menos de 15ms. Qualquer tentativa de ingresso reutilizado é bloqueada instantaneamente na catraca física mesmo se a internet da praça estiver instável.
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: CONECTIVIDADE & REDES */}
-          {activeTab === 'redes' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Infraestrutura de Redes Redundantes & Starlink
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Links contratados para arenas, estádios e teatros com tolerância a falhas
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Wifi className="w-4 h-4 text-blue-700" />
-                      <span className="text-xs font-bold text-slate-900">
-                        Pedreira Paulo Leminski — Links de Alta Densidade
-                      </span>
-                    </div>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
-                      Operacional
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-slate-800">Claro Fibra Dedicada 1Gbps</div>
-                        <div className="text-[10px] text-slate-500">Latência: 6ms · Rota Curitiba Datacenter</div>
-                      </div>
-                      <span className="text-emerald-700 font-bold text-[10px]">Primário Ativo</span>
-                    </div>
-
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-slate-800">Starlink Satélite Gen 3 (250 Mbps)</div>
-                        <div className="text-[10px] text-slate-500">Latência: 32ms · Antena Robusta Externa</div>
-                      </div>
-                      <span className="text-indigo-700 font-bold text-[10px]">Hot Standby</span>
-                    </div>
-
-                    <div className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-slate-800">Vivo 5G Industrial Failover (180 Mbps)</div>
-                        <div className="text-[10px] text-slate-500">Modem Teltonika com Chip M2M Dedicado</div>
-                      </div>
-                      <span className="text-slate-600 font-bold text-[10px]">Terciário</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Server className="w-4 h-4 text-indigo-700" />
-                      <span className="text-xs font-bold text-slate-900">
-                        Servidores Locais de Contingência (Edge Cache)
-                      </span>
-                    </div>
-                    <span className="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">
-                      Sincronizado
-                    </span>
-                  </div>
-
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-600">Base Local de QR Codes:</span>
-                      <strong className="text-slate-900">22.500 chaves criptográficas SHA-256</strong>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-600">Tempo de Sincronização:</span>
-                      <strong className="text-emerald-700">A cada 30 segundos</strong>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-600">Autonomia 100% Offline:</span>
-                      <strong className="text-blue-700">72 horas contínuas</strong>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-600">No-break de Campo:</span>
-                      <strong className="text-emerald-700">Nobreak Senoidal 3kVA (4h bateria)</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: ESCALAS DE CAMPO & STAFF */}
-          {activeTab === 'escalas' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Escalas Operacionais de Campo & Credenciamento
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Distribuição de postos por portão, horário de apresentação e crachás de acesso
-                  </p>
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-                    <tr>
-                      <th className="py-3 px-4">Função / Posto de Trabalho</th>
-                      <th className="py-3 px-4">Evento Vinculado</th>
-                      <th className="py-3 px-4">Efetivo Escalado</th>
-                      <th className="py-3 px-4">Horário de Apresentação</th>
-                      <th className="py-3 px-4">Responsável Técnico</th>
-                      <th className="py-3 px-4 text-right">Status do Ponto</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    <tr>
-                      <td className="py-3 px-4 font-bold text-slate-900">Operadores de Catracas Eletrônicas</td>
-                      <td className="py-3 px-4 text-slate-700">Pedreira Paulo Leminski</td>
-                      <td className="py-3 px-4 font-bold text-blue-700">28 operadores</td>
-                      <td className="py-3 px-4 text-slate-600">D-0 às 12:00</td>
-                      <td className="py-3 px-4 text-slate-700">Luciano Ferraz</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                          Confirmado
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="py-3 px-4 font-bold text-slate-900">Operadores de Caixa de Bilheteria Local</td>
-                      <td className="py-3 px-4 text-slate-700">Pedreira Paulo Leminski</td>
-                      <td className="py-3 px-4 font-bold text-blue-700">18 caixas</td>
-                      <td className="py-3 px-4 text-slate-600">D-0 às 11:30</td>
-                      <td className="py-3 px-4 text-slate-700">Mariana Silveira</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                          Confirmado
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className="py-3 px-4 font-bold text-slate-900">Técnicos de Suporte de TI & Redes</td>
-                      <td className="py-3 px-4 text-slate-700">Teatro Positivo & Pedreira</td>
-                      <td className="py-3 px-4 font-bold text-blue-700">8 engenheiros / técnicos</td>
-                      <td className="py-3 px-4 text-slate-600">D-1 às 08:00</td>
-                      <td className="py-3 px-4 text-slate-700">Marcio Silva</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                          Em Campo
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: VISTORIAS & ALVARÁS */}
-          {activeTab === 'alvaras' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    Vistorias Técnicas, Alvarás Municipais & Corpo de Bombeiros
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Auditoria compulsória de documentação para abertura legal dos portões de acesso
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {projects.map((p) => (
-                  <div key={p.id} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">{p.title}</div>
-                        <div className="text-[11px] text-slate-500">{p.venueName} · {p.eventDate}</div>
-                      </div>
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
-                        100% Liberado
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
-                        <span className="text-slate-600">Alvará Prefeitura:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Deferido
-                        </span>
-                      </div>
-
-                      <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
-                        <span className="text-slate-600">Laudo Bombeiros:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Aprovado
-                        </span>
-                      </div>
-
-                      <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
-                        <span className="text-slate-600">Ofício PM / Setran:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Protocolado
-                        </span>
-                      </div>
-
-                      <div className="p-2 bg-white border border-slate-200 rounded flex items-center justify-between">
-                        <span className="text-slate-600">Contingência Edge:</span>
-                        <span className="text-emerald-700 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Testado
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeTab === 'eventos' && renderEventosTab()}
+          {activeTab === 'monitor' && renderMonitorTab()}
+          {activeTab === 'redes' && renderRedesTab()}
+          {activeTab === 'escalas' && renderEscalasTab()}
+          {activeTab === 'alvaras' && renderAlvarasTab()}
+          {activeTab === 'calendario' && renderCalendarioTab()}
+          {activeTab === 'kpis' && renderKpisOperacionais()}
         </div>
       </div>
+    </>
+  ) : (
+    /* DEDICATED SCREEN VIEW FOR SPECIFIC SUBMENU */
+    <div className="space-y-6">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => handleSelectSection('proj-dashboard')}
+              className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition shadow-xs"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar ao Hub de Projetos</span>
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Projetos & Infraestrutura · {currentSubmenu?.group || 'Módulo'}
+                </span>
+                {currentSubmenu?.badge && (
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentSubmenu.badgeColor || 'bg-blue-100 text-blue-800'}`}>
+                    {currentSubmenu.badge}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
+                {currentSubmenu?.icon && React.createElement(currentSubmenu.icon, { className: 'w-6 h-6 text-blue-700' })}
+                <span>{currentSubmenu?.label || 'Visualização Dedicada'}</span>
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                {currentSubmenu?.purpose || 'Planejamento e controle de campo para controle de acesso.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const live = projects.find((p) => p.status === 'EM_OPERACAO');
+                if (live) handleSimulateCheckin(live.id);
+                else if (projects.length > 0) handleSimulateCheckin(projects[0].id);
+                showNotification('Simulação de check-in efetuada com sucesso!');
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors border border-emerald-300 shadow-2xs"
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>Simular Check-in (+15)</span>
+            </button>
+            <button
+              onClick={() => setIsNewProjectModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-xl transition-colors shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Novo Projeto</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* DEDICATED SUBMENU CONTENT */}
+      {(sectionId === 'proj-central-eventos' || sectionId === 'proj-dimensionamento-catracas' || sectionId === 'proj-dimensionamento-pdvs' || sectionId === 'proj-mapas-layout') && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderEventosTab()}
+        </div>
+      )}
+      {(sectionId === 'proj-monitor-portarias' || sectionId === 'proj-incidentes-campo' || sectionId === 'proj-fluxo-publico' || sectionId === 'proj-telemetria-bateria') && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderMonitorTab()}
+        </div>
+      )}
+      {(sectionId === 'proj-redes-conexoes' || sectionId === 'proj-links-redundantes' || sectionId === 'proj-servidores-locais' || sectionId === 'proj-switches-roteadores') && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderRedesTab()}
+        </div>
+      )}
+      {(sectionId === 'proj-escalas-campo' || sectionId === 'proj-credenciamento-staff' || sectionId === 'proj-ponto-geolocalizado' || sectionId === 'proj-treinamento-operadores') && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderEscalasTab()}
+        </div>
+      )}
+      {(sectionId === 'proj-alvaras-prefeitura' || sectionId === 'proj-laudos-bombeiros' || sectionId === 'proj-seguranca-policia' || sectionId === 'proj-checklists-vistoria') && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderAlvarasTab()}
+        </div>
+      )}
+      {sectionId === 'proj-calendario-operacoes' && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderCalendarioTab()}
+        </div>
+      )}
+      {sectionId === 'proj-kpis' && (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs">
+          {renderKpisOperacionais()}
+        </div>
+      )}
+      {![
+        'proj-central-eventos', 'proj-dimensionamento-catracas', 'proj-dimensionamento-pdvs', 'proj-mapas-layout',
+        'proj-monitor-portarias', 'proj-incidentes-campo', 'proj-fluxo-publico', 'proj-telemetria-bateria',
+        'proj-redes-conexoes', 'proj-links-redundantes', 'proj-servidores-locais', 'proj-switches-roteadores',
+        'proj-escalas-campo', 'proj-credenciamento-staff', 'proj-ponto-geolocalizado', 'proj-treinamento-operadores',
+        'proj-alvaras-prefeitura', 'proj-laudos-bombeiros', 'proj-seguranca-policia', 'proj-checklists-vistoria',
+        'proj-calendario-operacoes', 'proj-kpis',
+      ].includes(sectionId) && renderGenericProjSubmenu(currentSubmenu)}
+    </div>
+  )}
 
       {/* MODAL 1: NOVO PROJETO DE EVENTO */}
       {isNewProjectModalOpen && (
