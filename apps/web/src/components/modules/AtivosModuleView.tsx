@@ -413,7 +413,7 @@ export const AtivosModuleView: React.FC<Props> = ({
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-blue-700 uppercase tracking-wider mb-1">
               <Package className="w-4 h-4" />
-              <span>Ativos & Patrimônio / Hardwares de Bilheteria · DiskIngressos</span>
+              <span>Equipamentos & Hardwares de Bilheteria · DiskIngressos</span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               Gestão de Hardwares de Bilheteria, Catracas & Manutenção
@@ -553,7 +553,7 @@ export const AtivosModuleView: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-blue-700" />
             <span className="text-sm font-bold text-slate-900">
-              Central de Acesso Rápido — 24 Submenus de Ativos & Hardwares
+              Central de Acesso Rápido — 24 Submenus de Equipamentos
             </span>
             <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-full">
               {filteredSubmenus.length} de 24

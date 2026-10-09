@@ -522,7 +522,7 @@ export const navigationModules: ModuleNav[] = [
   },
   {
     id: 'ativos',
-    label: 'Ativos & Hardwares',
+    label: 'Equipamentos',
     icon: 'Package',
     groups: [
       {
