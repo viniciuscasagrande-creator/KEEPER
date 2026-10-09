@@ -112,8 +112,24 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
   const [isNewInvoiceModalOpen, setIsNewInvoiceModalOpen] = useState(false);
   const [isCalculateTaxModalOpen, setIsCalculateTaxModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isSplitFiscalModalOpen, setIsSplitFiscalModalOpen] = useState(false);
+  const [isWithholdingModalOpen, setIsWithholdingModalOpen] = useState(false);
   const [selectedInvoiceForCancel, setSelectedInvoiceForCancel] = useState<FiscalInvoice | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+
+  // Formulário de Split Fiscal
+  const [splitFiscalForm, setSplitFiscalForm] = useState({
+    eventName: 'Festival de Primavera 2026',
+    producerName: 'Opus Entretenimento Ltda',
+    producerDocument: '00.123.456/0001-99',
+    totalGmv: 500000,
+    convenienceRate: 10,
+    taxCity: 'Curitiba - PR',
+  });
+
+  // Filtros de Retenções na Fonte
+  const [withholdingFilterType, setWithholdingFilterType] = useState('TODOS');
+  const [withholdingFilterPeriod, setWithholdingFilterPeriod] = useState('2026-10');
 
   // Formulário de nova NFS-e
   const [newCustomerName, setNewCustomerName] = useState('');
@@ -275,6 +291,16 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
     }
   };
 
+  const handleSplitFiscalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const diskFee = splitFiscalForm.totalGmv * (splitFiscalForm.convenienceRate / 100);
+    const producerAmount = splitFiscalForm.totalGmv - diskFee;
+    setNotification(
+      `✅ Split fiscal homologado! R$ ${producerAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} segregados para o produtor e NFS-e de intermediação de R$ ${diskFee.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} programada.`
+    );
+    setIsSplitFiscalModalOpen(false);
+  };
+
   return (
     <div className="space-y-4 font-sans text-slate-900">
       {/* 1. Header Corporativo do Módulo Fiscal */}
@@ -315,6 +341,22 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
             >
               <Plus className="w-4 h-4" />
               <span>Nova NFS-e</span>
+            </button>
+
+            <button
+              onClick={() => setIsSplitFiscalModalOpen(true)}
+              className="h-9 px-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Split Fiscal (10% vs 90%)</span>
+            </button>
+
+            <button
+              onClick={() => setIsWithholdingModalOpen(true)}
+              className="h-9 px-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Retenções na Fonte</span>
             </button>
 
             <button
@@ -738,13 +780,22 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
                       Apuração mensal de tributos federais e municipais com conciliação automática para emissão de guias DARF.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setIsCalculateTaxModalOpen(true)}
-                    className="h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-                  >
-                    <Calculator className="w-4 h-4" />
-                    <span>Executar Apuração Out/2026</span>
-                  </button>
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button
+                      onClick={() => setIsWithholdingModalOpen(true)}
+                      className="h-9 px-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Sliders className="w-4 h-4" />
+                      <span>Extrato de Retenções</span>
+                    </button>
+                    <button
+                      onClick={() => setIsCalculateTaxModalOpen(true)}
+                      className="h-9 px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Calculator className="w-4 h-4" />
+                      <span>Executar Apuração Out/2026</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -846,6 +897,19 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
                       <div>• Documentos: <strong>Borderôs e Comprovantes Fiscais 1:1</strong></div>
                     </div>
                   </div>
+                </div>
+
+                <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 text-xs">
+                  <div className="text-[11px] text-slate-500 font-medium">
+                    A segregação tributária é executada no Split Engine com parametrização de alíquotas municipais e retenções automáticas.
+                  </div>
+                  <button
+                    onClick={() => setIsSplitFiscalModalOpen(true)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Simular & Homologar Split Fiscal (10% vs 90%)</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1427,6 +1491,350 @@ export function FiscalModuleView({ activeSection = 'fisc-dashboard-fiscal', onSe
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* MODAL 4: SPLIT FISCAL DE INGRESSOS VS TAXA DE CONVENIÊNCIA */}
+      {isSplitFiscalModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl p-6 space-y-4 text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Split Fiscal: Ingressos vs Taxa de Conveniência
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Segregação de receita fiduciária dos produtores (90%) vs faturamento próprio Disk (10%)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSplitFiscalModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSplitFiscalSubmit} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Evento / Espetáculo</label>
+                  <input
+                    type="text"
+                    required
+                    value={splitFiscalForm.eventName}
+                    onChange={(e) => setSplitFiscalForm({ ...splitFiscalForm, eventName: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Produtora Parceira</label>
+                  <input
+                    type="text"
+                    required
+                    value={splitFiscalForm.producerName}
+                    onChange={(e) => setSplitFiscalForm({ ...splitFiscalForm, producerName: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Volume Bruto GMV (R$)</label>
+                  <input
+                    type="number"
+                    required
+                    min={100}
+                    value={splitFiscalForm.totalGmv}
+                    onChange={(e) => setSplitFiscalForm({ ...splitFiscalForm, totalGmv: parseFloat(e.target.value) || 0 })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Taxa Disk (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={1}
+                    max={30}
+                    value={splitFiscalForm.convenienceRate}
+                    onChange={(e) => setSplitFiscalForm({ ...splitFiscalForm, convenienceRate: parseFloat(e.target.value) || 10 })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Município do ISS</label>
+                  <input
+                    type="text"
+                    value={splitFiscalForm.taxCity}
+                    onChange={(e) => setSplitFiscalForm({ ...splitFiscalForm, taxCity: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              {/* Segregação Visual de Valores */}
+              {(() => {
+                const diskFee = splitFiscalForm.totalGmv * (splitFiscalForm.convenienceRate / 100);
+                const producerAmt = splitFiscalForm.totalGmv - diskFee;
+                const iss = diskFee * 0.05;
+                const pis = diskFee * 0.0165;
+                const cofins = diskFee * 0.076;
+                const irpj = diskFee * 0.03;
+                const totalTaxes = iss + pis + cofins + irpj;
+                const netDisk = diskFee - totalTaxes;
+
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-amber-900 block">
+                          1. Custódia do Produtor ({(100 - splitFiscalForm.convenienceRate).toFixed(0)}%)
+                        </span>
+                        <div className="text-lg font-black text-amber-900">
+                          {fmt(producerAmt)}
+                        </div>
+                        <p className="text-[10px] text-amber-800 leading-tight">
+                          Patrimônio fiduciário de terceiros. Isento de incidência tributária na Disk.
+                        </p>
+                      </div>
+
+                      <div className="p-3.5 bg-indigo-50 rounded-xl border border-indigo-200 space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-indigo-900 block">
+                          2. Receita Própria Disk ({splitFiscalForm.convenienceRate}%)
+                        </span>
+                        <div className="text-lg font-black text-indigo-900">
+                          {fmt(diskFee)}
+                        </div>
+                        <p className="text-[10px] text-indigo-800 leading-tight">
+                          Base de cálculo oficial de NFS-e para tributação de ISS e PIS/COFINS.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Detalhamento dos Impostos Próprios Disk */}
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                      <span className="font-bold text-slate-800 block text-[11px] uppercase tracking-wider">
+                        Memória de Cálculo dos Tributos da Disk (Lucro Real):
+                      </span>
+                      <div className="grid grid-cols-4 gap-2 text-[11px]">
+                        <div className="bg-white p-2 rounded-lg border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">ISS Curitiba (5%)</span>
+                          <strong className="text-slate-900">{fmt(iss)}</strong>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">PIS (1,65%)</span>
+                          <strong className="text-slate-900">{fmt(pis)}</strong>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">COFINS (7,6%)</span>
+                          <strong className="text-slate-900">{fmt(cofins)}</strong>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-200">
+                          <span className="text-slate-500 block text-[10px]">IRPJ/CSLL (3%)</span>
+                          <strong className="text-slate-900">{fmt(irpj)}</strong>
+                        </div>
+                      </div>
+                      <div className="pt-1 flex items-center justify-between text-xs font-bold text-slate-800 border-t border-slate-200">
+                        <span>Total de Impostos Disk: <span className="text-rose-600">{fmt(totalTaxes)}</span></span>
+                        <span>Margem Líquida Disk: <span className="text-emerald-700">{fmt(netDisk)}</span></span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsSplitFiscalModalOpen(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Homologar Split & Emitir Lote NFS-e</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: RELATÓRIOS E GUIAS DE RETENÇÕES NA FONTE (ISS / PIS / COFINS / IRRF / CSRF) */}
+      {isWithholdingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 space-y-4 text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                  <Sliders className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Relatório & Extrato de Retenções Tributárias na Fonte
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Demonstrativo consolidado de CSRF (4,65%), IRRF (1,50%) e ISSQN retido por substituição tributária
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsWithholdingModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* KPIs Rápidos de Retenção */}
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <div className="p-3 bg-purple-50 rounded-xl border border-purple-200">
+                <span className="text-[10px] text-purple-900 font-bold uppercase block">Total Retido</span>
+                <div className="text-base font-black text-purple-950 mt-0.5">{fmt(42150.0)}</div>
+                <span className="text-[10px] text-purple-700">Out/2026</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-bold uppercase block">CSRF (4,65%)</span>
+                <div className="text-base font-black text-slate-900 mt-0.5">{fmt(22840.0)}</div>
+                <span className="text-[10px] text-slate-500">PIS/COFINS/CSLL</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-bold uppercase block">IRRF (1,50%)</span>
+                <div className="text-base font-black text-slate-900 mt-0.5">{fmt(6310.0)}</div>
+                <span className="text-[10px] text-slate-500">Intermediação</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-600 font-bold uppercase block">ISS Retido</span>
+                <div className="text-base font-black text-slate-900 mt-0.5">{fmt(13000.0)}</div>
+                <span className="text-[10px] text-slate-500">Curitiba e Praças</span>
+              </div>
+            </div>
+
+            {/* Filtros */}
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-[11px] font-bold text-slate-600">Filtrar Tributo:</span>
+              <button
+                type="button"
+                onClick={() => setWithholdingFilterType('TODOS')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                  withholdingFilterType === 'TODOS' ? 'bg-purple-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                Todos (4)
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithholdingFilterType('CSRF')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                  withholdingFilterType === 'CSRF' ? 'bg-purple-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                CSRF (4,65%)
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithholdingFilterType('IRRF')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                  withholdingFilterType === 'IRRF' ? 'bg-purple-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                IRRF (1,50%)
+              </button>
+              <button
+                type="button"
+                onClick={() => setWithholdingFilterType('ISS')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                  withholdingFilterType === 'ISS' ? 'bg-purple-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                ISSQN Retido (5,00%)
+              </button>
+            </div>
+
+            {/* Tabela de Retenções */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="py-2.5 px-3">Data</th>
+                    <th className="py-2.5 px-3">Produtor / Tomador</th>
+                    <th className="py-2.5 px-3">Tributo Retido</th>
+                    <th className="py-2.5 px-3">Base de Cálculo</th>
+                    <th className="py-2.5 px-3">Valor Retido</th>
+                    <th className="py-2.5 px-3 text-right">Protocolo EFD-Reinf</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[11px]">
+                  {[
+                    { id: '1', date: '08/10/2026', producer: 'Opus Entretenimento Ltda', cnpj: '00.123.456/0001-99', type: 'CSRF (PIS/COFINS/CSLL)', rate: '4,65%', base: 250000, value: 11625, reinfProtocol: 'REC-2026-991283' },
+                    { id: '2', date: '07/10/2026', producer: 'Live Curitiba Shows', cnpj: '11.222.333/0001-44', type: 'IRRF s/ Serviços Intermediação', rate: '1,50%', base: 180000, value: 2700, reinfProtocol: 'REC-2026-991284' },
+                    { id: '3', date: '05/10/2026', producer: 'Seven Produções Artísticas', cnpj: '22.333.444/0001-55', type: 'ISSQN Retido (Curitiba)', rate: '5,00%', base: 260000, value: 13000, reinfProtocol: 'DAM-PMC-44819' },
+                    { id: '4', date: '02/10/2026', producer: 'Teatro Positivo Produções', cnpj: '33.444.555/0001-66', type: 'CSRF (PIS/COFINS/CSLL)', rate: '4,65%', base: 241000, value: 11215, reinfProtocol: 'REC-2026-991285' },
+                  ]
+                    .filter((r) => {
+                      if (withholdingFilterType === 'CSRF') return r.type.includes('CSRF');
+                      if (withholdingFilterType === 'IRRF') return r.type.includes('IRRF');
+                      if (withholdingFilterType === 'ISS') return r.type.includes('ISS');
+                      return true;
+                    })
+                    .map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/70">
+                        <td className="py-2 px-3 font-mono text-slate-500">{item.date}</td>
+                        <td className="py-2 px-3">
+                          <div className="font-semibold text-slate-900">{item.producer}</div>
+                          <div className="text-[10px] text-slate-500 font-mono">{item.cnpj}</div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className="font-bold text-slate-800">{item.type}</span>
+                          <span className="text-[10px] text-slate-500 ml-1 font-mono">({item.rate})</span>
+                        </td>
+                        <td className="py-2 px-3 font-medium text-slate-700">{fmt(item.base)}</td>
+                        <td className="py-2 px-3 font-bold text-purple-800">{fmt(item.value)}</td>
+                        <td className="py-2 px-3 text-right font-mono text-[10px] text-slate-500">
+                          {item.reinfProtocol}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-100">
+              <span className="text-[11px] text-slate-500">
+                Informações em conformidade com o layout oficial da DCTFWeb e EFD-Reinf 2.1.
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNotification('Dossiê oficial de Retenções na Fonte exportado em CSV/PDF!')}
+                  className="px-3.5 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Exportar Dossiê</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsWithholdingModalOpen(false)}
+                  className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer"
+                >
+                  Fechar Extrato
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

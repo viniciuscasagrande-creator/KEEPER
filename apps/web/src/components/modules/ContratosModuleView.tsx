@@ -687,16 +687,25 @@ export const ContratosModuleView: React.FC<Props> = ({
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => showNotification(`Relatório oficial de ${item.label} gerado com sucesso!`)}
-                className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
+                onClick={() => setIsDigitalSignatureModalOpen(true)}
+                className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition flex items-center gap-1.5 shadow-2xs"
               >
-                Gerar Dossiê Oficial
+                <FileSignature className="w-3.5 h-3.5" />
+                <span>Assinatura Digital</span>
+              </button>
+              <button
+                onClick={() => setIsWarrantyModalOpen(true)}
+                className="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl border border-purple-200 transition flex items-center gap-1.5 shadow-2xs"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Garantias Fiduciárias</span>
               </button>
               <button
                 onClick={() => setIsContractModalOpen(true)}
-                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
               >
-                + Novo Instrumento
+                <Plus className="w-3.5 h-3.5" />
+                <span>Novo Contrato</span>
               </button>
             </div>
           </div>
@@ -772,15 +781,29 @@ export const ContratosModuleView: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 hidden md:inline">
             Exibindo <strong>{filteredContracts.length}</strong> contratos
           </span>
+          <button
+            onClick={() => setIsDigitalSignatureModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-200 shadow-2xs"
+          >
+            <FileSignature className="w-3.5 h-3.5" />
+            <span>Assinaturas</span>
+          </button>
+          <button
+            onClick={() => setIsWarrantyModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors border border-purple-200 shadow-2xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Garantias</span>
+          </button>
           <button
             onClick={() => setIsContractModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Novo Instrumento</span>
+            <span>Novo Contrato</span>
           </button>
         </div>
       </div>
@@ -1478,11 +1501,25 @@ export const ContratosModuleView: React.FC<Props> = ({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={() => setIsDigitalSignatureModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition border border-indigo-200 shadow-2xs"
+                >
+                  <FileSignature className="w-3.5 h-3.5" />
+                  <span>Assinaturas</span>
+                </button>
+                <button
+                  onClick={() => setIsWarrantyModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-xl transition border border-purple-200 shadow-2xs"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Garantias</span>
+                </button>
+                <button
                   onClick={() => setIsContractModalOpen(true)}
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-xl shadow-xs transition"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Novo Instrumento</span>
+                  <span>Novo Contrato</span>
                 </button>
               </div>
             </div>

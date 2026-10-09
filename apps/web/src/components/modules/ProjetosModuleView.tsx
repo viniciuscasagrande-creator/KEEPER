@@ -282,8 +282,30 @@ export const ProjetosModuleView: React.FC<Props> = ({
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [isChecklistD0ModalOpen, setIsChecklistD0ModalOpen] = useState(false);
   const [isStaffAllocationModalOpen, setIsStaffAllocationModalOpen] = useState(false);
+  const [isTurnstileTestModalOpen, setIsTurnstileTestModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<EventProject | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // Turnstile Test State
+  const [turnstileTestState, setTurnstileTestState] = useState({
+    selectedGate: 'Catraca 01 - Foyer Entrada Principal',
+    simulationMode: 'ONLINE_STARLINK' as 'ONLINE_STARLINK' | 'OFFLINE_EDGE',
+    ticketCode: 'TKT-2026-DISKINGRESSOS-994821-VIP',
+    attendeeName: 'Carlos Eduardo Ferreira',
+    ticketSector: 'Camarote Prime Disk',
+    isTesting: false,
+    lastResult: null as null | {
+      status: 'LIBERADO' | 'BLOQUEADO_DUPLICADO' | 'SETOR_INVALIDO';
+      message: string;
+      latencyMs: number;
+      timestamp: string;
+    },
+    testLogs: [
+      { id: '1', gate: 'Catraca 01 - Foyer Entrada Principal', ticket: 'TKT-00821-PISTA', result: 'LIBERADO', latency: '18ms', time: '14:22:10' },
+      { id: '2', gate: 'Catraca 02 - Portão Pista Premium', ticket: 'TKT-00822-PISTA', result: 'LIBERADO', latency: '19ms', time: '14:22:15' },
+      { id: '3', gate: 'Catraca 03 - Portão Camarote/VIP', ticket: 'TKT-00823-VIP', result: 'LIBERADO', latency: '16ms', time: '14:22:20' },
+    ],
+  });
 
   // Checklist D-0 Vistoria State
   const [checklistD0, setChecklistD0] = useState({
@@ -425,6 +447,74 @@ export const ProjetosModuleView: React.FC<Props> = ({
     }
   };
 
+  const handleRunTurnstileTest = (mode?: 'single' | 'batch') => {
+    if (mode === 'batch') {
+      showNotification('Iniciando bateria de estresse de 50 validações por catraca...');
+      setTurnstileTestState((prev) => ({
+        ...prev,
+        isTesting: true,
+      }));
+      setTimeout(() => {
+        const isOnline = turnstileTestState.simulationMode === 'ONLINE_STARLINK';
+        const lat = isOnline ? 21 : 2;
+        setTurnstileTestState((prev) => ({
+          ...prev,
+          isTesting: false,
+          lastResult: {
+            status: 'LIBERADO',
+            message: 'Bateria de 50 leituras concluída com 100% de sucesso. Vazão mecânica de 54 leituras/minuto.',
+            latencyMs: lat,
+            timestamp: new Date().toLocaleTimeString('pt-BR'),
+          },
+          testLogs: [
+            {
+              id: String(Date.now()),
+              gate: prev.selectedGate,
+              ticket: 'BAT-50-STRESS-TEST',
+              result: 'LIBERADO (50/50)',
+              latency: `${lat}ms`,
+              time: new Date().toLocaleTimeString('pt-BR'),
+            },
+            ...prev.testLogs,
+          ],
+        }));
+        showNotification('✅ Teste de Vazão Concluído! 50/50 leituras validadas sem falha.');
+      }, 700);
+      return;
+    }
+
+    setTurnstileTestState((prev) => ({
+      ...prev,
+      isTesting: true,
+    }));
+    setTimeout(() => {
+      const isOnline = turnstileTestState.simulationMode === 'ONLINE_STARLINK';
+      const latency = isOnline ? Math.floor(Math.random() * 8 + 15) : Math.floor(Math.random() * 3 + 1);
+      setTurnstileTestState((prev) => ({
+        ...prev,
+        isTesting: false,
+        lastResult: {
+          status: 'LIBERADO',
+          message: `Ingresso Válido! Giro mecânico liberado para ${prev.attendeeName} (${prev.ticketSector}).`,
+          latencyMs: latency,
+          timestamp: new Date().toLocaleTimeString('pt-BR'),
+        },
+        testLogs: [
+          {
+            id: String(Date.now()),
+            gate: prev.selectedGate,
+            ticket: prev.ticketCode,
+            result: 'LIBERADO',
+            latency: `${latency}ms`,
+            time: new Date().toLocaleTimeString('pt-BR'),
+          },
+          ...prev.testLogs.slice(0, 9),
+        ],
+      }));
+      showNotification('✅ Leitura óptica aprovada! Giro da catraca liberado.');
+    }, 350);
+  };
+
   const renderEventosTab = () => (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -454,9 +544,30 @@ export const ProjetosModuleView: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 hidden md:inline">
             Exibindo <strong>{filteredProjects.length}</strong> projetos de eventos
           </span>
+          <button
+            onClick={() => setIsTurnstileTestModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200 shadow-2xs"
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>Testar Catracas D-0</span>
+          </button>
+          <button
+            onClick={() => setIsChecklistD0ModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 shadow-2xs"
+          >
+            <FileCheck className="w-3.5 h-3.5" />
+            <span>Vistoria D-0</span>
+          </button>
+          <button
+            onClick={() => setIsStaffAllocationModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-200 shadow-2xs"
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Escala Staff</span>
+          </button>
           <button
             onClick={() => setIsNewProjectModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
@@ -577,6 +688,13 @@ export const ProjetosModuleView: React.FC<Props> = ({
               93.8% de Ocupação
             </div>
           </div>
+          <button
+            onClick={() => setIsTurnstileTestModalOpen(true)}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>Testar Catracas no Local</span>
+          </button>
           <button
             onClick={() => {
               const live = projects.find((p) => p.status === 'EM_OPERACAO');
@@ -1434,6 +1552,27 @@ export const ProjetosModuleView: React.FC<Props> = ({
               <span>Simular Check-in (+15)</span>
             </button>
             <button
+              onClick={() => setIsTurnstileTestModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors border border-emerald-300 shadow-2xs"
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Testar Catracas D-0</span>
+            </button>
+            <button
+              onClick={() => setIsChecklistD0ModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-800 bg-blue-100 hover:bg-blue-200 rounded-xl transition-colors border border-blue-300 shadow-2xs"
+            >
+              <FileCheck className="w-3.5 h-3.5" />
+              <span>Vistoria D-0</span>
+            </button>
+            <button
+              onClick={() => setIsStaffAllocationModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 rounded-xl transition-colors border border-indigo-300 shadow-2xs"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Escala Staff</span>
+            </button>
+            <button
               onClick={() => setIsNewProjectModalOpen(true)}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-xl transition-colors shadow-xs"
             >
@@ -1978,6 +2117,207 @@ export const ProjetosModuleView: React.FC<Props> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: TESTE DE CATRACAS NO LOCAL & HOMOLOGAÇÃO D-0 */}
+      {isTurnstileTestModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <Cpu className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Teste de Catracas no Local (Homologação D-0)</h2>
+                  <p className="text-xs text-slate-500">Validação óptica de QR-Code, ping Starlink vs Edge Offline e teste de vazão</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsTurnstileTestModalOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Status da Conectividade & Modo de Simulação */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Roteamento de Conexão</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTurnstileTestState({ ...turnstileTestState, simulationMode: 'ONLINE_STARLINK' })}
+                    className={`flex-1 py-1 px-2 rounded-lg font-bold text-[11px] transition flex items-center justify-center gap-1 border ${
+                      turnstileTestState.simulationMode === 'ONLINE_STARLINK'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                        : 'bg-white text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <Wifi className="w-3 h-3" />
+                    <span>Starlink (Cloud)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTurnstileTestState({ ...turnstileTestState, simulationMode: 'OFFLINE_EDGE' })}
+                    className={`flex-1 py-1 px-2 rounded-lg font-bold text-[11px] transition flex items-center justify-center gap-1 border ${
+                      turnstileTestState.simulationMode === 'OFFLINE_EDGE'
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
+                        : 'bg-white text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <Server className="w-3 h-3" />
+                    <span>Edge (Offline)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Telemetria de Campo</span>
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-800 pt-1">
+                  <span>Ping: <strong>{turnstileTestState.simulationMode === 'ONLINE_STARLINK' ? '18ms (Starlink)' : '2ms (Edge)'}</strong></span>
+                  <span className="text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[10px]">99.98% SLA</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Configuração da Leitura */}
+            <div className="space-y-3 text-xs bg-slate-50/70 p-3.5 rounded-xl border border-slate-200">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Catraca / Portão Testado</label>
+                  <select
+                    value={turnstileTestState.selectedGate}
+                    onChange={(e) => setTurnstileTestState({ ...turnstileTestState, selectedGate: e.target.value })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-slate-800 font-semibold"
+                  >
+                    <option value="Catraca 01 - Foyer Entrada Principal">Catraca 01 - Foyer Principal</option>
+                    <option value="Catraca 02 - Portão Pista Premium">Catraca 02 - Pista Premium</option>
+                    <option value="Catraca 03 - Portão Camarote/VIP">Catraca 03 - Camarote / VIP</option>
+                    <option value="Catraca 04 - Portão Arquibancada Sul">Catraca 04 - Arquibancada Sul</option>
+                    <option value="PDA Coletor 01 - Portão Staff / Convidados">PDA Coletor 01 - Portão Staff</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Ingresso / QR Code (Payload)</label>
+                  <input
+                    type="text"
+                    value={turnstileTestState.ticketCode}
+                    onChange={(e) => setTurnstileTestState({ ...turnstileTestState, ticketCode: e.target.value })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-slate-800 font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Portador Simulado</label>
+                  <input
+                    type="text"
+                    value={turnstileTestState.attendeeName}
+                    onChange={(e) => setTurnstileTestState({ ...turnstileTestState, attendeeName: e.target.value })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Setor / Modalidade</label>
+                  <input
+                    type="text"
+                    value={turnstileTestState.ticketSector}
+                    onChange={(e) => setTurnstileTestState({ ...turnstileTestState, ticketSector: e.target.value })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-slate-800"
+                  />
+                </div>
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  disabled={turnstileTestState.isTesting}
+                  onClick={() => handleRunTurnstileTest('single')}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5"
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                  <span>{turnstileTestState.isTesting ? 'Processando Leitura...' : 'Validar Leitura Óptica'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={turnstileTestState.isTesting}
+                  onClick={() => handleRunTurnstileTest('batch')}
+                  className="py-2.5 px-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Teste de Vazão (50 leituras)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Feedback da Última Leitura */}
+            {turnstileTestState.lastResult && (
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 animate-fadeIn">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold text-emerald-900 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>GIRO DE CATRACA LIBERADO COM SUCESSO</span>
+                  </span>
+                  <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-bold px-2 py-0.5 rounded-full">
+                    {turnstileTestState.lastResult.latencyMs}ms de resposta
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-800">{turnstileTestState.lastResult.message}</p>
+              </div>
+            )}
+
+            {/* Log de Leituras da Sessão */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+                Histórico Recente de Leituras na Portaria
+              </span>
+              <div className="border border-slate-200 rounded-xl overflow-hidden max-h-36 overflow-y-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="py-2 px-3">Horário</th>
+                      <th className="py-2 px-3">Catraca</th>
+                      <th className="py-2 px-3">Código QR</th>
+                      <th className="py-2 px-3">Latência</th>
+                      <th className="py-2 px-3 text-right">Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-[11px]">
+                    {turnstileTestState.testLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/70">
+                        <td className="py-1.5 px-3 font-mono text-slate-500">{log.time}</td>
+                        <td className="py-1.5 px-3 font-medium text-slate-800">{log.gate.split('-')[0]}</td>
+                        <td className="py-1.5 px-3 font-mono text-slate-600">{log.ticket}</td>
+                        <td className="py-1.5 px-3 text-slate-500">{log.latency}</td>
+                        <td className="py-1.5 px-3 text-right">
+                          <span className="text-emerald-700 font-bold text-[10px] bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                            {log.result}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsTurnstileTestModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-xs"
+              >
+                Concluir Testes
+              </button>
+            </div>
           </div>
         </div>
       )}

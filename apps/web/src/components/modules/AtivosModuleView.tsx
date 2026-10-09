@@ -503,15 +503,29 @@ export const AtivosModuleView: React.FC<Props> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 hidden md:inline">
             Exibindo <strong>{filteredAssets.length}</strong> de <strong>{assets.length}</strong> hardwares
           </span>
+          <button
+            onClick={() => setIsNewDispatchModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-200 shadow-2xs"
+          >
+            <Truck className="w-3.5 h-3.5" />
+            <span>Despachar Lote</span>
+          </button>
+          <button
+            onClick={() => setIsNewOrderModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors border border-amber-200 shadow-2xs"
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            <span>Registrar Avaria</span>
+          </button>
           <button
             onClick={() => setIsNewAssetModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Adicionar</span>
+            <span>Novo Equipamento</span>
           </button>
         </div>
       </div>
@@ -1062,16 +1076,25 @@ export const AtivosModuleView: React.FC<Props> = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => showNotification(`Relatório patrimonial de ${item.label} gerado com sucesso!`)}
-              className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition"
+              onClick={() => setIsNewDispatchModalOpen(true)}
+              className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition flex items-center gap-1.5 shadow-2xs"
             >
-              Exportar Relatório Patrimonial
+              <Truck className="w-3.5 h-3.5" />
+              <span>Despachar Lote</span>
+            </button>
+            <button
+              onClick={() => setIsNewOrderModalOpen(true)}
+              className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-xl border border-amber-200 transition flex items-center gap-1.5 shadow-2xs"
+            >
+              <Wrench className="w-3.5 h-3.5" />
+              <span>Registrar Avaria</span>
             </button>
             <button
               onClick={() => setIsNewAssetModalOpen(true)}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+              className="px-3.5 py-2 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
             >
-              + Novo Equipamento
+              <Plus className="w-3.5 h-3.5" />
+              <span>Novo Equipamento</span>
             </button>
           </div>
         </div>
@@ -1497,6 +1520,13 @@ export const AtivosModuleView: React.FC<Props> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsNewDispatchModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors border border-indigo-200 shadow-2xs"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span>Despachar Lote</span>
+            </button>
             <button
               onClick={() => setIsNewOrderModalOpen(true)}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-xl transition-colors border border-amber-300 shadow-2xs"
