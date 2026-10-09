@@ -202,7 +202,7 @@ export function HorizontalNav({
         <button
           onClick={() => handleButtonClick(mod.id, hasSubmenus)}
           onMouseEnter={() => handleButtonMouseEnter(mod.id, hasSubmenus)}
-          className={`w-full h-[40px] flex items-center justify-center px-2.5 py-2 rounded-lg text-xs lg:text-[13px] font-semibold tracking-normal transition-all whitespace-nowrap select-none group ${
+          className={`w-full h-[40px] flex items-center justify-center px-2 py-2 rounded-lg text-xs lg:text-[13px] font-semibold tracking-normal transition-all whitespace-nowrap select-none group text-center ${
             isActive
               ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
               : 'text-slate-300 hover:text-white hover:bg-slate-800 bg-slate-800/50 border border-slate-700/60'
@@ -213,9 +213,9 @@ export function HorizontalNav({
               : mod.label
           }
         >
-          <div className="flex items-center justify-center space-x-1.5 min-w-0 truncate">
+          <div className="w-full flex items-center justify-center gap-1.5 text-center">
             <Icon className="w-4 h-4 opacity-95 shrink-0" />
-            <span className="truncate text-center font-semibold">{mod.label}</span>
+            <span className="text-center font-semibold tracking-normal">{mod.label}</span>
             {hasSubmenus && (
               <ChevronDown
                 className={`w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-transform duration-150 shrink-0 ${
