@@ -260,12 +260,66 @@ export const navigationModules: ModuleNav[] = [
     icon: 'ShoppingCart',
     groups: [
       {
-        groupName: 'Processo de Aquisição',
+        groupName: 'Visão Geral',
         items: [
-          { id: 'comp-requests', label: 'Requisições de Compra' },
-          { id: 'comp-quotations', label: 'Cotações & Coleta de Preços' },
-          { id: 'comp-orders', label: 'Pedidos de Compra Aprovados' },
-          { id: 'comp-receipts', label: 'Recebimento Físico & Espelho NF' },
+          { id: 'comp-dashboard', label: 'Dashboard de Compras', description: 'KPIs, cotações, pedidos em aberto e orçamento', badge: 'Painel', badgeColor: 'bg-blue-100 text-blue-800' },
+          { id: 'comp-solicitacoes', label: 'Central de Solicitações', description: 'Requisições internas de compras e aprovação', badge: '12 Abertas', badgeColor: 'bg-amber-100 text-amber-800' },
+          { id: 'comp-planejamento', label: 'Planejamento de Compras', description: 'Previsão de demanda corporativa e compras sazonais' },
+        ],
+      },
+      {
+        groupName: 'Fornecedores e Cotações',
+        items: [
+          { id: 'comp-fornecedores', label: 'Cadastro de Fornecedores', description: 'Parceiros homologados, dados fiscais e contatos' },
+          { id: 'comp-homologacao', label: 'Homologação de Fornecedores', description: 'Compliance, certidões negativas e qualificação' },
+          { id: 'comp-rfq', label: 'Solicitação de Cotação (RFQ)', description: 'Disparo de cotações e coleta de propostas' },
+          { id: 'comp-mapa-comparativo', label: 'Mapa Comparativo', description: 'Comparativo de preços, prazos e condições' },
+          { id: 'comp-negociacao', label: 'Negociação Comercial', description: 'Registro de contrapropostas e saving gerado' },
+        ],
+      },
+      {
+        groupName: 'Pedidos e Contratações',
+        items: [
+          { id: 'comp-pedidos', label: 'Pedidos de Compra', description: 'Emissão e acompanhamento de ordens de compra', badge: '18 Ativos', badgeColor: 'bg-emerald-100 text-emerald-800' },
+          { id: 'comp-contratos', label: 'Contratos de Fornecimento', description: 'SLA, vigência, renovação e cláusulas' },
+          { id: 'comp-recorrentes', label: 'Compras Recorrentes', description: 'Suprimentos contínuos e assinaturas mensais' },
+          { id: 'comp-servicos', label: 'Aquisição de Serviços', description: 'Contratação de terceirizados, consultorias e laudos' },
+          { id: 'comp-aprovacoes', label: 'Aprovações de Compras', description: 'Alçadas de aprovação por centro de custo e diretoria' },
+        ],
+      },
+      {
+        groupName: 'Recebimento e Controle',
+        items: [
+          { id: 'comp-recebimento', label: 'Recebimento de Materiais', description: 'Conferência física, inspeção e aceite de entrega' },
+          { id: 'comp-aceite-servicos', label: 'Aceite de Serviços', description: 'Medição de serviços prestados e validação técnica' },
+          { id: 'comp-devolucoes', label: 'Devoluções e Trocas', description: 'RMA, devoluções parciais e notas de estorno' },
+          { id: 'comp-documentos', label: 'Documentos de Compra', description: 'Armazenamento de propostas, minutas e recibos' },
+        ],
+      },
+      {
+        groupName: 'Gestão Financeira',
+        items: [
+          { id: 'comp-orcamento', label: 'Orçamento de Compras', description: 'Acompanhamento orçamentário CapEx e OpEx' },
+          { id: 'comp-centros-custos', label: 'Centros de Custos', description: 'Apropriação e rateio por departamento Disk' },
+          { id: 'comp-contas-pagar', label: 'Integração Contas a Pagar', description: 'Geração automática de títulos na Tesouraria' },
+          { id: 'comp-impostos', label: 'Impostos nas Aquisições', description: 'DIFAL, ICMS-ST, retenções de IR, PIS/COFINS e ISS' },
+        ],
+      },
+      {
+        groupName: 'Patrimônio e Tecnologia',
+        items: [
+          { id: 'comp-ativos', label: 'Aquisição de Ativos', description: 'Equipamentos, hardware e incorporação ao imobilizado' },
+          { id: 'comp-licencas', label: 'Licenças e Assinaturas', description: 'SaaS corporativos, software e gestão de assentos' },
+          { id: 'comp-garantias', label: 'Garantias e Manutenção', description: 'Controle de garantia de fábrica e contratos de suporte' },
+        ],
+      },
+      {
+        groupName: 'Controle e Governança',
+        items: [
+          { id: 'comp-relatorios', label: 'Relatórios de Compras', description: 'Saving acumulado, lead time e gastos por categoria' },
+          { id: 'comp-avaliacao', label: 'Avaliação de Fornecedores', description: 'Índice de pontualidade, qualidade e SLA (IQF)' },
+          { id: 'comp-auditoria', label: 'Auditoria e Histórico', description: 'Rastreabilidade ponta a ponta de solicitações e pedidos' },
+          { id: 'comp-configuracoes', label: 'Configurações de Compras', description: 'Alçadas de valor, parâmetros e fluxos de workflow' },
         ],
       },
     ],
