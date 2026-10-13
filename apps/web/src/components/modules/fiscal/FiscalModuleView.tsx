@@ -36,7 +36,7 @@ import {
   Moon,
   Info,
 } from 'lucide-react';
-import { fiscalClient, FiscalDashboardResponse, FiscalInvoice } from '../../services/fiscalClient';
+import { fiscalClient, FiscalDashboardResponse, FiscalInvoice } from '../../../services/fiscalClient';
 
 export interface FiscalSubmenuDef {
   id: string;

@@ -44,8 +44,8 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import { ACCOUNTING_PATHS, AccountingRequest } from '../../services/contabilidadeClient';
-import { api } from '../../services/api';
+import { ACCOUNTING_PATHS, AccountingRequest } from '../../../services/contabilidadeClient';
+import { api } from '../../../services/api';
 
 export type AccountingEnvironment =
   | 'DISK_EMPRESA'

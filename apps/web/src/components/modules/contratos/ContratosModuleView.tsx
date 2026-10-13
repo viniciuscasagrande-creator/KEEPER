@@ -42,7 +42,7 @@ import {
   ContractStatus,
   ContractType,
   Signatory,
-} from '../../services/contratosClient';
+} from '../../../services/contratosClient';
 
 interface Props {
   activeSection?: string;

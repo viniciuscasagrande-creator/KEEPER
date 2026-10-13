@@ -23,21 +23,21 @@ import {
   Layers,
   Percent,
 } from 'lucide-react';
-import { api } from '../../services/api';
-import { FinancialDashboard } from './financeiro/FinancialDashboard';
-import { PayablesView } from './financeiro/PayablesView';
-import { ReceivablesView } from './financeiro/ReceivablesView';
-import { TreasuryView } from './financeiro/TreasuryView';
-import { ReconciliationView } from './financeiro/ReconciliationView';
-import { CashflowView } from './financeiro/CashflowView';
-import { BudgetView } from './financeiro/BudgetView';
-import { CreditView } from './financeiro/CreditView';
-import { SettlementCentralView } from './financeiro/SettlementCentralView';
-import { ProducerFinancialCentralView } from './financeiro/ProducerFinancialCentralView';
-import { RefundsAndCancellationsView } from './financeiro/RefundsAndCancellationsView';
-import { GatewaysModuleView } from './GatewaysModuleView';
-import { TaxRulesCommercialView } from './financeiro/TaxRulesCommercialView';
-import { PayableDetailsDrawer, PayableDetailItem } from '../drawers/PayableDetailsDrawer';
+import { api } from '../../../services/api';
+import { FinancialDashboard } from './FinancialDashboard';
+import { PayablesView } from './PayablesView';
+import { ReceivablesView } from './ReceivablesView';
+import { TreasuryView } from './TreasuryView';
+import { ReconciliationView } from './ReconciliationView';
+import { CashflowView } from './CashflowView';
+import { BudgetView } from './BudgetView';
+import { CreditView } from './CreditView';
+import { SettlementCentralView } from './SettlementCentralView';
+import { ProducerFinancialCentralView } from './ProducerFinancialCentralView';
+import { RefundsAndCancellationsView } from './RefundsAndCancellationsView';
+import { GatewaysModuleView } from '../gateways/GatewaysModuleView';
+import { TaxRulesCommercialView } from './TaxRulesCommercialView';
+import { PayableDetailsDrawer, PayableDetailItem } from '../../drawers/PayableDetailsDrawer';
 
 export type FinancialTab =
   | 'settlement'

@@ -43,7 +43,7 @@ import {
   CrmDashboardMetrics,
   ProducerCategory,
   DealStage,
-} from '../../services/crmClient';
+} from '../../../services/crmClient';
 
 interface Props {
   activeSection?: string;

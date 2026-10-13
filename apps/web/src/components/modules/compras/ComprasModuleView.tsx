@@ -56,7 +56,7 @@ import {
   StockItem,
   Warehouse,
   KardexMovement,
-} from '../../services/comprasClient';
+} from '../../../services/comprasClient';
 
 export interface ComprasSubmenuDef {
   id: string;

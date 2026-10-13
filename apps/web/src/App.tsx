@@ -11,19 +11,21 @@ import { RecentMovementsTable } from './components/dashboard/RecentMovementsTabl
 import { CommandCenterModal } from './components/modals/CommandCenterModal';
 import { QuickEntryDrawer } from './components/drawers/QuickEntryDrawer';
 import { ApprovalsDrawer } from './components/drawers/ApprovalsDrawer';
-import { FinancialModuleView } from './components/modules/FinancialModuleView';
-import { AccountingModuleView } from './components/modules/AccountingModuleView';
-import { ContabilidadeCompletaView } from './components/modules/ContabilidadeCompletaView';
-import { GatewaysModuleView } from './components/modules/GatewaysModuleView';
-import { RhDpModuloView } from './components/modules/RhDpModuloView';
-import { FiscalModuleView } from './components/modules/FiscalModuleView';
-import { ComprasModuleView } from './components/modules/ComprasModuleView';
-import { InteligenciaModuleView } from './components/modules/InteligenciaModuleView';
-import { ConfiguracoesModuleView } from './components/modules/ConfiguracoesModuleView';
-import { CrmModuleView } from './components/modules/CrmModuleView';
-import { ContratosModuleView } from './components/modules/ContratosModuleView';
-import { ProjetosModuleView } from './components/modules/ProjetosModuleView';
-import { AtivosModuleView } from './components/modules/AtivosModuleView';
+import {
+  FinancialModuleView,
+  AccountingModuleView,
+  ContabilidadeCompletaView,
+  GatewaysModuleView,
+  RhDpModuloView,
+  FiscalModuleView,
+  ComprasModuleView,
+  InteligenciaModuleView,
+  ConfiguracoesModuleView,
+  CrmModuleView,
+  ContratosModuleView,
+  ProjetosModuleView,
+  AtivosModuleView,
+} from './components/modules';
 import { api } from './services/api';
 import { Calendar, Download, RefreshCw } from 'lucide-react';
 

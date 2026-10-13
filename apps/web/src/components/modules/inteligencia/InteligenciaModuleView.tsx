@@ -77,7 +77,7 @@ import {
   MonthlyEvolutionItem,
   ScenarioSimulationResult,
   EventPerformanceItem,
-} from '../../services/inteligenciaClient';
+} from '../../../services/inteligenciaClient';
 import {
   sentinelClient,
   SentinelAlert,
@@ -100,7 +100,7 @@ import {
   AiAssistantResponse,
   StressTestConfig,
   StressTestResult,
-} from '../../services/sentinelClient';
+} from '../../../services/sentinelClient';
 
 interface Props {
   activeSection?: string;

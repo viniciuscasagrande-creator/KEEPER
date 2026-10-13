@@ -39,7 +39,7 @@ import {
   ProjetosMetrics,
   EventProjectStatus,
   VenueType,
-} from '../../services/projetosClient';
+} from '../../../services/projetosClient';
 
 interface Props {
   activeSection?: string;

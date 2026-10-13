@@ -53,7 +53,7 @@ import {
   AuditLogItem,
   IntegrationItem,
   SystemHealth,
-} from '../../services/configuracoesClient';
+} from '../../../services/configuracoesClient';
 
 interface Props {
   activeSection?: string;

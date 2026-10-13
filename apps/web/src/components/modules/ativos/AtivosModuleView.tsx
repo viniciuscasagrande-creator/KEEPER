@@ -40,7 +40,7 @@ import {
   AtivosMetrics,
   AssetCategory,
   AssetStatus,
-} from '../../services/ativosClient';
+} from '../../../services/ativosClient';
 
 interface Props {
   activeSection?: string;

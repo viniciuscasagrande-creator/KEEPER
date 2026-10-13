@@ -15,7 +15,7 @@ import {
   Eye,
   FileCheck2,
 } from 'lucide-react';
-import { api } from '../../services/api';
+import { api } from '../../../services/api';
 
 export function AccountingModuleView() {
   const [activeTab, setActiveTab] = useState<'chart' | 'journal' | 'trial' | 'dre'>('chart');
