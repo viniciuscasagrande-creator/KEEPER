@@ -10,6 +10,8 @@ import { AppropriationService } from './appropriation/appropriation.service';
 import { AppropriationController } from './appropriation/appropriation.controller';
 import { CommercialRulesController } from './commercial-rules/commercial-rules.controller';
 import { CommercialRulesService } from './commercial-rules/commercial-rules.service';
+import { CnabController } from './cnab/cnab.controller';
+import { CnabService } from './cnab/cnab.service';
 
 @Module({
   imports: [ContabilModule, AppropriationModule],
@@ -18,6 +20,7 @@ import { CommercialRulesService } from './commercial-rules/commercial-rules.serv
     SettlementController,
     AppropriationController,
     CommercialRulesController,
+    CnabController,
   ],
   providers: [
     PrismaService,
@@ -25,7 +28,14 @@ import { CommercialRulesService } from './commercial-rules/commercial-rules.serv
     SettlementService,
     AppropriationService,
     CommercialRulesService,
+    CnabService,
   ],
-  exports: [FinanceiroService, SettlementService, AppropriationService, CommercialRulesService],
+  exports: [
+    FinanceiroService,
+    SettlementService,
+    AppropriationService,
+    CommercialRulesService,
+    CnabService,
+  ],
 })
 export class FinanceiroModule {}

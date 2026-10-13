@@ -26,6 +26,8 @@ import {
   UserCheck,
   CreditCard,
   Percent,
+  Globe,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { api } from '../../../services/api';
 import { EventFeeRulesModal } from '../../modals/EventFeeRulesModal';
@@ -34,6 +36,8 @@ import { ProducerAdvanceModal } from '../../modals/ProducerAdvanceModal';
 import { EventExpenseModal } from '../../modals/EventExpenseModal';
 import { RepaymentScheduleModal } from '../../modals/RepaymentScheduleModal';
 import { SaleSplitSimulatorModal } from '../../modals/SaleSplitSimulatorModal';
+import { ProducerPortalPreviewModal } from '../../modals/ProducerPortalPreviewModal';
+import { CnabBankingModal } from '../../modals/CnabBankingModal';
 import { EventWalletStatementDrawer } from '../../drawers/EventWalletStatementDrawer';
 
 export type ProducerCentralTab =
@@ -68,6 +72,8 @@ export function ProducerFinancialCentralView() {
   const [isRepaymentModalOpen, setIsRepaymentModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isSimulatorModalOpen, setIsSimulatorModalOpen] = useState(false);
+  const [isPortalPreviewModalOpen, setIsPortalPreviewModalOpen] = useState(false);
+  const [isCnabModalOpen, setIsCnabModalOpen] = useState(false);
   const [isStatementDrawerOpen, setIsStatementDrawerOpen] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
 
@@ -243,6 +249,22 @@ export function ProducerFinancialCentralView() {
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>Simulador de Split</span>
+            </button>
+
+            <button
+              onClick={() => setIsPortalPreviewModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold shadow-2xs transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5 text-blue-600" />
+              <span>Portal do Produtor (Preview)</span>
+            </button>
+
+            <button
+              onClick={() => setIsCnabModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold shadow-2xs transition-colors"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
+              <span>CNAB Bancário (Itaú/Bradesco)</span>
             </button>
           </div>
         </div>
@@ -1341,6 +1363,18 @@ export function ProducerFinancialCentralView() {
       <SaleSplitSimulatorModal
         isOpen={isSimulatorModalOpen}
         onClose={() => setIsSimulatorModalOpen(false)}
+      />
+
+      <ProducerPortalPreviewModal
+        isOpen={isPortalPreviewModalOpen}
+        onClose={() => setIsPortalPreviewModalOpen(false)}
+        producerId={selectedProducerId}
+        producerName={currentProducer.tradeName || currentProducer.name}
+      />
+
+      <CnabBankingModal
+        isOpen={isCnabModalOpen}
+        onClose={() => setIsCnabModalOpen(false)}
       />
 
       <EventWalletStatementDrawer

@@ -45,6 +45,7 @@ async function bootstrap() {
     .addTag('Core - RBAC & Permissions', 'Roles and granular permissions')
     .addTag('Core - Audit Trail', 'Immutable audit logs')
     .addTag('Core - Workflows', 'Approval workflows and state engine')
+    .addTag('Portal do Produtor (API Central Oficial DiskIngressos)', 'Contratos de API para consulta de eventos, saldos e repasses')
     .addTag('Financeiro', 'Contas a pagar, receber, tesouraria e conciliação')
     .addTag('Contábil', 'Razão imutável, plano de contas e partidas dobradas')
     .build();

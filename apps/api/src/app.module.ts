@@ -20,6 +20,8 @@ import { InteligenciaModule } from './inteligencia/inteligencia.module';
 import { SentinelModule } from './inteligencia/sentinel/sentinel.module';
 import { HealthModule } from './health/health.module';
 
+import { ProducerModule } from './producer/producer.module';
+
 @Module({
   imports: [
     JwtModule.register({
@@ -30,6 +32,7 @@ import { HealthModule } from './health/health.module';
     CoreModule,
     HealthModule,
     FinanceiroModule,
+    ProducerModule,
     ContabilModule,
     FiscalModule,
     RhModule,

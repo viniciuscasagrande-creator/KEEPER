@@ -389,4 +389,59 @@ export const api = {
   accountingRequest: async (endpoint: string, options?: RequestInit): Promise<any> => {
     return request<any>(endpoint, options);
   },
+
+  // Portal do Produtor Oficial
+  getProducerPortalSummary: async (producerId = 'prod-01') => {
+    return request<any>(`/producer/finance/summary?producerId=${producerId}`);
+  },
+
+  getProducerPortalEvents: async (producerId = 'prod-01') => {
+    return request<any[]>(`/producer/events?producerId=${producerId}`);
+  },
+
+  getProducerEventDashboard: async (eventId: string, producerId = 'prod-01') => {
+    return request<any>(`/producer/events/${eventId}/dashboard?producerId=${producerId}`);
+  },
+
+  getProducerEventStatement: async (eventId: string, producerId = 'prod-01') => {
+    return request<any>(`/producer/finance/events/${eventId}/statement?producerId=${producerId}`);
+  },
+
+  getProducerPayoutRequests: async (producerId = 'prod-01', eventId?: string) => {
+    const qs = eventId ? `&eventId=${eventId}` : '';
+    return request<any[]>(`/producer/finance/payout-requests?producerId=${producerId}${qs}`);
+  },
+
+  createProducerPayoutRequest: async (data: any) => {
+    return request<any>('/producer/finance/payout-requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  createProducerAdvanceRequest: async (data: any) => {
+    return request<any>('/producer/finance/advance-requests', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // CNAB 240 / 400 Bancário
+  getCnabBanks: async () => {
+    return request<any[]>('/financeiro/cnab/banks');
+  },
+
+  generateCnabRemessa: async (data: any) => {
+    return request<any>('/financeiro/cnab/remessa', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  parseCnabRetorno: async (data: { fileContent: string; bankCode?: string }) => {
+    return request<any>('/financeiro/cnab/retorno', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
