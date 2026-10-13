@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ContabilService } from '../../contabil/contabil.service';
 import { AppropriationService } from '../appropriation/appropriation.service';
@@ -41,7 +41,12 @@ export class SettlementService {
           const prodWallets = wallets.filter((w) => w.producerId === p.id);
           const totalVendas = prodWallets.reduce((acc, w) => acc + Number(w.grossTicketSales || 0), 0);
           const totalTaxas = prodWallets.reduce(
-            (acc, w) => acc + Number(w.diskFeeTotal || 0) + Number(w.spreadFeeTotal || 0) + Number(w.advanceFeeTotal || 0),
+            (acc, w) =>
+              acc +
+              Number(w.diskFeeTotal || 0) +
+              Number(w.spreadFeeTotal || 0) +
+              Number(w.advanceFeeTotal || 0) +
+              Number(w.otherFeesTotal || 0),
             0,
           );
           const totalDespesas = prodWallets.reduce((acc, w) => acc + Number(w.expensesTotal || 0), 0);
@@ -59,260 +64,129 @@ export class SettlementService {
             cnpj: p.document,
             code: p.code || 'PROD-001',
             status: p.status,
-            email: p.email || 'financeiro@produtor.com.br',
-            phone: p.phone || '(41) 3322-8800',
-            bankName: p.bankName || 'Itaú Unibanco S.A. (341)',
-            agency: p.agency || '0422',
-            account: p.account || '88120-1',
-            pixKey: p.pixKey || p.email || 'financeiro@produtor.com.br',
+            email: p.email || '',
+            phone: p.phone || '',
+            bankName: p.bankName || '',
+            agency: p.agency || '',
+            account: p.account || '',
+            pixKey: p.pixKey || '',
             kpis: {
-              saldoTotal: saldoTotal > 0 ? saldoTotal : 820450.0,
-              disponivel: disponivel > 0 ? disponivel : 570450.0,
+              saldoTotal,
+              disponivel,
               aReceber: Math.max(0, projetado - saldoTotal),
-              emAntecipacao: emAntecipacao > 0 ? emAntecipacao : 100000.0,
-              emRepasse: emRepasse > 0 ? emRepasse : 150000.0,
-              despesas: totalDespesas > 0 ? totalDespesas : 80000.0,
+              emAntecipacao,
+              emRepasse,
+              despesas: totalDespesas,
               bloqueado,
-              projetado: projetado > 0 ? projetado : 1240000.0,
+              projetado,
             },
           };
         });
       }
     } catch (err: any) {
-      this.logger.warn(`Consulta de produtores no Prisma falhou (${err?.message}). Utilizando catálogo base demonstrativo.`);
+      this.logger.warn(`Consulta de produtores no Prisma: ${err?.message}`);
     }
 
-    return [
-      {
-        id: 'prod-01',
-        name: 'ABC Produções & Eventos Ltda',
-        tradeName: 'ABC Produções',
-        cnpj: '12.345.678/0001-90',
-        code: 'PROD-001',
-        status: 'ACTIVE',
-        email: 'financeiro@abcproducoes.com.br',
-        phone: '(41) 3322-8800',
-        bankName: 'Itaú Unibanco S.A. (341)',
-        agency: '0422',
-        account: '88120-1',
-        pixKey: 'financeiro@abcproducoes.com.br',
-        kpis: {
-          saldoTotal: 820450.0,
-          disponivel: 570450.0,
-          aReceber: 200000.0,
-          emAntecipacao: 100000.0,
-          emRepasse: 150000.0,
-          despesas: 80000.0,
-          bloqueado: 100000.0,
-          projetado: 1240000.0,
-        },
-      },
-      {
-        id: 'prod-02',
-        name: 'Live Nation Brasil Produções S.A.',
-        tradeName: 'Live Nation Brasil',
-        cnpj: '98.765.432/0001-11',
-        code: 'PROD-002',
-        status: 'ACTIVE',
-        email: 'settlement@livenation.com.br',
-        phone: '(11) 4003-9000',
-        bankName: 'Banco Bradesco S.A. (237)',
-        agency: '1024',
-        account: '44520-9',
-        pixKey: 'pix@livenation.com.br',
-        kpis: {
-          saldoTotal: 2100000.0,
-          disponivel: 1450000.0,
-          aReceber: 500000.0,
-          emAntecipacao: 150000.0,
-          emRepasse: 400000.0,
-          despesas: 280000.0,
-          bloqueado: 100000.0,
-          projetado: 3500000.0,
-        },
-      },
-      {
-        id: 'prod-03',
-        name: 'CWB Brasil Entretenimento S.A.',
-        tradeName: 'CWB Brasil',
-        cnpj: '45.123.789/0001-55',
-        code: 'PROD-003',
-        status: 'ACTIVE',
-        email: 'financeiro@cwbbrasil.com.br',
-        phone: '(41) 3015-0000',
-        bankName: 'Banco Santander (033)',
-        agency: '3301',
-        account: '19200-3',
-        pixKey: '45.123.789/0001-55',
-        kpis: {
-          saldoTotal: 580000.0,
-          disponivel: 410000.0,
-          aReceber: 120000.0,
-          emAntecipacao: 50000.0,
-          emRepasse: 120000.0,
-          despesas: 70000.0,
-          bloqueado: 50000.0,
-          projetado: 890000.0,
-        },
-      },
-    ];
+    return [];
   }
 
   /**
    * Posição Financeira Completa do Produtor com Seletor de Eventos
    */
   async getProducerFinancialOverview(tenantId: string, producerId: string) {
-    const producers = await this.getProducers(tenantId);
-    const prod = producers.find((p) => p.id === producerId) || producers[0];
+    const dbProducer = await this.prisma.producer.findFirst({
+      where: {
+        tenantId,
+        id: producerId,
+      },
+    });
 
-    // Consulta carteiras do banco filtrando por tenantId e producerId
-    try {
-      const dbWallets = await this.prisma.eventWallet.findMany({
-        where: {
-          tenantId,
-          ...(producerId ? { producerId } : {}),
-        },
-        include: {
-          eventFeeRules: true,
-        },
-      });
-
-      if (dbWallets && dbWallets.length > 0) {
-        const events = dbWallets.map((w) => {
-          const vendasBrutas = Number(w.grossTicketSales || 0);
-          const taxasDisk = Number(w.diskFeeTotal || 0);
-          const taxasAdicionais = Number(w.spreadFeeTotal || 0) + Number(w.advanceFeeTotal || 0) + Number(w.otherFeesTotal || 0);
-          const despesas = Number(w.expensesTotal || 0);
-          const saldoEconomico = vendasBrutas - taxasDisk - taxasAdicionais - despesas;
-          const repassesRealizados = Number(w.repaymentsPaidTotal || 0);
-          const antecipacaoRealizada = Number(w.advancesPaidTotal || 0);
-          const repassesAgendados = Number(w.repaymentsScheduledTotal || 0);
-          const disponivel = Number(w.balanceAvailable || 0);
-          const bloqueado = Number(w.blockedBalance || 0);
-          const projetado = Number(w.projectedBalance || 0);
-
-          return {
-            id: w.id,
-            eventId: w.eventId,
-            name: w.eventName,
-            venue: 'Pedreira Paulo Leminski - Curitiba/PR',
-            date: '2026-10-25',
-            vendasBrutas,
-            taxasDisk,
-            taxasAdicionais,
-            despesas,
-            saldoEconomico,
-            repassesRealizados,
-            antecipacaoRealizada,
-            repassesAgendados,
-            disponivel,
-            bloqueado,
-            projetado,
-            activeRulesCount: w.eventFeeRules?.length || 3,
-          };
-        });
-
-        const totalVendas = events.reduce((a, b) => a + b.vendasBrutas, 0);
-        const totalSaldo = events.reduce((a, b) => a + b.saldoEconomico, 0);
-        const totalDisponivel = events.reduce((a, b) => a + b.disponivel, 0);
-
-        return {
-          producer: prod,
-          consolidatedKpis: {
-            saldoTotal: prod.kpis.saldoTotal,
-            disponivel: prod.kpis.disponivel,
-            aReceber: prod.kpis.aReceber,
-            emAntecipacao: prod.kpis.emAntecipacao,
-            emRepasse: prod.kpis.emRepasse,
-            despesas: prod.kpis.despesas,
-            bloqueado: prod.kpis.bloqueado,
-            projetado: prod.kpis.projetado,
-          },
-          events,
-          totals: {
-            vendas: totalVendas,
-            saldoEconomico: totalSaldo,
-            disponivel: totalDisponivel,
-          },
-        };
-      }
-    } catch (err: any) {
-      this.logger.warn(`Erro ao consultar carteiras do banco (${err?.message}). Utilizando visão padrão.`);
+    if (!dbProducer) {
+      throw new NotFoundException(`Produtor '${producerId}' não encontrado para a organização informada.`);
     }
 
-    const events = [
-      {
-        id: 'ev-101',
-        name: 'Festival XYZ',
-        venue: 'Pedreira Paulo Leminski - Curitiba/PR',
-        date: '10/10/2026 a 12/10/2026',
-        vendasBrutas: 500000.0,
-        taxasDisk: 50000.0,
-        taxasAdicionais: 22000.0, // Spread 12.5k + Advance 7.5k + Ribeit 2k
-        despesas: 100000.0,
-        saldoEconomico: 328000.0,
-        repassesRealizados: 100000.0,
-        antecipacaoRealizada: 50000.0,
-        repassesAgendados: 30000.0,
-        disponivel: 148000.0,
-        bloqueado: 0.0,
-        projetado: 680000.0,
-        activeRulesCount: 4,
+    const dbWallets = await this.prisma.eventWallet.findMany({
+      where: {
+        tenantId,
+        producerId: dbProducer.id,
       },
-      {
-        id: 'ev-102',
-        name: 'Show ABC',
-        venue: 'Live Curitiba',
-        date: '24/10/2026',
-        vendasBrutas: 280000.0,
-        taxasDisk: 22400.0, // 8%
-        taxasAdicionais: 8400.0, // Spread R$ 3,00
-        despesas: 59200.0,
-        saldoEconomico: 190000.0,
-        repassesRealizados: 0.0,
-        antecipacaoRealizada: 0.0,
-        repassesAgendados: 0.0,
-        disponivel: 190000.0,
-        bloqueado: 0.0,
-        projetado: 340000.0,
-        activeRulesCount: 2,
+      include: {
+        eventFeeRules: true,
       },
-      {
-        id: 'ev-103',
-        name: 'Teatro 2026',
-        venue: 'Teatro Positivo',
-        date: '05/11/2026',
-        vendasBrutas: 150000.0,
-        taxasDisk: 15000.0,
-        taxasAdicionais: 4500.0,
-        despesas: 20500.0,
-        saldoEconomico: 110000.0,
-        repassesRealizados: 0.0,
-        antecipacaoRealizada: 0.0,
-        repassesAgendados: 0.0,
-        disponivel: 110000.0,
-        bloqueado: 0.0,
-        projetado: 220000.0,
-        activeRulesCount: 3,
-      },
-    ];
+    });
+
+    const events = (dbWallets || []).map((w) => {
+      const vendasBrutas = Number(w.grossTicketSales || 0);
+      const taxasDisk = Number(w.diskFeeTotal || 0);
+      const taxasAdicionais =
+        Number(w.spreadFeeTotal || 0) + Number(w.advanceFeeTotal || 0) + Number(w.otherFeesTotal || 0);
+      const despesas = Number(w.expensesTotal || 0);
+      const saldoEconomico = vendasBrutas - taxasDisk - taxasAdicionais - despesas;
+      const repassesRealizados = Number(w.repaymentsPaidTotal || 0);
+      const antecipacaoRealizada = Number(w.advancesPaidTotal || 0);
+      const repassesAgendados = Number(w.repaymentsScheduledTotal || 0);
+      const disponivel = Number(w.balanceAvailable || 0);
+      const bloqueado = Number(w.blockedBalance || 0);
+      const projetado = Number(w.projectedBalance || 0);
+
+      return {
+        id: w.id,
+        eventId: w.eventId,
+        name: w.eventName,
+        venue: 'Local do Evento',
+        date: w.createdAt.toISOString().split('T')[0],
+        vendasBrutas,
+        taxasDisk,
+        taxasAdicionais,
+        despesas,
+        saldoEconomico,
+        repassesRealizados,
+        antecipacaoRealizada,
+        repassesAgendados,
+        disponivel,
+        bloqueado,
+        projetado,
+        activeRulesCount: w.eventFeeRules?.length || 0,
+      };
+    });
 
     const totalVendas = events.reduce((a, b) => a + b.vendasBrutas, 0);
     const totalSaldo = events.reduce((a, b) => a + b.saldoEconomico, 0);
     const totalDisponivel = events.reduce((a, b) => a + b.disponivel, 0);
+    const totalDespesas = events.reduce((a, b) => a + b.despesas, 0);
+    const totalAntecipacao = events.reduce((a, b) => a + b.antecipacaoRealizada, 0);
+    const totalRepasses = events.reduce((a, b) => a + b.repassesAgendados, 0);
+    const totalBloqueado = events.reduce((a, b) => a + b.bloqueado, 0);
+    const totalProjetado = events.reduce((a, b) => a + b.projetado, 0);
+
+    const producerObj = {
+      id: dbProducer.id,
+      name: dbProducer.name,
+      tradeName: dbProducer.tradeName || dbProducer.name,
+      cnpj: dbProducer.document,
+      code: dbProducer.code || 'PROD-001',
+      status: dbProducer.status,
+      email: dbProducer.email || '',
+      phone: dbProducer.phone || '',
+      bankName: dbProducer.bankName || '',
+      agency: dbProducer.agency || '',
+      account: dbProducer.account || '',
+      pixKey: dbProducer.pixKey || '',
+      kpis: {
+        saldoTotal: totalSaldo,
+        disponivel: totalDisponivel,
+        aReceber: Math.max(0, totalProjetado - totalSaldo),
+        emAntecipacao: totalAntecipacao,
+        emRepasse: totalRepasses,
+        despesas: totalDespesas,
+        bloqueado: totalBloqueado,
+        projetado: totalProjetado,
+      },
+    };
 
     return {
-      producer: prod,
-      consolidatedKpis: {
-        saldoTotal: prod.kpis.saldoTotal,
-        disponivel: prod.kpis.disponivel,
-        aReceber: prod.kpis.aReceber,
-        emAntecipacao: prod.kpis.emAntecipacao,
-        emRepasse: prod.kpis.emRepasse,
-        despesas: prod.kpis.despesas,
-        bloqueado: prod.kpis.bloqueado,
-        projetado: prod.kpis.projetado,
-      },
+      producer: producerObj,
+      consolidatedKpis: producerObj.kpis,
       events,
       totals: {
         vendas: totalVendas,
@@ -326,97 +200,77 @@ export class SettlementService {
    * Posição Financeira Analítica de um Evento Específico (com decomposição)
    */
   async getEventFinancialDetail(tenantId: string, eventId: string) {
+    const wallet = await this.prisma.eventWallet.findFirst({
+      where: {
+        tenantId,
+        OR: [{ id: eventId }, { eventId: eventId }],
+      },
+      include: {
+        eventFeeRules: true,
+      },
+    });
+
+    if (!wallet) {
+      throw new NotFoundException(`Carteira do evento '${eventId}' não encontrada para a organização.`);
+    }
+
+    const vendasBrutas = Number(wallet.grossTicketSales || 0);
+    const taxaDisk = Number(wallet.diskFeeTotal || 0);
+    const spread = Number(wallet.spreadFeeTotal || 0);
+    const advance = Number(wallet.advanceFeeTotal || 0);
+    const ribeit = Number(wallet.otherFeesTotal || 0);
+    const totalTaxas = taxaDisk + spread + advance + ribeit;
+    const totalDespesas = Number(wallet.expensesTotal || 0);
+    const repassesRealizados = Number(wallet.repaymentsPaidTotal || 0);
+    const antecipacaoRealizada = Number(wallet.advancesPaidTotal || 0);
+    const repassesAgendados = Number(wallet.repaymentsScheduledTotal || 0);
+    const saldoEconomico = vendasBrutas - totalTaxas - totalDespesas;
+    const saldoDisponivel = Number(wallet.balanceAvailable || 0);
+    const saldoBloqueado = Number(wallet.blockedBalance || 0);
+    const saldoProjetado = Number(wallet.projectedBalance || 0);
+
     return {
-      eventId: 'ev-101',
-      eventName: 'Festival XYZ',
-      producerId: 'prod-01',
-      producerName: 'ABC Produções & Eventos Ltda',
-      venue: 'Pedreira Paulo Leminski',
-      date: '10/10/2026 a 12/10/2026',
-      vendasBrutas: 500000.0,
+      eventId: wallet.eventId,
+      eventName: wallet.eventName,
+      producerId: wallet.producerId,
+      producerName: wallet.producerName,
+      venue: 'Local do Evento',
+      date: wallet.createdAt.toISOString().split('T')[0],
+      vendasBrutas,
       taxas: {
-        taxaDisk: 50000.0, // 10%
-        spread: 12500.0, // 2,5%
-        advance: 7500.0, // 1,5%
-        ribeit: 2000.0, // R$ 1,00 por ingresso
-        totalTaxas: 72000.0,
+        taxaDisk,
+        spread,
+        advance,
+        ribeit,
+        totalTaxas,
       },
       despesas: {
-        seguranca: 30000.0,
-        estrutura: 20000.0,
-        artistas: 50000.0,
-        totalDespesas: 100000.0,
-        items: [
-          { id: 'exp-1', category: 'Segurança & Portaria', supplier: 'GuardSeg Ltda', doc: 'NF-4921', amount: 30000.0, auth: 'Carlos Eduardo' },
-          { id: 'exp-2', category: 'Estrutura & Palco', supplier: 'Stark Iluminação S.A.', doc: 'NF-1802', amount: 20000.0, auth: 'Fernanda Lima' },
-          { id: 'exp-3', category: 'Cachê Artístico', supplier: 'Banda Principal Agência', doc: 'CONTRATO-89', amount: 50000.0, auth: 'Vinicius Casagrande' },
-        ],
+        totalDespesas,
+        items: [],
       },
-      saldoEconomico: 328000.0,
+      saldoEconomico,
       deducoesOperacionais: {
-        repassesRealizados: 100000.0,
-        antecipacaoRealizada: 50000.0,
-        repassesAgendados: 30000.0,
-        totalDeducoes: 180000.0,
+        repassesRealizados,
+        antecipacaoRealizada,
+        repassesAgendados,
+        totalDeducoes: repassesRealizados + antecipacaoRealizada + repassesAgendados,
       },
-      saldoDisponivel: 148000.0,
-      saldoBloqueado: 0.0,
-      saldoProjetado: 680000.0,
-      // Regras de taxas ativas para o evento com vigência
-      eventFeeRules: [
-        {
-          id: 'rule-01',
-          feeCode: 'DISK_FEE',
-          feeName: 'Taxa DiskIngressos',
-          calculationType: 'PERCENTAGE',
-          rate: 10.0,
-          fixedAmount: 0.0,
-          payer: 'CLIENTE',
-          basisType: 'VALOR_DO_INGRESSO',
-          validFrom: '2026-08-01',
-          validTo: null,
-          isActive: true,
-        },
-        {
-          id: 'rule-02',
-          feeCode: 'SPREAD',
-          feeName: 'Spread Financeiro',
-          calculationType: 'PERCENTAGE',
-          rate: 2.5,
-          fixedAmount: 0.0,
-          payer: 'PRODUTOR',
-          basisType: 'VALOR_BRUTO_VENDA',
-          validFrom: '2026-10-01',
-          validTo: '2026-10-15',
-          isActive: true,
-        },
-        {
-          id: 'rule-03',
-          feeCode: 'ADVANCE',
-          feeName: 'Advance (Antecipação)',
-          calculationType: 'PERCENTAGE',
-          rate: 1.5,
-          fixedAmount: 0.0,
-          payer: 'PRODUTOR',
-          basisType: 'VALOR_ANTECIPADO',
-          validFrom: '2026-09-01',
-          validTo: null,
-          isActive: true,
-        },
-        {
-          id: 'rule-04',
-          feeCode: 'RIBEIT',
-          feeName: 'Ribeit (Rebate Comercial)',
-          calculationType: 'FIXED_AMOUNT',
-          rate: 0.0,
-          fixedAmount: 1.0,
-          payer: 'PRODUTOR',
-          basisType: 'POR_INGRESSO',
-          validFrom: '2026-09-01',
-          validTo: null,
-          isActive: true,
-        },
-      ],
+      saldoDisponivel,
+      saldoBloqueado,
+      saldoProjetado,
+      eventFeeRules: (wallet.eventFeeRules || []).map((r) => ({
+        id: r.id,
+        feeCode: r.feeCode,
+        feeName: r.feeName,
+        calculationType: r.calculationType,
+        rate: Number(r.rate || 0),
+        fixedAmount: Number(r.fixedAmount || 0),
+        payer: r.payer,
+        basisType: r.basisType,
+        validFrom: r.validFrom?.toISOString().split('T')[0] || '',
+        validTo: r.validTo?.toISOString().split('T')[0] || null,
+        isActive: r.isActive,
+      })),
     };
   }
 
@@ -467,17 +321,28 @@ export class SettlementService {
       pixKey: data.pixKey || 'financeiro@abcproducoes.com.br',
     };
 
-    // Persistência em banco de dados via Prisma quando disponível
-    try {
-      const wallet = await this.prisma.eventWallet.findFirst({
-        where: {
-          tenantId,
-          OR: [{ id: eventId }, { eventId: eventId }],
-        },
-      });
+    const wallet = await this.prisma.eventWallet.findFirst({
+      where: {
+        tenantId,
+        OR: [{ id: eventId }, { eventId: eventId }],
+      },
+    });
 
-      if (wallet) {
-        await this.prisma.producerAdvance.create({
+    if (!wallet) {
+      throw new NotFoundException(`Carteira do evento '${eventId}' não encontrada para a organização.`);
+    }
+
+    const availableLimit = Number(wallet.balanceAvailable || 0);
+    if (requested > availableLimit) {
+      throw new BadRequestException(
+        `Solicitação de antecipação (R$ ${requested.toFixed(2)}) excede o limite disponível para a carteira (R$ ${availableLimit.toFixed(2)}).`,
+      );
+    }
+
+    let createdAdvance: any;
+    try {
+      createdAdvance = await this.prisma.$transaction(async (tx) => {
+        const adv = await tx.producerAdvance.create({
           data: {
             tenantId,
             eventWalletId: wallet.id,
@@ -491,15 +356,30 @@ export class SettlementService {
             authorizedBy: (data as any).authorizedBy || null,
           },
         });
-      }
+
+        await tx.eventWallet.update({
+          where: { id: wallet.id },
+          data: {
+            blockedBalance: { increment: requested },
+            balanceAvailable: { decrement: requested },
+          },
+        });
+
+        return adv;
+      });
     } catch (err: any) {
-      this.logger.warn(`Persistência Prisma na antecipação (${err?.message}). Utilizando em memória.`);
+      this.logger.error(`Erro ao persistir solicitação de antecipação: ${err?.message}`);
+      throw new InternalServerErrorException(`Falha ao persistir solicitação de antecipação: ${err?.message}`);
     }
 
     return {
       success: true,
-      advance,
-      message: `Solicitação de antecipação de R$ ${requested.toFixed(2)} criada com custo de R$ ${cost.toFixed(2)} (Líquido: R$ ${netAmount.toFixed(2)}). Enviada para alçada de aprovação!`,
+      advance: {
+        ...advance,
+        id: createdAdvance.id,
+        createdAt: createdAdvance.createdAt,
+      },
+      message: `Solicitação de antecipação de R$ ${requested.toFixed(2)} criada com custo de R$ ${cost.toFixed(2)} (Líquido: R$ ${netAmount.toFixed(2)}). Registrada e enviada para alçada de aprovação!`,
     };
   }
 
@@ -513,29 +393,32 @@ export class SettlementService {
     pixKey?: string;
     overrideLimit?: boolean;
   }) {
-    const eventDetail = await this.getEventFinancialDetail(tenantId, eventId);
-    const amount = Number(data.amount);
+    const wallet = await this.prisma.eventWallet.findFirst({
+      where: {
+        tenantId,
+        OR: [{ id: eventId }, { eventId: eventId }],
+      },
+    });
 
-    if (amount > eventDetail.saldoDisponivel && !data.overrideLimit) {
+    if (!wallet) {
+      throw new NotFoundException(`Carteira do evento '${eventId}' não encontrada para a organização.`);
+    }
+
+    const amount = Number(data.amount);
+    const available = Number(wallet.balanceAvailable || 0);
+
+    if (amount > available && !data.overrideLimit) {
       throw new BadRequestException(
-        `Valor do repasse (R$ ${amount.toFixed(2)}) é maior que o saldo disponível do evento (R$ ${eventDetail.saldoDisponivel.toFixed(2)}). Operação bloqueada por governança financeira.`,
+        `Valor do repasse (R$ ${amount.toFixed(2)}) é maior que o saldo disponível do evento (R$ ${available.toFixed(2)}). Operação bloqueada por governança financeira.`,
       );
     }
 
-    let scheduleId = `rep-${Date.now()}`;
     const scheduleNum = `REP-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Persistência em banco de dados via Prisma quando disponível com atualização transacional da carteira
+    let createdSchedule: any;
     try {
-      const wallet = await this.prisma.eventWallet.findFirst({
-        where: {
-          tenantId,
-          OR: [{ id: eventId }, { eventId: eventId }],
-        },
-      });
-
-      if (wallet) {
-        const created = await this.prisma.settlementSchedule.create({
+      createdSchedule = await this.prisma.$transaction(async (tx) => {
+        const schedule = await tx.settlementSchedule.create({
           data: {
             tenantId,
             eventWalletId: wallet.id,
@@ -547,44 +430,39 @@ export class SettlementService {
             paymentMethod: 'PIX',
             destinationBank: data.destinationBank,
             destinationPixKey: data.pixKey,
-            authorizedBy: 'Vinicius Casagrande (Diretoria)',
+            authorizedBy: 'Diretoria Financeira',
           },
         });
-        scheduleId = created.id;
 
-        // Atualiza saldos da carteira transacionalmente
-        await this.prisma.eventWallet.update({
+        await tx.eventWallet.update({
           where: { id: wallet.id },
           data: {
-            repaymentsScheduledTotal: {
-              increment: amount,
-            },
-            balanceAvailable: {
-              decrement: amount,
-            },
+            repaymentsScheduledTotal: { increment: amount },
+            balanceAvailable: { decrement: amount },
           },
         });
-      }
-    } catch (err: any) {
-      this.logger.warn(`Persistência Prisma no agendamento (${err?.message}). Utilizando em memória.`);
-    }
 
-    const repayment = {
-      id: scheduleId,
-      producerId,
-      eventId,
-      scheduleNumber: scheduleNum,
-      scheduledDate: data.scheduledDate,
-      amount,
-      status: 'SCHEDULED',
-      destinationBank: data.destinationBank,
-      destinationPixKey: data.pixKey,
-      authorizedBy: 'Vinicius Casagrande (Diretoria)',
-    };
+        return schedule;
+      });
+    } catch (err: any) {
+      this.logger.error(`Erro ao persistir agendamento de repasse: ${err?.message}`);
+      throw new InternalServerErrorException(`Falha ao persistir agendamento de repasse: ${err?.message}`);
+    }
 
     return {
       success: true,
-      repayment,
+      repayment: {
+        id: createdSchedule.id,
+        producerId,
+        eventId: wallet.eventId,
+        scheduleNumber: scheduleNum,
+        scheduledDate: data.scheduledDate,
+        amount,
+        status: 'SCHEDULED',
+        destinationBank: data.destinationBank,
+        destinationPixKey: data.pixKey,
+        authorizedBy: 'Diretoria Financeira',
+      },
       message: `Repasse de R$ ${amount.toFixed(2)} agendado com sucesso para ${data.scheduledDate}!`,
     };
   }
@@ -626,68 +504,42 @@ export class SettlementService {
    * Posição das Carteiras de Eventos
    */
   async getEventWallets(tenantId: string, companyId?: string) {
-    return [
-      {
-        id: 'wallet-001',
-        eventId: 'ev-101',
-        eventName: 'Festival XYZ',
-        producerId: 'prod-01',
-        producerName: 'ABC Produções & Eventos Ltda',
-        grossSales: 500000.0,
-        diskFeeTotal: 50000.0,
-        spreadFeeTotal: 12500.0,
-        advanceFeeTotal: 7500.0,
-        ribitFeeTotal: 2000.0,
-        expensesTotal: 100000.0,
-        repaymentsPaidTotal: 100000.0,
-        repaymentsScheduledTotal: 30000.0,
-        advancesPaidTotal: 50000.0,
-        balanceAvailable: 148000.0,
-        blockedBalance: 0.0,
-        projectedBalance: 680000.0,
-        status: 'ACTIVE',
-      },
-      {
-        id: 'wallet-002',
-        eventId: 'ev-102',
-        eventName: 'Show ABC',
-        producerId: 'prod-01',
-        producerName: 'ABC Produções & Eventos Ltda',
-        grossSales: 280000.0,
-        diskFeeTotal: 22400.0,
-        spreadFeeTotal: 8400.0,
-        advanceFeeTotal: 0.0,
-        ribitFeeTotal: 0.0,
-        expensesTotal: 59200.0,
-        repaymentsPaidTotal: 0.0,
-        repaymentsScheduledTotal: 0.0,
-        advancesPaidTotal: 0.0,
-        balanceAvailable: 190000.0,
-        blockedBalance: 0.0,
-        projectedBalance: 340000.0,
-        status: 'ACTIVE',
-      },
-      {
-        id: 'wallet-003',
-        eventId: 'ev-103',
-        eventName: 'Teatro 2026',
-        producerId: 'prod-01',
-        producerName: 'ABC Produções & Eventos Ltda',
-        grossSales: 150000.0,
-        diskFeeTotal: 15000.0,
-        spreadFeeTotal: 4500.0,
-        advanceFeeTotal: 0.0,
-        ribitFeeTotal: 0.0,
-        expensesTotal: 20500.0,
-        repaymentsPaidTotal: 0.0,
-        repaymentsScheduledTotal: 0.0,
-        advancesPaidTotal: 0.0,
-        balanceAvailable: 110000.0,
-        blockedBalance: 0.0,
-        projectedBalance: 220000.0,
-        status: 'ACTIVE',
-      },
-    ];
+    try {
+      const dbWallets = await this.prisma.eventWallet.findMany({
+        where: {
+          tenantId,
+          ...(companyId ? { companyId } : {}),
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (dbWallets && dbWallets.length > 0) {
+        return dbWallets.map((w) => ({
+          id: w.id,
+          eventId: w.eventId,
+          eventName: w.eventName,
+          producerId: w.producerId,
+          producerName: w.producerName,
+          grossSales: Number(w.grossTicketSales || 0),
+          diskFeeTotal: Number(w.diskFeeTotal || 0),
+          spreadFeeTotal: Number(w.spreadFeeTotal || 0),
+          advanceFeeTotal: Number(w.advanceFeeTotal || 0),
+          ribitFeeTotal: Number(w.otherFeesTotal || 0),
+          expensesTotal: Number(w.expensesTotal || 0),
+          repaymentsPaidTotal: Number(w.repaymentsPaidTotal || 0),
+          repaymentsScheduledTotal: Number(w.repaymentsScheduledTotal || 0),
+          advancesPaidTotal: Number(w.advancesPaidTotal || 0),
+          balanceAvailable: Number(w.balanceAvailable || 0),
+          blockedBalance: Number(w.blockedBalance || 0),
+          projectedBalance: Number(w.projectedBalance || 0),
+          status: w.status,
+        }));
+      }
+    } catch (err: any) {
+      this.logger.warn(`Erro ao consultar carteiras de eventos no Prisma: ${err?.message}`);
+    }
+
+    return [];
   }
 
   /**

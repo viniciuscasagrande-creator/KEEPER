@@ -23,23 +23,37 @@ export class WebhooksService {
   }
 
   /**
-   * Validação criptográfica de assinatura HMAC SHA-256
+   * Validação criptográfica de assinatura HMAC SHA-256 com segredos por provedor
    */
   private verifyHmacSignature(payload: any, signatureHeader?: string, provider?: string): boolean {
     const signature = signatureHeader || payload?.signature;
-    const requireSignature = process.env.REQUIRE_WEBHOOK_SIGNATURE === 'true';
+    const isProduction = process.env.NODE_ENV === 'production';
+    const requireSignature = isProduction || process.env.REQUIRE_WEBHOOK_SIGNATURE === 'true';
 
     if (!signature) {
       if (requireSignature) {
-        throw new UnauthorizedException(`Assinatura HMAC ausente para o webhook do provedor ${provider || 'gateway'}`);
+        throw new UnauthorizedException(
+          `Assinatura HMAC ausente para o webhook do provedor ${provider || 'gateway'} (obrigatória em produção)`,
+        );
       }
+      this.logger.warn(`Webhook recebido sem assinatura HMAC em ambiente de desenvolvimento (Provedor: ${provider})`);
       return true;
     }
 
     const secretKey =
       process.env[`WEBHOOK_SECRET_${provider?.toUpperCase()}`] ||
-      process.env.WEBHOOK_SECRET ||
-      'keeper-webhook-secret-production-2026';
+      process.env.WEBHOOK_SECRET;
+
+    if (!secretKey) {
+      if (isProduction) {
+        this.logger.error(`Segredo de webhook não configurado para o provedor ${provider || 'padrão'}`);
+        throw new InternalServerErrorException(
+          `Chave secreta de autenticação do provedor ${provider || 'gateway'} não está configurada no servidor.`,
+        );
+      }
+      // Em modo de testes/dev local sem env configurada
+      return true;
+    }
 
     const normalizedSignature = signature.replace(/^sha256=/, '').trim();
     const rawPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
@@ -55,14 +69,14 @@ export class WebhooksService {
       }
     } catch (err: any) {
       if (err instanceof UnauthorizedException) throw err;
-      throw new UnauthorizedException('Erro ao decodificar assinatura HMAC do webhook');
+      throw new UnauthorizedException('Falha ao validar assinatura criptográfica do webhook');
     }
 
     return true;
   }
 
   /**
-   * Resolução dinâmica do TenantId real a partir do banco de dados ou contexto
+   * Resolução dinâmica do TenantId real a partir do banco de dados (rejeita fallback inválido)
    */
   private async resolveTenantId(providedTenantId?: string): Promise<string> {
     if (providedTenantId) {
@@ -72,7 +86,7 @@ export class WebhooksService {
         });
         if (tenant) return tenant.id;
       } catch {
-        // Fallback para consulta dinâmica
+        // Prossegue para busca dinâmica se id falhar
       }
     }
 
@@ -86,10 +100,12 @@ export class WebhooksService {
       const anyTenant = await this.prisma.tenant.findFirst();
       if (anyTenant) return anyTenant.id;
     } catch (err: any) {
-      this.logger.warn(`Falha ao consultar tenant dinâmico no banco: ${err?.message}`);
+      this.logger.error(`Falha ao consultar tenant dinâmico no banco: ${err?.message}`);
+      throw new InternalServerErrorException('Falha de infraestrutura ao resolver tenant da organização.');
     }
 
-    return '00000000-0000-0000-0000-000000000001';
+    // Se nenhum tenant existir no banco de dados, rejeita processamento financeiro
+    throw new BadRequestException('Tenant inválido ou não identificado para o processamento deste webhook.');
   }
 
   /**
@@ -103,36 +119,44 @@ export class WebhooksService {
     const tenantId = await this.resolveTenantId(tenantIdHeader);
     const aggregateUuid = this.toValidUuid(dto.transactionId);
 
+    // 3. Validação de Vínculo: Se evento informado, confere se pertence ao mesmo tenant
+    const eventUuid = this.toValidUuid(dto.eventId);
+    const existingWallet = await this.prisma.eventWallet.findFirst({
+      where: {
+        OR: [{ id: eventUuid }, { eventId: dto.eventId }],
+      },
+    });
+
+    if (existingWallet && existingWallet.tenantId !== tenantId) {
+      throw new BadRequestException('Violação de isolamento multi-tenant: O evento informado não pertence à sua organização.');
+    }
+
     this.logger.log(
       `[Webhook Inbound] Gateway '${dto.provider}' noticou '${dto.eventType}' para transação '${dto.transactionId}' (Evento: ${dto.eventId}, R$ ${dto.amount})`,
     );
 
-    // 3. Verificação de Idempotência
-    try {
-      const existing = await this.prisma.domainEvent.findFirst({
-        where: {
-          tenantId,
-          aggregateType: 'PAYMENT_TRANSACTION',
-          aggregateId: aggregateUuid,
-          eventType: `GATEWAY_${dto.eventType}`,
-        },
-      });
+    // 4. Verificação de Idempotência
+    const existingEvent = await this.prisma.domainEvent.findFirst({
+      where: {
+        tenantId,
+        aggregateType: 'PAYMENT_TRANSACTION',
+        aggregateId: aggregateUuid,
+        eventType: `GATEWAY_${dto.eventType}`,
+      },
+    });
 
-      if (existing) {
-        this.logger.log(`[Idempotência] Webhook repetido ignorado para transação ${dto.transactionId}`);
-        return {
-          received: true,
-          idempotent: true,
-          transactionId: dto.transactionId,
-          status: 'ALREADY_PROCESSED',
-          message: `Webhook do gateway ${dto.provider} já reconciliado anteriormente.`,
-        };
-      }
-    } catch {
-      // Ignora erro de consulta se tabela de eventos ainda não foi migrada
+    if (existingEvent) {
+      this.logger.log(`[Idempotência] Webhook repetido ignorado para transação ${dto.transactionId}`);
+      return {
+        received: true,
+        idempotent: true,
+        transactionId: dto.transactionId,
+        status: 'ALREADY_PROCESSED',
+        message: `Webhook do gateway ${dto.provider} já reconciliado anteriormente.`,
+      };
     }
 
-    // 4. Registro no log de telemetria
+    // 5. Registro no log de telemetria
     const logEntry = {
       id: `wh-${Date.now()}`,
       category: 'GATEWAY',
@@ -150,7 +174,7 @@ export class WebhooksService {
     this.webhookLogs.unshift(logEntry);
     if (this.webhookLogs.length > 100) this.webhookLogs.pop();
 
-    // 5. Persistência real em banco de dados com tratamento de erro
+    // 6. Persistência transacional com rollback e tratamento de erro estrito
     try {
       await this.prisma.$transaction(async (tx) => {
         // Grava no outbox de eventos de domínio
@@ -171,18 +195,10 @@ export class WebhooksService {
         });
 
         // Se houver carteira de evento cadastrada, reconcilia saldo
-        const eventUuid = this.toValidUuid(dto.eventId);
-        const wallet = await tx.eventWallet.findFirst({
-          where: {
-            tenantId,
-            OR: [{ id: eventUuid }, { eventId: dto.eventId }],
-          },
-        });
-
-        if (wallet) {
+        if (existingWallet) {
           if (dto.eventType === 'CHARGEBACK_OPENED') {
             await tx.eventWallet.update({
-              where: { id: wallet.id },
+              where: { id: existingWallet.id },
               data: {
                 blockedBalance: { increment: dto.amount },
                 balanceAvailable: { decrement: dto.amount },
@@ -190,7 +206,7 @@ export class WebhooksService {
             });
           } else if (dto.eventType === 'PAYMENT_CONFIRMED' || dto.eventType === 'PIX_SETTLED') {
             await tx.eventWallet.update({
-              where: { id: wallet.id },
+              where: { id: existingWallet.id },
               data: {
                 grossTicketSales: { increment: dto.amount },
                 balanceAvailable: { increment: dto.amount - (dto.feeAmount || 0) },
@@ -202,14 +218,8 @@ export class WebhooksService {
     } catch (err: any) {
       logEntry.status = 'PERSISTENCE_FAILED';
       this.logger.error(`Erro ao persistir evento de webhook: ${err?.message}`, err?.stack);
-      // Se a persistência falhou criticamente, retorna status apropriado
-      return {
-        received: true,
-        transactionId: dto.transactionId,
-        status: 'PERSISTENCE_WARNING',
-        error: err?.message,
-        message: `Webhook recebido, mas persistência transacional reportou aviso: ${err?.message}`,
-      };
+      // Não mascara o erro: notifica o gateway para efetuar retentativa
+      throw new InternalServerErrorException(`Falha ao persistir conciliação da transação ${dto.transactionId}: ${err?.message}`);
     }
 
     return {
@@ -229,6 +239,41 @@ export class WebhooksService {
     this.verifyHmacSignature(dto, signatureHeader, 'BILHETERIA_DISK');
     const tenantId = await this.resolveTenantId(tenantIdHeader);
     const eventUuid = this.toValidUuid(dto.eventId);
+
+    // Validação de Vínculo Tenant / Evento
+    const wallet = await this.prisma.eventWallet.findFirst({
+      where: {
+        OR: [{ id: eventUuid }, { eventId: dto.eventId }],
+      },
+    });
+
+    if (wallet && wallet.tenantId !== tenantId) {
+      throw new BadRequestException('Inconsistência de tenant: O evento de ingressos pertence a outra organização.');
+    }
+
+    // Idempotência baseada no lote / transação de venda
+    const batchKey = `${dto.eventId}-${dto.salesChannel}-${dto.batchOrSector || 'GENERAL'}-${dto.ticketCount}-${dto.grossAmount}`;
+    const batchUuid = this.toValidUuid(batchKey);
+
+    const existingBatch = await this.prisma.domainEvent.findFirst({
+      where: {
+        tenantId,
+        aggregateType: 'EVENT_TICKETS',
+        aggregateId: batchUuid,
+        eventType: 'TICKET_SALES_BATCH_RECEIVED',
+      },
+    });
+
+    if (existingBatch) {
+      this.logger.log(`[Idempotência] Lote de vendas repetido já processado: ${batchKey}`);
+      return {
+        received: true,
+        idempotent: true,
+        eventId: dto.eventId,
+        status: 'ALREADY_PROCESSED',
+        message: `Lote de vendas de ingressos já reconciliado anteriormente.`,
+      };
+    }
 
     this.logger.log(
       `[Webhook Inbound] Bilheteria noticou venda de ${dto.ticketCount} ingressos no evento '${dto.eventName}' (Canal: ${dto.salesChannel}, Bruto: R$ ${dto.grossAmount})`,
@@ -257,20 +302,14 @@ export class WebhooksService {
             tenantId,
             eventType: 'TICKET_SALES_BATCH_RECEIVED',
             aggregateType: 'EVENT_TICKETS',
-            aggregateId: eventUuid,
+            aggregateId: batchUuid,
             payload: {
               ...dto,
+              batchKey,
               processedAt: new Date().toISOString(),
             },
             status: 'PROCESSED',
             processedAt: new Date(),
-          },
-        });
-
-        const wallet = await tx.eventWallet.findFirst({
-          where: {
-            tenantId,
-            OR: [{ id: eventUuid }, { eventId: dto.eventId }],
           },
         });
 
@@ -287,7 +326,9 @@ export class WebhooksService {
         }
       });
     } catch (err: any) {
-      this.logger.warn(`Persistência de vendas de ingressos (${err?.message})`);
+      logEntry.status = 'PERSISTENCE_FAILED';
+      this.logger.error(`Falha ao persistir lote de vendas de ingressos: ${err?.message}`, err?.stack);
+      throw new InternalServerErrorException(`Falha ao persistir lote de ingressos: ${err?.message}`);
     }
 
     return {
@@ -317,7 +358,7 @@ export class WebhooksService {
       category: 'DIGITAL_SIGNATURE',
       platform: dto.platform,
       contractCode: dto.contractCode,
-      status: dto.status,
+      status: dto.status as string,
       signatoryEmail: dto.signatoryEmail,
       receivedAt: new Date().toISOString(),
       tenantId,
@@ -342,7 +383,9 @@ export class WebhooksService {
         },
       });
     } catch (err: any) {
-      this.logger.warn(`Persistência de assinatura digital (${err?.message})`);
+      logEntry.status = 'PERSISTENCE_FAILED';
+      this.logger.error(`Falha ao persistir status de assinatura digital: ${err?.message}`);
+      throw new InternalServerErrorException(`Falha ao persistir assinatura do contrato: ${err?.message}`);
     }
 
     return {

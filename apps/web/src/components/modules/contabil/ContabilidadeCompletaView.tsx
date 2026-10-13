@@ -496,6 +496,9 @@ export function ContabilidadeCompletaView({ request = api.accountingRequest, ini
                 <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
                   Keeper ERP
                 </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                  Demonstração / Homologação
+                </span>
               </div>
               <p className="text-xs text-slate-500 font-normal mt-0.5 leading-relaxed">
                 Gestão contábil e fiscal unificada: escrituração societária Disk, controle auxiliar de eventos dos produtores e conciliação financeira.

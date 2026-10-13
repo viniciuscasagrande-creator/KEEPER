@@ -27,10 +27,11 @@ async function bootstrap() {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
+      const isProduction = process.env.NODE_ENV === 'production';
       const isAllowed =
         configuredOrigins.includes(origin) ||
-        /^https:\/\/.*\.vercel\.app$/.test(origin) ||
-        /^http:\/\/localhost:\d+$/.test(origin);
+        origin === 'https://keeper-tng6.vercel.app' ||
+        (!isProduction && (/^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)));
 
       if (isAllowed) {
         callback(null, true);

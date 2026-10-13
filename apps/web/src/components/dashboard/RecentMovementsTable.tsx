@@ -137,7 +137,7 @@ interface RecentMovementsTableProps {
 }
 
 export function RecentMovementsTable({ refreshTrigger, onMovementUpdated }: RecentMovementsTableProps) {
-  const [movements, setMovements] = useState<Movement[]>(mockMovements);
+  const [movements, setMovements] = useState<Movement[]>((import.meta as any)?.env?.DEV ? mockMovements : []);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState<'all' | 'payable' | 'receivable'>('all');
@@ -200,10 +200,9 @@ export function RecentMovementsTable({ refreshTrigger, onMovementUpdated }: Rece
       }
 
       if (liveList.length > 0) {
-        // Merge with mock items that are not duplicated
-        const existingCodes = new Set(liveList.map((m) => m.code));
-        const filteredMock = mockMovements.filter((m) => !existingCodes.has(m.code));
-        setMovements([...liveList, ...filteredMock]);
+        setMovements(liveList);
+      } else if ((import.meta as any)?.env?.PROD) {
+        setMovements([]);
       }
     } catch (err) {
       console.warn('API unavailable, keeping base movements list', err);
