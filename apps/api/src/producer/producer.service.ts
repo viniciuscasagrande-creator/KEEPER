@@ -330,6 +330,44 @@ export class ProducerService {
    * Acompanhamento dos repasses solicitados
    */
   async getPayoutRequests(tenantId: string, producerId: string, eventId?: string) {
+    try {
+      const dbSchedules = await this.prisma.settlementSchedule.findMany({
+        where: {
+          tenantId,
+          ...(producerId ? { producerId } : {}),
+        },
+        include: {
+          wallet: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (dbSchedules && dbSchedules.length > 0) {
+        return dbSchedules.map((s) => ({
+          id: s.id,
+          requestNumber: s.scheduleNumber,
+          eventId: s.eventWalletId,
+          eventName: s.wallet?.eventName || 'Evento DiskIngressos',
+          producerId: s.producerId,
+          producerName: s.wallet?.producerName || 'Produtora',
+          amount: Number(s.amount),
+          paymentMethod: s.paymentMethod,
+          destinationAccount: s.destinationPixKey || s.destinationAccount || 'Conta Padrão',
+          status: s.status === 'PAID' ? 'PAID' : 'UNDER_ANALYSIS',
+          requestedAt: s.createdAt.toISOString(),
+          paidAt: s.paidAt?.toISOString(),
+          timeline: [
+            { step: 'SOLICITADO', label: 'Solicitado pelo Produtor', time: s.createdAt.toLocaleString('pt-BR'), status: 'COMPLETED' },
+            { step: 'ANALISE', label: 'Análise de Retenções', time: 'Concluído', status: 'COMPLETED' },
+            { step: 'APROVACAO', label: 'Aprovação de Alçada', status: s.status === 'PAID' ? 'COMPLETED' : 'IN_PROGRESS' },
+            { step: 'LIQUIDACAO', label: 'Liquidação Bancária PIX', status: s.status === 'PAID' ? 'COMPLETED' : 'PENDING' },
+          ],
+        }));
+      }
+    } catch (err: any) {
+      this.logger.warn(`Erro ao consultar agendamentos no Prisma (${err?.message}). Utilizando repositório de memória.`);
+    }
+
     let list = this.payoutRequestsStore;
     if (eventId && eventId !== 'all') {
       list = list.filter((p) => p.eventId === eventId);

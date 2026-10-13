@@ -12,9 +12,33 @@ async function bootstrap() {
   const prefix = process.env.API_PREFIX || 'api/v1';
   app.setGlobalPrefix(prefix);
 
-  // Enable CORS
+  // Secure CORS origin resolution
+  const configuredOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : [
+        'https://keeper-tng6.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:4000',
+        'http://127.0.0.1:5173',
+      ];
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      const isAllowed =
+        configuredOrigins.includes(origin) ||
+        /^https:\/\/.*\.vercel\.app$/.test(origin) ||
+        /^http:\/\/localhost:\d+$/.test(origin);
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        logger.warn(`Bloqueada requisição CORS não autorizada da origem: ${origin}`);
+        callback(new Error(`CORS policy: Origin ${origin} not allowed.`));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

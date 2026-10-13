@@ -24,10 +24,18 @@ import { ProducerModule } from './producer/producer.module';
 
 @Module({
   imports: [
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production-change-this-now!',
-      signOptions: { expiresIn: '1h' },
+      useFactory: () => {
+        const secret = process.env.JWT_SECRET;
+        if (process.env.NODE_ENV === 'production' && (!secret || secret.includes('replace-in-production') || secret.length < 32)) {
+          throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable with at least 32 characters is mandatory in production!');
+        }
+        return {
+          secret: secret || 'super-secret-jwt-key-development-only-change-in-production',
+          signOptions: { expiresIn: '8h' },
+        };
+      },
     }),
     CoreModule,
     HealthModule,
